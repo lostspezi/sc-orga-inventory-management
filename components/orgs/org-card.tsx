@@ -1,4 +1,5 @@
 import type {OrganizationView} from "@/lib/types/organization";
+import Link from "next/link";
 
 type Props = {
     organization: OrganizationView;
@@ -63,6 +64,13 @@ export default function OrgCard({ organization }: Props) {
                     </span>
                 </div>
             </div>
+
+            <Link
+                href={`/terminal/orgs/${organization.slug}`}
+                className="sc-btn sc-btn-outline mt-4 inline-flex w-full items-center justify-center text-center"
+            >
+                Go to Org
+            </Link>
 
             {organization.starCitizenOrganizationUrl && (
                 <a

@@ -1,0 +1,40 @@
+import { auth } from "@/auth";
+import { notFound, redirect } from "next/navigation";
+import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
+import OrgDetailsShell from "@/components/orgs/details/org-details-shell";
+
+type Props = {
+    children: React.ReactNode;
+    params: Promise<{ slug: string }>;
+};
+
+export default async function OrgLayout({ children, params }: Props) {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+        redirect("/login");
+    }
+
+    const { slug } = await params;
+    const org = await getOrganizationBySlug(slug);
+
+    if (!org) {
+        notFound();
+    }
+
+    // Access check: only members can access
+    const isMember = org.members.some((m) => m.userId === session.user!.id);
+    if (!isMember) {
+        notFound();
+    }
+
+    return (
+        <OrgDetailsShell
+            slug={org.slug}
+            orgName={org.name}
+            orgRsiUrl={org.starCitizenOrganizationUrl}
+        >
+            {children}
+        </OrgDetailsShell>
+    );
+}
