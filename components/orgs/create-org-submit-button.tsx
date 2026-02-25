@@ -2,16 +2,17 @@
 
 import { useFormStatus } from "react-dom";
 
-export default function CreateOrgSubmitButton() {
+export default function CreateOrgSubmitButton({ disabled }: { disabled?: boolean }) {
     const { pending } = useFormStatus();
+    const isDisabled = disabled || pending;
 
     return (
         <button
             type="submit"
-            disabled={pending}
-            className="sc-btn sc-btn-outline"
+            disabled={isDisabled}
+            className="sc-btn disabled:opacity-60"
         >
-            {pending ? "Creating..." : "Create"}
+            {pending ? "Creating..." : "Create Organization"}
         </button>
     );
 }
