@@ -18,9 +18,22 @@ function sanitizeHandle(input: string) {
         .replace(/[^a-z0-9_-]/g, "");
 }
 
+// very simple display name generator
+function displayNameFromHandle(handle: string) {
+    if (!handle) return "";
+    // merccorp -> Merccorp, my-org -> My Org
+    return handle
+        .replace(/[-_]+/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 type RsiResult =
     | { status: "valid"; url: string; handle: string }
     | { status: "invalid"; reason?: string; handle: string };
+
+type DbResult =
+    | { status: "known"; exists: boolean; handle: string }
+    | { status: "idle" };
 
 export default function CreateOrgDialog() {
     const dialogRef = useRef<HTMLDialogElement | null>(null);
@@ -31,16 +44,33 @@ export default function CreateOrgDialog() {
     const [orgHandleRaw, setOrgHandleRaw] = useState("");
     const orgHandle = useMemo(() => sanitizeHandle(orgHandleRaw), [orgHandleRaw]);
 
+    // RSI validation result
     const [rsiResult, setRsiResult] = useState<RsiResult | null>(null);
 
-    const isChecking =
+    // DB existence check
+    const [dbResult, setDbResult] = useState<DbResult>({ status: "idle" });
+
+    const isCheckingRsi =
         orgHandle.length > 0 && (rsiResult === null || rsiResult.handle !== orgHandle);
 
-    const canSubmit =
-        orgHandle.length > 0 &&
-        rsiResult?.status === "valid" &&
-        rsiResult.handle === orgHandle;
+    const rsiValid =
+        orgHandle.length > 0 && rsiResult?.status === "valid" && rsiResult.handle === orgHandle;
 
+    const dbKnownForHandle =
+        dbResult.status === "known" && dbResult.handle === orgHandle;
+
+    const existsInDb =
+        dbKnownForHandle && dbResult.exists;
+
+    const isCheckingDb =
+        rsiValid && !dbKnownForHandle; // we only check DB once RSI is valid
+
+    const orgName = useMemo(() => displayNameFromHandle(orgHandle), [orgHandle]);
+
+    // Submit only if RSI valid AND not existing in DB
+    const canSubmit = rsiValid && !existsInDb;
+
+    // reset & close on success
     useEffect(() => {
         if (!state.success) return;
 
@@ -48,6 +78,7 @@ export default function CreateOrgDialog() {
             formRef.current?.reset();
             setOrgHandleRaw("");
             setRsiResult(null);
+            setDbResult({ status: "idle" });
             dialogRef.current?.close();
         });
     }, [state.success]);
@@ -57,8 +88,10 @@ export default function CreateOrgDialog() {
         formRef.current?.reset();
         setOrgHandleRaw("");
         setRsiResult(null);
+        setDbResult({ status: "idle" });
     };
 
+    // RSI: validate handle -> exists?
     useEffect(() => {
         if (!orgHandle) return;
 
@@ -76,25 +109,46 @@ export default function CreateOrgDialog() {
                 } else {
                     setRsiResult({ status: "invalid", reason: "Organization not found (404).", handle: orgHandle });
                 }
+
+                // important: reset dbResult when handle changes / RSI re-check happens
+                setDbResult({ status: "idle" });
             } catch {
                 setRsiResult({ status: "invalid", reason: "Validation failed. Try again.", handle: orgHandle });
+                setDbResult({ status: "idle" });
             }
         }, 400);
 
         return () => clearTimeout(t);
     }, [orgHandle]);
 
-    // URL to submit (only if current handle is valid)
+    // DB: check if slug already exists (only once RSI valid)
+    useEffect(() => {
+        if (!rsiValid) return;
+
+        const t = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/orgs/exists?handle=${encodeURIComponent(orgHandle)}`, {
+                    method: "GET",
+                    cache: "no-store",
+                });
+
+                const data: { exists: boolean; handle: string } = await res.json();
+                setDbResult({ status: "known", exists: data.exists, handle: data.handle });
+            } catch {
+                // if DB check fails, treat as "unknown" but keep UI safe
+                setDbResult({ status: "known", exists: false, handle: orgHandle });
+            }
+        }, 150);
+
+        return () => clearTimeout(t);
+    }, [rsiValid, orgHandle]);
+
     const submittedUrl =
-        canSubmit && rsiResult?.status === "valid" ? rsiResult.url : "";
+        rsiValid && rsiResult?.status === "valid" ? rsiResult.url : "";
 
     return (
         <>
-            <button
-                type="button"
-                onClick={() => dialogRef.current?.showModal()}
-                className="sc-btn"
-            >
+            <button type="button" onClick={() => dialogRef.current?.showModal()} className="sc-btn">
                 Create Organization
             </button>
 
@@ -131,7 +185,7 @@ export default function CreateOrgDialog() {
                                 className="mt-1 text-sm"
                                 style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                             >
-                                Register a new organization in the terminal.
+                                Enter the RSI org handle. The name will be derived automatically.
                             </p>
                         </div>
 
@@ -151,22 +205,35 @@ export default function CreateOrgDialog() {
                     </div>
 
                     <form ref={formRef} action={formAction} className="space-y-4">
+                        {/* Derived Name (read-only) */}
                         <div>
                             <label
                                 htmlFor="name"
                                 className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                                 style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                             >
-                                Organization Name
+                                Organization Name (derived)
                             </label>
+
+                            {/* submit value */}
+                            <input type="hidden" name="name" value={orgName} />
+
+                            {/* display-only */}
                             <input
                                 id="name"
-                                name="name"
                                 type="text"
-                                placeholder="e.g. Galactic Traders"
-                                className="sc-input w-full"
-                                required
+                                value={orgName || ""}
+                                readOnly
+                                className="sc-input w-full opacity-90"
                             />
+
+                            <p
+                                className="mt-1 text-[11px]"
+                                style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
+                            >
+                                Name is generated from the handle and cannot be edited.
+                            </p>
+
                             {state.fieldErrors?.name && (
                                 <p className="mt-1 text-xs" style={{ color: "rgba(240,165,0,0.85)" }}>
                                     {state.fieldErrors.name}
@@ -174,6 +241,7 @@ export default function CreateOrgDialog() {
                             )}
                         </div>
 
+                        {/* Handle Input */}
                         <div>
                             <label
                                 htmlFor="starCitizenOrgHandle"
@@ -195,52 +263,63 @@ export default function CreateOrgDialog() {
                                 autoComplete="off"
                             />
 
-                            {/* hidden field: final URL saved to DB */}
-                            <input
-                                type="hidden"
-                                name="starCitizenOrganizationUrl"
-                                value={submittedUrl}
-                            />
+                            {/* URL saved to DB */}
+                            <input type="hidden" name="starCitizenOrganizationUrl" value={submittedUrl} />
 
-                            {/* status line */}
+                            {/* Status line */}
                             <div className="mt-2 text-[11px]" style={{ fontFamily: "var(--font-mono)" }}>
                                 {!orgHandle && (
                                     <span style={{ color: "rgba(200,220,232,0.35)" }}>
-                                        Enter the org handle to validate availability.
-                                    </span>
+                    Enter the org handle to validate availability.
+                  </span>
                                 )}
 
-                                {orgHandle && isChecking && (
+                                {orgHandle && isCheckingRsi && (
                                     <span style={{ color: "rgba(79,195,220,0.55)" }}>
-                                        Checking RSI registry…
-                                    </span>
+                    Checking RSI registry…
+                  </span>
                                 )}
 
-                                {canSubmit && rsiResult?.status === "valid" && (
+                                {rsiValid && rsiResult?.status === "valid" && (
                                     <span style={{ color: "rgba(79,195,220,0.75)" }}>
-                                        Found:{" "}
-                                        <a
-                                            href={rsiResult.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="underline"
-                                        >
-                                            {rsiResult.url}
-                                        </a>
-                                    </span>
+                    RSI OK:{" "}
+                                        <a href={rsiResult.url} target="_blank" rel="noreferrer" className="underline">
+                      {rsiResult.url}
+                    </a>
+                  </span>
                                 )}
 
                                 {orgHandle &&
-                                    !isChecking &&
+                                    !isCheckingRsi &&
                                     rsiResult?.status === "invalid" &&
                                     rsiResult.handle === orgHandle && (
                                         <span style={{ color: "rgba(240,165,0,0.85)" }}>
-                                            {rsiResult.reason ?? "Organization not found."}
-                                        </span>
+                      {rsiResult.reason ?? "Organization not found."}
+                    </span>
                                     )}
                             </div>
 
-                            {/* server-side validation errors (optional) */}
+                            {/* DB Check line */}
+                            <div className="mt-2 text-[11px]" style={{ fontFamily: "var(--font-mono)" }}>
+                                {rsiValid && isCheckingDb && (
+                                    <span style={{ color: "rgba(79,195,220,0.45)" }}>
+                    Checking local registry…
+                  </span>
+                                )}
+
+                                {rsiValid && dbKnownForHandle && !existsInDb && (
+                                    <span style={{ color: "rgba(79,195,220,0.65)" }}>
+                    Local registry: available.
+                  </span>
+                                )}
+
+                                {rsiValid && dbKnownForHandle && existsInDb && (
+                                    <span style={{ color: "rgba(240,165,0,0.9)" }}>
+                    This organization already exists in your database.
+                  </span>
+                                )}
+                            </div>
+
                             {state.fieldErrors?.starCitizenOrganizationUrl && (
                                 <p className="mt-1 text-xs" style={{ color: "rgba(240,165,0,0.85)" }}>
                                     {state.fieldErrors.starCitizenOrganizationUrl}
@@ -249,7 +328,10 @@ export default function CreateOrgDialog() {
                         </div>
 
                         {state.message && !state.success && (
-                            <p className="text-sm" style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-mono)" }}>
+                            <p
+                                className="text-sm"
+                                style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-mono)" }}
+                            >
                                 {state.message}
                             </p>
                         )}
