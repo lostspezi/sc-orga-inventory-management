@@ -1,0 +1,100 @@
+import Link from "next/link";
+import { ExternalLink, ChevronLeft } from "lucide-react";
+import OrgDetailsSidebar from "@/components/orgs/details/org-details-sidebar";
+import OrgDetailsMobileNav from "@/components/orgs/details/org-details-mobile-nav";
+
+type Props = {
+    slug: string;
+    orgName: string;
+    orgRsiUrl?: string;
+    children: React.ReactNode;
+};
+
+export default function OrgDetailsShell({ slug, orgName, orgRsiUrl, children }: Props) {
+    return (
+        <main className="min-h-screen px-4 py-6 sm:px-6">
+            <div className="mx-auto w-full max-w-7xl space-y-4">
+                {/* Header */}
+                <header
+                    className="hud-panel corner-tr corner-bl relative p-5 sm:p-6"
+                    style={{ animation: "slide-in-up 0.45s ease forwards" }}
+                >
+                    <div
+                        className="absolute -top-px left-8 right-8 h-px"
+                        style={{ background: "linear-gradient(90deg, transparent, var(--accent-primary), transparent)" }}
+                    />
+
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p
+                                className="mb-1 text-xs uppercase tracking-[0.35em]"
+                                style={{ color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-display)" }}
+                            >
+                                Organization Terminal
+                            </p>
+                            <h1
+                                className="text-xl font-semibold uppercase tracking-[0.08em] sm:text-2xl"
+                                style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
+                            >
+                                {orgName}
+                            </h1>
+                            <p
+                                className="mt-1 text-xs sm:text-sm"
+                                style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
+                            >
+                                /terminal/orgs/{slug}
+                            </p>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Link href="/terminal/orgs" className="sc-btn sc-btn-outline inline-flex items-center gap-2">
+                                <ChevronLeft size={16} />
+                                Back to Orgs
+                            </Link>
+
+                            {orgRsiUrl && (
+                                <a
+                                    href={orgRsiUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="sc-btn inline-flex items-center gap-2"
+                                >
+                                    <ExternalLink size={16} />
+                                    RSI Page
+                                </a>
+                            )}
+                        </div>
+                    </div>
+
+                    <div
+                        className="absolute -bottom-px left-8 right-8 h-px"
+                        style={{ background: "linear-gradient(90deg, transparent, rgba(79,195,220,0.25), transparent)" }}
+                    />
+                </header>
+
+                {/* Mobile nav */}
+                <OrgDetailsMobileNav slug={slug} />
+
+                {/* Content grid */}
+                <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+                    <OrgDetailsSidebar slug={slug} />
+
+                    <section
+                        className="hud-panel corner-tr corner-bl relative p-4 sm:p-5"
+                        style={{ background: "rgba(8,16,24,0.55)", animation: "slide-in-up 0.5s ease forwards" }}
+                    >
+                        <div
+                            className="absolute -top-px left-8 right-8 h-px"
+                            style={{ background: "linear-gradient(90deg, transparent, rgba(79,195,220,0.35), transparent)" }}
+                        />
+                        {children}
+                        <div
+                            className="absolute -bottom-px left-8 right-8 h-px"
+                            style={{ background: "linear-gradient(90deg, transparent, rgba(79,195,220,0.2), transparent)" }}
+                        />
+                    </section>
+                </div>
+            </div>
+        </main>
+    );
+}
