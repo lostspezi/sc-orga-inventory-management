@@ -29,7 +29,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-ui);
+  font-family: var(--font-ui), sans-serif;
   overflow-x: hidden;
 }
 
@@ -99,9 +99,12 @@ body {
 }
 
 /* ─── Utility classes ─── */
-.font-display { font-family: var(--font-display); }
-.font-ui      { font-family: var(--font-ui); }
-.font-mono    { font-family: var(--font-mono); }
+.font-display {
+  font-family: var(--font-display), sans-serif; }
+.font-ui      {
+  font-family: var(--font-ui), sans-serif; }
+.font-mono    {
+  font-family: var(--font-mono), sans-serif; }
 
 .text-accent   { color: var(--accent-primary); }
 .text-amber    { color: var(--accent-secondary); }
@@ -185,7 +188,7 @@ body {
   background: rgba(4, 18, 28, 0.9);
   border: 1px solid rgba(79, 195, 220, 0.2);
   color: var(--accent-primary);
-  font-family: var(--font-mono);
+  font-family: var(--font-mono), sans-serif;
   font-size: 0.875rem;
   letter-spacing: 0.05em;
   padding: 0.625rem 1rem;
@@ -203,7 +206,7 @@ body {
 
 /* ─── Button ─── */
 .sc-btn {
-  font-family: var(--font-display);
+  font-family: var(--font-display), sans-serif;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.15em;
@@ -260,7 +263,7 @@ body {
   align-items: center;
   gap: 1rem;
   color: rgba(79,195,220,0.4);
-  font-family: var(--font-mono);
+  font-family: var(--font-mono), sans-serif;
   font-size: 0.7rem;
   letter-spacing: 0.2em;
 }
@@ -287,3 +290,66 @@ body {
 
 .status-dot.online  { background: #4fdc8a; box-shadow: 0 0 8px #4fdc8a; }
 .status-dot.warning { background: var(--accent-secondary); animation: pulse-glow-amber 2s infinite; }
+
+/* ─── Login loading ─── */
+@keyframes loading-sweep {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(240%);
+  }
+}
+
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(79, 195, 220, 0.45);
+    opacity: 0.9;
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(79, 195, 220, 0);
+    opacity: 1;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(79, 195, 220, 0);
+    opacity: 0.9;
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes ping-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  80%, 100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* ─── Not found ─── */
+@keyframes pulse-warning {
+  0% {
+    box-shadow: 0 0 0 0 rgba(240, 165, 0, 0.45);
+    opacity: 0.9;
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(240, 165, 0, 0);
+    opacity: 1;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(240, 165, 0, 0);
+    opacity: 0.9;
+  }
+}

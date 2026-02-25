@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import {useState} from "react";
-import ImpressumModal from "@/components/imprint-modal";
+import LegalDialog from "@/components/lega-dialog";
 
 export default function Home() {
     const [showImpressum, setShowImpressum] = useState<boolean>(false);
@@ -10,7 +10,7 @@ export default function Home() {
     return (
         <div className="relative min-h-screen overflow-hidden" style={{background: "var(--background)"}}>
 
-            {showImpressum && <ImpressumModal onClose={() => setShowImpressum(false)}/>}
+            {showImpressum && <LegalDialog onClose={() => setShowImpressum(false)}/>}
 
             {/* ── Scan-line overlay ── */}
             <div className="scan-overlay"/>
@@ -219,7 +219,7 @@ export default function Home() {
                         className="cursor-pointer text-[10px] tracking-[0.2em] uppercase transition-colors hover:text-cyan-400"
                         style={{color: "rgba(79,195,220,0.35)", fontFamily: "var(--font-mono)"}}
                     >
-                        Imprint
+                        Legal
                     </button>
                 </footer>
             </div>

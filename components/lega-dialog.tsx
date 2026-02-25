@@ -1,4 +1,4 @@
-export default function ImpressumModal({ onClose }: { onClose: () => void }) {
+export default function LegalDialog({ onClose }: { onClose: () => void }) {
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center px-4"
@@ -41,6 +41,7 @@ export default function ImpressumModal({ onClose }: { onClose: () => void }) {
                     <div>
                         <p className="mb-1.5 text-[10px] uppercase tracking-[0.2em]" style={{ color: "rgba(79,195,220,0.4)", fontFamily: "var(--font-mono)" }}>Contact</p>
                         <p>E-Mail: <span style={{ color: "var(--accent-primary)" }}>[ marcell.dechant@proton.me ]</span></p>
+                        <p>Discord: <span style={{ color: "var(--accent-primary)" }}>[ https://discord.gg/Xe9GfTjZEW ]</span></p>
                     </div>
                     <div>
                         <p className="mb-1.5 text-[10px] uppercase tracking-[0.2em]" style={{ color: "rgba(79,195,220,0.4)", fontFamily: "var(--font-mono)" }}>Disclaimer</p>
