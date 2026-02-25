@@ -337,3 +337,19 @@ body {
     opacity: 0;
   }
 }
+
+/* ─── Not found ─── */
+@keyframes pulse-warning {
+  0% {
+    box-shadow: 0 0 0 0 rgba(240, 165, 0, 0.45);
+    opacity: 0.9;
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(240, 165, 0, 0);
+    opacity: 1;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(240, 165, 0, 0);
+    opacity: 0.9;
+  }
+}
