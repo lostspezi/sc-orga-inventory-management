@@ -1,11 +1,11 @@
-import {signIn} from "@/auth";
+import {signInWithDiscord} from "@/lib/actions";
 
 export default function SignIn() {
     return (
         <form
             action={async () => {
                 "use server"
-                await signIn("discord")
+                await signInWithDiscord()
             }}
         >
             <button
