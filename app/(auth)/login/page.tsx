@@ -50,7 +50,7 @@ export default function LoginPage() {
                         className="font-display text-2xl font-bold tracking-wider uppercase"
                         style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)", animation: "flicker 8s infinite" }}
                     >
-                        Fleet Management
+                        Inventory Management
                     </h1>
                     <p
                         className="mt-1 text-xs tracking-[0.25em] uppercase"
@@ -132,7 +132,7 @@ export default function LoginPage() {
                             className="sc-btn sc-btn-outline w-full opacity-40 cursor-not-allowed"
                             disabled
                         >
-                            Access Fleet Terminal
+                            Access Inventory Terminal
                         </button>
                     </div>
 
