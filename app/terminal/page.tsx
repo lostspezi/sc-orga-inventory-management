@@ -1,4 +1,5 @@
 import Link from "next/link";
+import {signOutAction} from "@/lib/actions";
 
 export default function TerminalPage() {
     return (
@@ -224,9 +225,21 @@ export default function TerminalPage() {
                                 </ul>
                             </div>
 
-                            <Link href="/" className="sc-btn w-full text-center">
-                                Return to Home
-                            </Link>
+                            {/* Buttons */}
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <Link href="/" className="sc-btn w-full text-center">
+                                    Home
+                                </Link>
+
+                                <form action={signOutAction}>
+                                    <button
+                                        type="submit"
+                                        className="sc-btn sc-btn-outline w-full"
+                                    >
+                                        Logout
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
 
