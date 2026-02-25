@@ -1,11 +1,15 @@
-import { MongoClient, ServerApiVersion, Db } from "mongodb"
+import {MongoClient, ServerApiVersion, Db} from "mongodb"
 
 if (!process.env.MONGODB_URI) {
     throw new Error('Invalid/Missing environment variable: "MONGODB_URI"')
 }
 
+if (!process.env.MONGODB_DB_NAME) {
+    throw new Error('Invalid/Missing environment variable: "MONGODB_DB_NAME"')
+}
+
 const uri = process.env.MONGODB_URI
-const dbName = process.env.MONGODB_DB_NAME || "sc-orga-inventory-management"
+const dbName = process.env.MONGODB_DB_NAME
 
 const options = {
     serverApi: {
