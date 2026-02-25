@@ -15,7 +15,7 @@ const rajdhani = Rajdhani({
 });
 
 export const metadata: Metadata = {
-    title: "SC Orga — Fleet Management",
+    title: "SC Orga — Inventory Management",
     description: "Star Citizen Organization Inventory Management System",
 };
 
