@@ -196,3 +196,22 @@ export async function addMemberToOrganizationInDb(
 
     return result.modifiedCount > 0;
 }
+
+export async function setOrganizationDiscordGuildId(
+    slug: string,
+    discordGuildId: string
+): Promise<boolean> {
+    const db = await getDb();
+
+    const result = await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { slug },
+        {
+            $set: {
+                discordGuildId,
+                updatedAt: new Date(),
+            },
+        }
+    );
+
+    return result.modifiedCount > 0;
+}

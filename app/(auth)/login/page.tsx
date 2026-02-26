@@ -2,10 +2,17 @@ import SignIn from "@/components/sign-in";
 import {auth} from "@/auth";
 import {redirect} from "next/navigation";
 
-export default async function LoginPage() {
-    const session = await auth();
+type Props = {
+    searchParams: Promise<{ callbackUrl?: string }>;
+};
 
-    if(session) redirect("/terminal");
+export default async function LoginPage({ searchParams }: Props) {
+    const session = await auth();
+    const { callbackUrl } = await searchParams;
+
+    if (session) {
+        redirect(callbackUrl || "/terminal");
+    }
 
     return (
         <main className="flex min-h-screen items-center justify-center px-4 py-16">
@@ -84,7 +91,7 @@ export default async function LoginPage() {
                     </div>
 
                     {/* ── Discord sign-in ── */}
-                    <SignIn />
+                    <SignIn callbackUrl={callbackUrl} />
 
                     {/* ── Divider ── */}
                     <div className="sc-divider my-6">OR</div>

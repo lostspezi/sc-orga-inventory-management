@@ -1,4 +1,25 @@
-export default function OrgMembersPage() {
+import { notFound } from "next/navigation";
+import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
+import { getPendingOrganizationInvitesByOrganizationId } from "@/lib/repositories/organization-invite-repository";
+import DiscordInviteForm from "@/components/orgs/members/discord-invite-form";
+import PendingOrgInvitesList from "@/components/orgs/members/pending-org-invites-list";
+import ConnectDiscordServerCard from "@/components/orgs/members/connect-discord-server-card";
+
+type Props = {
+    params: Promise<{ slug: string }>;
+};
+
+export default async function OrgMembersPage({ params }: Props) {
+    const { slug } = await params;
+
+    const org = await getOrganizationBySlug(slug);
+
+    if (!org) {
+        notFound();
+    }
+
+    const pendingInvites = await getPendingOrganizationInvitesByOrganizationId(org._id);
+
     return (
         <div className="space-y-4">
             <div>
@@ -18,29 +39,99 @@ export default function OrgMembersPage() {
                     className="mt-1 text-sm"
                     style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    Member administration tools will be available here soon.
+                    Invite users, manage roles, and review pending member onboarding.
                 </p>
             </div>
 
+            {/* Current members placeholder */}
             <div
-                className="rounded-lg border border-dashed p-8 text-center"
+                className="rounded-lg border p-4"
                 style={{
-                    borderColor: "rgba(240,165,0,0.28)",
-                    background: "rgba(20,14,6,0.12)",
+                    borderColor: "rgba(79,195,220,0.14)",
+                    background: "rgba(7,18,28,0.28)",
                 }}
             >
-                <p
-                    className="text-sm uppercase tracking-[0.12em]"
-                    style={{ color: "rgba(240,165,0,0.8)", fontFamily: "var(--font-display)" }}
-                >
-                    Module Under Construction
-                </p>
-                <p
-                    className="mt-2 text-xs"
-                    style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
-                >
-                    Invite, roles, and member actions are currently being integrated.
-                </p>
+                <div className="mb-3 flex items-center justify-between gap-2">
+                    <div>
+                        <p
+                            className="text-[10px] uppercase tracking-[0.25em]"
+                            style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
+                        >
+                            Active Members
+                        </p>
+                        <h3
+                            className="mt-1 text-base font-semibold uppercase tracking-[0.08em]"
+                            style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
+                        >
+                            {org.members.length} Registered
+                        </h3>
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    {org.members.map((member) => (
+                        <div
+                            key={`${member.userId}-${member.joinedAt.toString()}`}
+                            className="rounded-md border px-3 py-2"
+                            style={{
+                                borderColor: "rgba(79,195,220,0.10)",
+                                background: "rgba(7,18,28,0.18)",
+                            }}
+                        >
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                <span
+                                    className="text-xs"
+                                    style={{ color: "rgba(200,220,232,0.55)", fontFamily: "var(--font-mono)" }}
+                                >
+                                    {member.userId}
+                                </span>
+                                <span
+                                    className="rounded border px-2 py-0.5 text-[10px] uppercase"
+                                    style={{
+                                        borderColor: "rgba(79,195,220,0.18)",
+                                        color: "rgba(79,195,220,0.65)",
+                                        fontFamily: "var(--font-mono)",
+                                    }}
+                                >
+                                    {member.role}
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Invite via Discord */}
+            {org.discordGuildId ? (
+                <DiscordInviteForm organizationSlug={org.slug} />
+            ) : (
+                <ConnectDiscordServerCard organizationSlug={org.slug} />
+            )}
+
+            {/* Pending invites */}
+            <div
+                className="rounded-lg border p-4"
+                style={{
+                    borderColor: "rgba(79,195,220,0.14)",
+                    background: "rgba(7,18,28,0.28)",
+                }}
+            >
+                <div className="mb-4">
+                    <p
+                        className="text-[10px] uppercase tracking-[0.25em]"
+                        style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
+                    >
+                        Pending Invitations
+                    </p>
+                    <h3
+                        className="mt-1 text-base font-semibold uppercase tracking-[0.08em]"
+                        style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
+                    >
+                        Open Invites
+                    </h3>
+                </div>
+
+                <PendingOrgInvitesList invites={pendingInvites} />
             </div>
         </div>
     );

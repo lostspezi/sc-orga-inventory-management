@@ -7,6 +7,7 @@ export type OrganizationDocument = {
     starCitizenOrganizationUrl: string;
     createdByUserId: string;
     members: OrganizationMember[];
+    discordGuildId?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -57,4 +58,32 @@ export type OrganizationAuditLogDocument = {
     metadata?: Record<string, unknown>;
 
     createdAt: Date;
+};
+
+/* INVITE */
+export type OrganizationInviteDocument = {
+    _id: ObjectId;
+    organizationId: ObjectId;
+    organizationSlug: string;
+
+    invitedByUserId: string;
+    invitedByUsername?: string;
+
+    targetRole: "admin" | "member";
+
+    deliveryMethod: "email" | "discord_dm" | "in_app";
+
+    inviteToken: string;
+    email?: string;
+    discordUserId?: string;
+    targetUserId?: string;
+
+    status: "pending" | "accepted" | "declined" | "expired" | "revoked";
+
+    expiresAt: Date;
+    acceptedAt?: Date;
+    declinedAt?: Date;
+
+    createdAt: Date;
+    updatedAt: Date;
 };
