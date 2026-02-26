@@ -8,6 +8,7 @@ import {
     hasPendingDiscordInviteForOrganization,
 } from "@/lib/repositories/organization-invite-repository";
 import {sendDiscordDm} from "@/lib/discord/send-discord-dm";
+import {refresh, revalidatePath} from "next/cache";
 
 type CreateDiscordOrgInviteState = {
     success: boolean;
@@ -116,6 +117,9 @@ export async function createDiscordOrgInviteAction(
 
     try {
         await sendDiscordDm(discordUserId, dmText);
+
+        revalidatePath(`/terminal/orgs/${org.slug}/members`);
+        refresh();
 
         return {
             success: true,
