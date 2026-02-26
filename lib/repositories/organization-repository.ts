@@ -216,6 +216,26 @@ export async function removeMemberFromOrganizationInDb(
     return result.modifiedCount > 0;
 }
 
+export async function clearOrganizationDiscordGuildId(
+    discordGuildId: string
+): Promise<number> {
+    const db = await getDb();
+
+    const result = await db.collection<OrganizationDocument>(COLLECTION).updateMany(
+        { discordGuildId },
+        {
+            $unset: {
+                discordGuildId: "",
+            },
+            $set: {
+                updatedAt: new Date(),
+            },
+        }
+    );
+
+    return result.modifiedCount;
+}
+
 async function mapOrganizationToView(
     db: Awaited<ReturnType<typeof getDb>>,
     org: OrganizationDocument
