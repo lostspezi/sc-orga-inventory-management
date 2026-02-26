@@ -75,51 +75,12 @@ export async function getOrganizationViewsByUserId(
     const db = await getDb();
 
     const orgs = await db
-        .collection<OrganizationDocument>("organizations")
+        .collection<OrganizationDocument>(COLLECTION)
         .find({ "members.userId": userId })
         .sort({ createdAt: -1 })
         .toArray();
 
-    const allUserIds = Array.from(
-        new Set(
-            orgs.flatMap((org) => [
-                org.createdByUserId,
-                ...org.members.map((m) => m.userId),
-            ])
-        )
-    );
-
-    const objectIds = allUserIds
-        .filter((id) => ObjectId.isValid(id))
-        .map((id) => new ObjectId(id));
-
-    const users = objectIds.length
-        ? await db
-            .collection<UserDocument>("users")
-            .find({ _id: { $in: objectIds } })
-            .project({ _id: 1, name: 1 })
-            .toArray()
-        : [];
-
-    const usernameByUserId = new Map(
-        users.map((u) => [u._id.toString(), u.name ?? undefined])
-    );
-
-    return orgs.map<OrganizationView>((org) => ({
-        _id: org._id,
-        name: org.name,
-        slug: org.slug,
-        starCitizenOrganizationUrl: org.starCitizenOrganizationUrl,
-        createdByUsername: usernameByUserId.get(org.createdByUserId),
-        createdAt: org.createdAt,
-        updatedAt: org.updatedAt,
-        members: org.members.map<OrganizationMemberView>((m) => ({
-            userId: m.userId,
-            username: usernameByUserId.get(m.userId),
-            role: m.role,
-            joinedAt: m.joinedAt,
-        })),
-    }));
+    return Promise.all(orgs.map((org) => mapOrganizationToView(db, org)));
 }
 
 export async function getOrganizationById(id: string): Promise<OrganizationDocument | null> {
@@ -138,6 +99,22 @@ export async function getOrganizationBySlug(slug: string): Promise<OrganizationD
     return db
         .collection<OrganizationDocument>(COLLECTION)
         .findOne({ slug });
+}
+
+export async function getOrganizationViewBySlug(
+    slug: string
+): Promise<OrganizationView | null> {
+    const db = await getDb();
+
+    const org = await db
+        .collection<OrganizationDocument>(COLLECTION)
+        .findOne({ slug });
+
+    if (!org) {
+        return null;
+    }
+
+    return mapOrganizationToView(db, org);
 }
 
 export async function updateOrganizationInDb(
@@ -214,4 +191,72 @@ export async function setOrganizationDiscordGuildId(
     );
 
     return result.modifiedCount > 0;
+}
+
+export async function removeMemberFromOrganizationInDb(
+    organizationId: string,
+    userId: string
+): Promise<boolean> {
+    if (!ObjectId.isValid(organizationId)) return false;
+
+    const db = await getDb();
+
+    const result = await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { _id: new ObjectId(organizationId) },
+        {
+            $pull: {
+                members: { userId },
+            },
+            $set: {
+                updatedAt: new Date(),
+            },
+        }
+    );
+
+    return result.modifiedCount > 0;
+}
+
+async function mapOrganizationToView(
+    db: Awaited<ReturnType<typeof getDb>>,
+    org: OrganizationDocument
+): Promise<OrganizationView> {
+    const allUserIds = Array.from(
+        new Set([
+            org.createdByUserId,
+            ...org.members.map((m) => m.userId),
+        ])
+    );
+
+    const objectIds = allUserIds
+        .filter((id) => ObjectId.isValid(id))
+        .map((id) => new ObjectId(id));
+
+    const users = objectIds.length
+        ? await db
+            .collection<UserDocument>("users")
+            .find({ _id: { $in: objectIds } })
+            .project({ _id: 1, name: 1 })
+            .toArray()
+        : [];
+
+    const usernameByUserId = new Map(
+        users.map((u) => [u._id.toString(), u.name ?? undefined])
+    );
+
+    return {
+        _id: org._id,
+        name: org.name,
+        slug: org.slug,
+        starCitizenOrganizationUrl: org.starCitizenOrganizationUrl,
+        createdByUsername: usernameByUserId.get(org.createdByUserId),
+        createdAt: org.createdAt,
+        updatedAt: org.updatedAt,
+        members: org.members.map<OrganizationMemberView>((m): OrganizationMemberView => ({
+            userId: m.userId,
+            username: usernameByUserId.get(m.userId),
+            role: m.role,
+            joinedAt: m.joinedAt,
+        })),
+        discordGuildId: org.discordGuildId,
+    };
 }

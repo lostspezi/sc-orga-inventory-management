@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { ExternalLink, ChevronLeft } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import OrgDetailsSidebar from "@/components/orgs/details/org-details-sidebar";
 import OrgDetailsMobileNav from "@/components/orgs/details/org-details-mobile-nav";
 import {OrganizationRole} from "@/components/orgs/details/org-details-nav";
+import React from "react";
 
 type Props = {
     slug: string;
@@ -49,11 +49,6 @@ export default function OrgDetailsShell({ slug, orgName, orgRsiUrl, children, cu
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2">
-                            <Link href="/terminal/orgs" className="sc-btn sc-btn-outline inline-flex items-center gap-2">
-                                <ChevronLeft size={16} />
-                                Back to Orgs
-                            </Link>
-
                             {orgRsiUrl && (
                                 <a
                                     href={orgRsiUrl}

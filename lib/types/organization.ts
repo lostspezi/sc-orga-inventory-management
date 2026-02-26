@@ -25,11 +25,13 @@ export type OrganizationView = {
     starCitizenOrganizationUrl: string;
     createdByUsername: string;
     members: OrganizationMemberView[];
+    discordGuildId?: string;
     createdAt: Date;
     updatedAt: Date;
 }
 
 export type OrganizationMemberView = {
+    userId: string;
     username: string;
     role: "owner" | "admin" | "member";
     joinedAt: Date;
