@@ -65,7 +65,7 @@ export async function createOrganizationInvite(
         action: "member.invited_discord",
         entityType: "member",
         entityId: result.insertedId.toString(),
-        message: `${input.invitedByUsername} invited ${input.discordUserId} to Organization via Discord DM.`,
+        message: "Member invited to Organization via Discord DM.",
         metadata: {
             discordUserId: input.discordUserId,
             targetUserId: input.targetUserId,
