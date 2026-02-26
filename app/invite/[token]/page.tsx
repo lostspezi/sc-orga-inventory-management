@@ -150,7 +150,7 @@ export default async function InviteAcceptPage({ params }: Props) {
 
     await markOrganizationInviteAccepted(invite._id);
 
-    const targetUrl = `/terminal/orgs/${org.slug}/members`;
+    const targetUrl = `/terminal/orgs/${org.slug}`;
 
     return (
         <>
@@ -160,15 +160,15 @@ export default async function InviteAcceptPage({ params }: Props) {
                 title={alreadyMember ? "Already a Member" : "Invite Accepted"}
                 description={
                     alreadyMember
-                        ? `Your account is already linked to ${org.name}. Redirecting you to the members area.`
-                        : `You have successfully joined ${org.name} as ${invite.targetRole}. Redirecting you to the members area.`
+                        ? `Your account is already linked to ${org.name}. Redirecting you to the org area.`
+                        : `You have successfully joined ${org.name} as ${invite.targetRole}. Redirecting you to the org area.`
                 }
                 tone="cyan"
                 icon={<CheckCircle2 size={18} />}
                 actions={
                     <>
                         <Link href={targetUrl} className="sc-btn">
-                            Open Members Now
+                            Open Org Now
                         </Link>
                         <Link href={`/terminal/orgs/${org.slug}`} className="sc-btn sc-btn-outline">
                             Open Organization
