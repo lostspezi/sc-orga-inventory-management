@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation";
-import { FileText, User, Clock3 } from "lucide-react";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import { getOrganizationAuditLogsByOrganizationId } from "@/lib/repositories/organization-audit-log-repository";
-import React from "react";
 import LogsSearchForm from "@/components/orgs/details/logs-search-form";
+import AuditLogList from "@/components/orgs/details/audit-log-list";
 
 type Props = {
     params: Promise<{ slug: string }>;
@@ -24,6 +23,18 @@ export default async function OrgLogsPage({ params, searchParams }: Props) {
         org._id.toString(),
         q
     );
+
+    const serializedLogs = logs.map((log) => ({
+        _id: log._id.toString(),
+        action: log.action,
+        message: log.message,
+        actorUsername: log.actorUsername,
+        actorUserId: log.actorUserId,
+        entityType: log.entityType,
+        entityId: log.entityId,
+        metadata: log.metadata ?? null,
+        createdAt: log.createdAt.toISOString(),
+    }));
 
     return (
         <div className="space-y-4">
@@ -74,109 +85,8 @@ export default async function OrgLogsPage({ params, searchParams }: Props) {
                     </p>
                 </div>
             ) : (
-                <div className="space-y-3">
-                    {logs.map((log) => (
-                        <AuditLogCard key={log._id.toString()} log={log} />
-                    ))}
-                </div>
+                <AuditLogList logs={serializedLogs} />
             )}
-        </div>
-    );
-}
-
-function AuditLogCard({
-                          log,
-                      }: {
-    log: {
-        action: string;
-        message: string;
-        actorUsername?: string;
-        actorUserId: string;
-        entityType: string;
-        entityId?: string;
-        createdAt: Date;
-    };
-}) {
-    const actor = log.actorUsername ?? log.actorUserId;
-    const createdAt = new Date(log.createdAt).toLocaleString("en-GB", {
-        dateStyle: "medium",
-        timeStyle: "short",
-    });
-
-    return (
-        <div
-            className="rounded-lg border p-4"
-            style={{
-                borderColor: "rgba(79,195,220,0.14)",
-                background: "rgba(7,18,28,0.26)",
-            }}
-        >
-            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div
-                    className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.08em]"
-                    style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
-                >
-                    <FileText size={16} />
-                    {log.action}
-                </div>
-
-                <span
-                    className="rounded border px-2 py-0.5 text-[10px] uppercase"
-                    style={{
-                        borderColor: "rgba(79,195,220,0.18)",
-                        color: "rgba(79,195,220,0.6)",
-                        fontFamily: "var(--font-mono)",
-                    }}
-                >
-                    {log.entityType}
-                </span>
-            </div>
-
-            <p
-                className="text-sm"
-                style={{ color: "rgba(200,220,232,0.5)", fontFamily: "var(--font-mono)" }}
-            >
-                {log.message}
-            </p>
-
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                <InfoRow icon={<User size={14} />} label="Actor" value={actor} />
-                <InfoRow icon={<Clock3 size={14} />} label="Time" value={createdAt} />
-            </div>
-
-            {log.entityId && (
-                <div className="mt-2">
-                    <p
-                        className="text-[11px]"
-                        style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
-                    >
-                        Entity ID: {log.entityId}
-                    </p>
-                </div>
-            )}
-        </div>
-    );
-}
-
-function InfoRow({
-                     icon,
-                     label,
-                     value,
-                 }: {
-    icon: React.ReactNode;
-    label: string;
-    value: string;
-}) {
-    return (
-        <div className="flex items-center gap-2 text-xs" style={{ fontFamily: "var(--font-mono)" }}>
-            <span style={{ color: "rgba(79,195,220,0.65)" }}>{icon}</span>
-            <span style={{ color: "rgba(200,220,232,0.35)" }}>{label}</span>
-            <span
-                className="ml-auto text-right"
-                style={{ color: "rgba(200,220,232,0.6)" }}
-            >
-                {value}
-            </span>
         </div>
     );
 }
