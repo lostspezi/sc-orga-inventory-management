@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { LayoutDashboard, Users } from "lucide-react";
+import { LayoutDashboard, Users, Logs } from "lucide-react";
 
 export type OrgNavItem = {
     key: string;
@@ -17,8 +17,14 @@ export const ORG_NAV_ITEMS: OrgNavItem[] = [
     },
     {
         key: "members",
-        label: "Members",
+        label: ( "Members" ),
         href: (slug) => `/terminal/orgs/${slug}/members`,
         icon: Users,
+    },
+    {
+        key: "logs",
+        label: "Logs",
+        href: (slug) => `/terminal/orgs/${slug}/logs`,
+        icon: Logs,
     },
 ];

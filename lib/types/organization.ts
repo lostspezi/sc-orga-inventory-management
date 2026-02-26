@@ -33,3 +33,28 @@ export type OrganizationMemberView = {
     role: "owner" | "admin" | "member";
     joinedAt: Date;
 }
+
+/* AUDIT */
+export type OrganizationAuditLogDocument = {
+    _id: ObjectId;
+    organizationId: ObjectId;
+    organizationSlug: string;
+
+    actorUserId: string;
+    actorUsername?: string;
+
+    action:
+        | "organization.created"
+        | "member.added"
+        | "member.removed"
+        | "member.role_changed";
+
+    entityType: "organization" | "member";
+    entityId?: string;
+
+    message: string;
+
+    metadata?: Record<string, unknown>;
+
+    createdAt: Date;
+};

@@ -6,6 +6,8 @@ import type {
     OrganizationMemberView,
     OrganizationView
 } from "@/lib/types/organization";
+import {createOrganizationAuditLog} from "@/lib/repositories/organization-audit-log-repository";
+import {auth} from "@/auth";
 
 type UserDocument = {
     _id: ObjectId;
@@ -46,6 +48,24 @@ export async function createOrganizationInDb(
     };
 
     const result = await db.collection<Omit<OrganizationDocument, "_id">>(COLLECTION).insertOne(doc);
+
+    const session = await auth();
+
+    await createOrganizationAuditLog({
+        organizationId: result.insertedId,
+        organizationSlug: input.slug,
+        actorUserId: input.createdByUserId,
+        actorUsername: session?.user?.name ?? "Unknown User",
+        action: "organization.created",
+        entityType: "organization",
+        entityId: result.insertedId.toString(),
+        message: "Organization created.",
+        metadata: {
+            name: input.name,
+            slug: input.slug,
+        },
+    });
+
     return result.insertedId;
 }
 

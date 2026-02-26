@@ -315,7 +315,7 @@ export default function CreateOrgDialog() {
 
                                 {rsiValid && dbKnownForHandle && existsInDb && (
                                     <span style={{ color: "rgba(240,165,0,0.9)" }}>
-                    This organization already exists in your database.
+                    This organization already exists in our database.
                   </span>
                                 )}
                             </div>
