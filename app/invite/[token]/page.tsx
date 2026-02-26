@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { addMemberToOrganizationInDb, getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import {
     expireOrganizationInvite,
@@ -8,8 +8,9 @@ import {
     markOrganizationInviteAccepted,
 } from "@/lib/repositories/organization-invite-repository";
 import { getDiscordAccountByUserId } from "@/lib/repositories/auth-account-repository";
-import { ArrowLeft, LogIn, ShieldAlert, Clock3, Link2Off } from "lucide-react";
+import { ArrowLeft, LogIn, ShieldAlert, Clock3, Link2Off, CheckCircle2 } from "lucide-react";
 import React from "react";
+import InviteSuccessRedirect from "@/components/invite/invite-success-redirect";
 
 type Props = {
     params: Promise<{ token: string }>;
@@ -105,7 +106,6 @@ export default async function InviteAcceptPage({ params }: Props) {
         );
     }
 
-    // If the invite is tied to a Discord user, verify logged-in user matches that Discord account
     if (invite.discordUserId) {
         const discordAccount = await getDiscordAccountByUserId(session.user.id);
 
@@ -150,7 +150,43 @@ export default async function InviteAcceptPage({ params }: Props) {
 
     await markOrganizationInviteAccepted(invite._id);
 
-    redirect(`/terminal/orgs/${org.slug}/members`);
+    const targetUrl = `/terminal/orgs/${org.slug}/members`;
+
+    return (
+        <>
+            <InviteSuccessRedirect to={targetUrl} delayMs={5000} />
+            <InviteStateShell
+                eyebrow="INVITE.ACCEPTED"
+                title={alreadyMember ? "Already a Member" : "Invite Accepted"}
+                description={
+                    alreadyMember
+                        ? `Your account is already linked to ${org.name}. Redirecting you to the members area.`
+                        : `You have successfully joined ${org.name} as ${invite.targetRole}. Redirecting you to the members area.`
+                }
+                tone="cyan"
+                icon={<CheckCircle2 size={18} />}
+                actions={
+                    <>
+                        <Link href={targetUrl} className="sc-btn">
+                            Open Members Now
+                        </Link>
+                        <Link href={`/terminal/orgs/${org.slug}`} className="sc-btn sc-btn-outline">
+                            Open Organization
+                        </Link>
+                    </>
+                }
+                statusLines={
+                    <>
+                        [INVITE] Validation complete
+                        <br />
+                        [MEMBER] Access granted
+                        <br />
+                        [ROUTE] Redirecting in 5 seconds<span style={{ animation: "blink-cursor 1s steps(1) infinite" }}>_</span>
+                    </>
+                }
+            />
+        </>
+    );
 }
 
 function InviteStateShell({
@@ -160,6 +196,7 @@ function InviteStateShell({
                               actions,
                               tone = "cyan",
                               icon,
+                              statusLines,
                           }: Readonly<{
     eyebrow: string;
     title: string;
@@ -167,47 +204,39 @@ function InviteStateShell({
     actions: React.ReactNode;
     tone?: "cyan" | "amber";
     icon?: React.ReactNode;
+    statusLines?: React.ReactNode;
 }>) {
     const isAmber = tone === "amber";
 
     return (
         <main className="flex min-h-screen items-center justify-center px-4 py-10">
             <div className="w-full max-w-2xl" style={{ animation: "slide-in-up 0.55s ease forwards" }}>
-                {/* Header */}
                 <div className="mb-6 text-center" style={{ animation: "slide-in-up 0.4s ease forwards" }}>
                     <div className="relative mx-auto mb-5 flex h-20 w-20 items-center justify-center">
                         <div
                             className="absolute inset-0 rounded-full border"
                             style={{
-                                borderColor: isAmber
-                                    ? "rgba(240,165,0,0.22)"
-                                    : "rgba(79,195,220,0.22)",
+                                borderColor: isAmber ? "rgba(240,165,0,0.22)" : "rgba(79,195,220,0.22)",
                                 animation: "rotate-slow 16s linear infinite",
                             }}
                         />
                         <div
                             className="absolute inset-2 rounded-full border"
                             style={{
-                                borderColor: isAmber
-                                    ? "rgba(240,165,0,0.14)"
-                                    : "rgba(79,195,220,0.14)",
+                                borderColor: isAmber ? "rgba(240,165,0,0.14)" : "rgba(79,195,220,0.14)",
                                 animation: "rotate-slow 10s linear infinite reverse",
                             }}
                         />
                         <div
                             className="relative flex h-9 w-9 items-center justify-center rotate-45 border-2"
                             style={{
-                                borderColor: isAmber
-                                    ? "rgba(240,165,0,0.9)"
-                                    : "var(--accent-primary)",
+                                borderColor: isAmber ? "rgba(240,165,0,0.9)" : "var(--accent-primary)",
                             }}
                         >
                             <div
                                 className="-rotate-45"
                                 style={{
-                                    color: isAmber
-                                        ? "rgba(240,165,0,0.85)"
-                                        : "var(--accent-primary)",
+                                    color: isAmber ? "rgba(240,165,0,0.85)" : "var(--accent-primary)",
                                 }}
                             >
                                 {icon}
@@ -240,7 +269,6 @@ function InviteStateShell({
                     </p>
                 </div>
 
-                {/* Main Panel */}
                 <div
                     className="hud-panel corner-tr corner-bl relative p-5 sm:p-6"
                     style={{ background: "rgba(8,16,24,0.55)" }}
@@ -281,23 +309,23 @@ function InviteStateShell({
                         <div
                             className="rounded-lg border p-4"
                             style={{
-                                borderColor: isAmber
-                                    ? "rgba(240,165,0,0.14)"
-                                    : "rgba(79,195,220,0.14)",
-                                background: isAmber
-                                    ? "rgba(20,14,6,0.12)"
-                                    : "rgba(7,18,28,0.28)",
+                                borderColor: isAmber ? "rgba(240,165,0,0.14)" : "rgba(79,195,220,0.14)",
+                                background: isAmber ? "rgba(20,14,6,0.12)" : "rgba(7,18,28,0.28)",
                             }}
                         >
                             <p
                                 className="text-[11px] leading-5"
                                 style={{ color: "rgba(200,220,232,0.38)", fontFamily: "var(--font-mono)" }}
                             >
-                                [INVITE] Route validation complete
-                                <br />
-                                [AUTH] Session state checked
-                                <br />
-                                [STATUS] Awaiting next user action<span style={{ animation: "blink-cursor 1s steps(1) infinite" }}>_</span>
+                                {statusLines ?? (
+                                    <>
+                                        [INVITE] Route validation complete
+                                        <br />
+                                        [AUTH] Session state checked
+                                        <br />
+                                        [STATUS] Awaiting next user action<span style={{ animation: "blink-cursor 1s steps(1) infinite" }}>_</span>
+                                    </>
+                                )}
                             </p>
                         </div>
 
