@@ -6,6 +6,7 @@ import PendingOrgInvitesList from "@/components/orgs/details/members/pending-org
 import ConnectDiscordServerCard from "@/components/orgs/details/members/connect-discord-server-card";
 import {auth} from "@/auth";
 import RemoveMemberButton from "@/components/orgs/details/members/remove-member-button";
+import ChangeMemberRoleControl from "@/components/orgs/details/members/change-member-role-control";
 
 type Props = {
     params: Promise<{ slug: string }>;
@@ -41,13 +42,13 @@ export default async function OrgMembersPage({params}: Props) {
             >
                 <h2
                     className="text-lg font-semibold uppercase tracking-[0.08em]"
-                    style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}
+                    style={{color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)"}}
                 >
                     Forbidden
                 </h2>
                 <p
                     className="mt-2 text-sm"
-                    style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
+                    style={{color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)"}}
                 >
                     Only organization admins & owners can access member management.
                 </p>
@@ -135,12 +136,21 @@ export default async function OrgMembersPage({params}: Props) {
                                 </span>
                                 </div>
                                 {isAdminOrOwner &&
-                                    <RemoveMemberButton
-                                        organizationSlug={org.slug}
-                                        targetUserId={member.userId}
-                                        disabled={member.role === "owner"}
-                                        targetLabel={member.username}
-                                    />
+                                    <>
+                                        <ChangeMemberRoleControl
+                                            organizationSlug={org.slug}
+                                            targetUserId={member.userId}
+                                            targetLabel={member.username}
+                                            currentRole={member.role}
+                                            actorRole={currentMember.role}
+                                        />
+                                        <RemoveMemberButton
+                                            organizationSlug={org.slug}
+                                            targetUserId={member.userId}
+                                            disabled={member.role === "owner"}
+                                            targetLabel={member.username}
+                                        />
+                                    </>
                                 }
                             </div>
                         </div>
