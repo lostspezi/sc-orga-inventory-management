@@ -1,7 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type Props = {
@@ -15,21 +15,34 @@ export default function LogsSearchForm({ initialQuery = "" }: Props) {
 
     const [value, setValue] = useState(initialQuery);
 
+    const currentQuery = searchParams.get("q") ?? "";
+
+    const normalizedValue = useMemo(() => value.trim(), [value]);
+
     useEffect(() => {
         const timeout = setTimeout(() => {
+            if (normalizedValue === currentQuery) {
+                return;
+            }
+
             const params = new URLSearchParams(searchParams.toString());
 
-            if (value.trim()) {
-                params.set("q", value.trim());
+            if (normalizedValue) {
+                params.set("q", normalizedValue);
             } else {
                 params.delete("q");
             }
 
-            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+            const nextQueryString = params.toString();
+            const nextUrl = nextQueryString
+                ? `${pathname}?${nextQueryString}`
+                : pathname;
+
+            router.replace(nextUrl, { scroll: false });
         }, 250);
 
         return () => clearTimeout(timeout);
-    }, [value, pathname, router, searchParams]);
+    }, [normalizedValue, currentQuery, pathname, router, searchParams]);
 
     return (
         <div

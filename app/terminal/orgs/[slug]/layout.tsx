@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { notFound, redirect } from "next/navigation";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import OrgDetailsShell from "@/components/orgs/details/org-details-shell";
+import {OrganizationRole} from "@/components/orgs/details/org-details-nav";
 
 type Props = {
     children: React.ReactNode;
@@ -28,11 +29,20 @@ export default async function OrgLayout({ children, params }: Props) {
         notFound();
     }
 
+    const currentMember = org.members.find((m) => m.userId === session?.user?.id);
+
+    if (!currentMember) {
+        notFound();
+    }
+
+    const currentRole = currentMember.role as OrganizationRole;
+
     return (
         <OrgDetailsShell
             slug={org.slug}
             orgName={org.name}
             orgRsiUrl={org.starCitizenOrganizationUrl}
+            currentRole={currentRole}
         >
             {children}
         </OrgDetailsShell>
