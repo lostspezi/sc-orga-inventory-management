@@ -7,6 +7,13 @@ type AccountDocument = {
     providerAccountId: string;
 };
 
+type UserDocument = {
+    _id: ObjectId;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+};
+
 export async function getDiscordAccountByUserId(userId: string): Promise<AccountDocument | null> {
     if (!ObjectId.isValid(userId)) {
         return null;
@@ -37,4 +44,31 @@ export async function getDiscordAccountsByUserIds(userIds: string[]): Promise<Ac
             provider: "discord",
         })
         .toArray();
+}
+
+export async function getUserByDiscordAccountId(discordAccountId: string) {
+    const db = await getDb();
+
+    const account = await db.collection<AccountDocument>("accounts").findOne({
+        provider: "discord",
+        providerAccountId: discordAccountId,
+    });
+
+    if (!account) {
+        return null;
+    }
+
+    const user = await db.collection<UserDocument>("users").findOne({
+        _id: new ObjectId(account.userId),
+    });
+
+    if (!user) {
+        return null;
+    }
+
+    return {
+        id: user._id.toString(),
+        name: user.name ?? null,
+        email: user.email ?? null,
+    };
 }

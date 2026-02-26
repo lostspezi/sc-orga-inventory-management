@@ -1,5 +1,6 @@
 import { getDiscordBotClient } from "@/lib/discord/bot/client";
 import { registerCoreDiscordBotEvents } from "@/lib/discord/bot/register-core-events";
+import {registerSlashCommands} from "@/lib/discord/bot/register-slash-commands";
 
 declare global {
     // eslint-disable-next-line no-var
@@ -24,6 +25,7 @@ export async function startDiscordBot() {
 
     if (!client.isReady()) {
         await client.login(token);
+        await registerSlashCommands();
     }
 
     global.__discordBotStarted = true;
