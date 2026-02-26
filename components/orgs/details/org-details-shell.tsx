@@ -3,6 +3,7 @@ import OrgDetailsSidebar from "@/components/orgs/details/org-details-sidebar";
 import OrgDetailsMobileNav from "@/components/orgs/details/org-details-mobile-nav";
 import {OrganizationRole} from "@/components/orgs/details/org-details-nav";
 import React from "react";
+import OrgBreadcrumbs from "@/components/orgs/details/org-breadcrumbs";
 
 type Props = {
     slug: string;
@@ -40,12 +41,7 @@ export default function OrgDetailsShell({ slug, orgName, orgRsiUrl, children, cu
                             >
                                 {orgName}
                             </h1>
-                            <p
-                                className="mt-1 text-xs sm:text-sm"
-                                style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
-                            >
-                                /terminal/orgs/{slug}
-                            </p>
+                            <OrgBreadcrumbs slug={slug} orgName={orgName} />
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2">

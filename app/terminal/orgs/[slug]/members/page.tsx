@@ -30,6 +30,31 @@ export default async function OrgMembersPage({params}: Props) {
 
     const isAdminOrOwner = currentMember && (currentMember.role === "admin" || currentMember.role === "owner");
 
+    if (!currentMember || !isAdminOrOwner) {
+        return (
+            <div
+                className="rounded-lg border p-6"
+                style={{
+                    borderColor: "rgba(240,165,0,0.18)",
+                    background: "rgba(20,14,6,0.12)",
+                }}
+            >
+                <h2
+                    className="text-lg font-semibold uppercase tracking-[0.08em]"
+                    style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}
+                >
+                    Forbidden
+                </h2>
+                <p
+                    className="mt-2 text-sm"
+                    style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
+                >
+                    Only organization admins & owners can access member management.
+                </p>
+            </div>
+        );
+    }
+
     const pendingInvites = await getPendingOrganizationInvitesByOrganizationId(org._id);
 
     return (
