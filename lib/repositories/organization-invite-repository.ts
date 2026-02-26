@@ -14,8 +14,10 @@ type CreateOrganizationInviteInput = {
     targetRole: "admin" | "member";
     deliveryMethod: "email" | "discord_dm" | "in_app";
     email?: string;
+    token?: string;
     discordUserId?: string;
     targetUserId?: string;
+    status?: "pending" | "accepted" | "declined" | "expired";
     expiresAt: Date;
 };
 
@@ -43,11 +45,11 @@ export async function createOrganizationInvite(
         invitedByUsername: input.invitedByUsername,
         targetRole: input.targetRole,
         deliveryMethod: input.deliveryMethod,
-        inviteToken: hashedToken,
+        inviteToken: input.token ?? hashedToken,
         email: input.email,
         discordUserId: input.discordUserId,
         targetUserId: input.targetUserId,
-        status: "pending",
+        status: input.status ?? "pending",
         expiresAt: input.expiresAt,
         createdAt: now,
         updatedAt: now,

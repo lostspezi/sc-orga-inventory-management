@@ -247,6 +247,16 @@ export async function getOrganizationsByDiscordGuildId(
         .toArray();
 }
 
+export async function getOrganizationByDiscordGuildId(
+    discordGuildId: string
+): Promise<OrganizationDocument | null> {
+    const db = await getDb();
+
+    return db
+        .collection<OrganizationDocument>(COLLECTION)
+        .findOne({ discordGuildId });
+}
+
 async function mapOrganizationToView(
     db: Awaited<ReturnType<typeof getDb>>,
     org: OrganizationDocument
