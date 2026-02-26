@@ -17,7 +17,7 @@ export default function OrgDetailsMobileNav({ slug }: Props) {
                 className="hud-panel corner-tr corner-bl relative overflow-x-auto p-2"
                 style={{ background: "rgba(8,16,24,0.55)" }}
             >
-                <div className="flex min-w-max gap-2">
+                <div className="flex justify-center min-w-max gap-2">
                     {ORG_NAV_ITEMS.map((item) => {
                         const href = item.href(slug);
                         const isActive = pathname === href;

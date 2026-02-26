@@ -1,11 +1,15 @@
 import {signInWithDiscord} from "@/lib/actions";
 
-export default function SignIn() {
+type Props = {
+    callbackUrl?: string;
+};
+
+export default function SignIn({ callbackUrl }: Props) {
     return (
         <form
             action={async () => {
-                "use server"
-                await signInWithDiscord()
+                "use server";
+                await signInWithDiscord({ callbackUrl });
             }}
         >
             <button
