@@ -30,8 +30,18 @@ export default function RemoveMemberButton({
     useEffect(() => {
         if (!state.success) return;
 
-        setOpen(false);
-        router.refresh();
+        let cancelled = false;
+
+        queueMicrotask(() => {
+            if (cancelled) return;
+
+            setOpen(false);
+            router.refresh();
+        });
+
+        return () => {
+            cancelled = true;
+        };
     }, [state.success, router]);
 
     const handleConfirm = async () => {
