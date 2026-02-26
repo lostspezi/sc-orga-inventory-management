@@ -171,7 +171,7 @@ export default function DiscordMemberAutocomplete({
                     <button
                         type="button"
                         onClick={handleClear}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1"
+                        className="cursor-pointer absolute right-2 top-1/2 -translate-y-1/2 rounded p-1"
                         style={{ color: "rgba(200,220,232,0.45)" }}
                         aria-label="Clear selection"
                     >
@@ -193,7 +193,7 @@ export default function DiscordMemberAutocomplete({
                                 key={member.userId}
                                 type="button"
                                 onClick={() => handleSelect(member)}
-                                className="flex w-full items-center gap-3 px-3 py-2 text-left transition hover:bg-white/5"
+                                className=" cursor-pointer flex w-full items-center gap-3 px-3 py-2 text-left transition hover:bg-white/5"
                             >
                                 {member.avatarUrl ? (
                                     // eslint-disable-next-line @next/next/no-img-element
