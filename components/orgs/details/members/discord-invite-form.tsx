@@ -2,8 +2,8 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { createDiscordOrgInviteAction } from "@/lib/actions/create-discord-org-invite-action";
-import DiscordInviteSubmitButton from "@/components/orgs/members/discord-invite-submit-button";
-import DiscordMemberAutocomplete from "@/components/orgs/members/discord-member-autocomplete";
+import DiscordInviteSubmitButton from "@/components/orgs/details/members/discord-invite-submit-button";
+import DiscordMemberAutocomplete from "@/components/orgs/details/members/discord-member-autocomplete";
 
 type Props = {
     organizationSlug: string;

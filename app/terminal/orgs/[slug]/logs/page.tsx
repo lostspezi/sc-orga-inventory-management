@@ -1,8 +1,8 @@
 import {notFound, redirect} from "next/navigation";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import { getOrganizationAuditLogsByOrganizationId } from "@/lib/repositories/organization-audit-log-repository";
-import LogsSearchForm from "@/components/orgs/details/logs-search-form";
-import AuditLogList from "@/components/orgs/details/audit-log-list";
+import LogsSearchForm from "@/components/orgs/details/audit/logs-search-form";
+import AuditLogList from "@/components/orgs/details/audit/audit-log-list";
 import {auth} from "@/auth";
 
 type Props = {

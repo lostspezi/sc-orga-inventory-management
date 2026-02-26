@@ -1,9 +1,9 @@
 import {notFound, redirect} from "next/navigation";
 import {getOrganizationBySlug} from "@/lib/repositories/organization-repository";
 import {getPendingOrganizationInvitesByOrganizationId} from "@/lib/repositories/organization-invite-repository";
-import DiscordInviteForm from "@/components/orgs/members/discord-invite-form";
-import PendingOrgInvitesList from "@/components/orgs/members/pending-org-invites-list";
-import ConnectDiscordServerCard from "@/components/orgs/members/connect-discord-server-card";
+import DiscordInviteForm from "@/components/orgs/details/members/discord-invite-form";
+import PendingOrgInvitesList from "@/components/orgs/details/members/pending-org-invites-list";
+import ConnectDiscordServerCard from "@/components/orgs/details/members/connect-discord-server-card";
 import {auth} from "@/auth";
 
 type Props = {
