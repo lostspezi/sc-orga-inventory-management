@@ -46,6 +46,7 @@ export type OrganizationAuditLogDocument = {
 
     action:
         | "organization.created"
+        | "member.invited_discord"
         | "member.added"
         | "member.removed"
         | "member.role_changed";

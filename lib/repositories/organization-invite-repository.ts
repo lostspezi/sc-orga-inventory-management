@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import { createHash, randomBytes } from "crypto";
 import { getDb } from "@/lib/db";
 import type { OrganizationInviteDocument } from "@/lib/types/organization";
+import {createOrganizationAuditLog} from "@/lib/repositories/organization-audit-log-repository";
 
 const COLLECTION = "organization_invites";
 
@@ -55,6 +56,21 @@ export async function createOrganizationInvite(
     const result = await db
         .collection<Omit<OrganizationInviteDocument, "_id">>(COLLECTION)
         .insertOne(doc);
+
+    await createOrganizationAuditLog({
+        organizationId: input.organizationId,
+        organizationSlug: input.organizationSlug,
+        actorUserId: input.invitedByUserId,
+        actorUsername: input.invitedByUsername ?? "Unknown User",
+        action: "member.invited_discord",
+        entityType: "member",
+        entityId: result.insertedId.toString(),
+        message: `${input.invitedByUsername} invited ${input.discordUserId} to Organization via Discord DM.`,
+        metadata: {
+            discordUserId: input.discordUserId,
+            targetUserId: input.targetUserId,
+        },
+    });
 
     return {
         inviteId: result.insertedId,
