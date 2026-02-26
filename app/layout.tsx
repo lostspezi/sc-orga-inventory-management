@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Orbitron, Rajdhani } from "next/font/google";
 import "./globals.css";
+import {startDiscordBot} from "@/lib/discord/bot/start-discord-bot";
+
+startDiscordBot().catch((error) => {
+    console.error("[discord-bot] Startup failed", error);
+});
 
 const orbitron = Orbitron({
     variable: "--font-orbitron",

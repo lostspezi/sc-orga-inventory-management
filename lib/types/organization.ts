@@ -51,7 +51,9 @@ export type OrganizationAuditLogDocument = {
         | "member.invited_discord"
         | "member.added"
         | "member.removed"
-        | "member.role_changed";
+        | "member.role_changed"
+        | "integration.discord_disconnected"
+        | "integration.discord_connected";
 
     entityType: "organization" | "member";
     entityId?: string;
