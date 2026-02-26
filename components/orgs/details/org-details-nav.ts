@@ -23,6 +23,7 @@ export const ORG_NAV_ITEMS: OrgNavItem[] = [
         label: "Members",
         href: (slug) => `/terminal/orgs/${slug}/members`,
         icon: Users,
+        allowedRoles: ["owner", "admin"],
     },
     {
         key: "logs",
