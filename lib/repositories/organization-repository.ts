@@ -1,5 +1,5 @@
-import { ObjectId } from "mongodb";
-import { getDb } from "@/lib/db";
+import {ObjectId} from "mongodb";
+import {getDb} from "@/lib/db";
 import type {
     OrganizationDocument,
     OrganizationMember,
@@ -76,8 +76,8 @@ export async function getOrganizationViewsByUserId(
 
     const orgs = await db
         .collection<OrganizationDocument>(COLLECTION)
-        .find({ "members.userId": userId })
-        .sort({ createdAt: -1 })
+        .find({"members.userId": userId})
+        .sort({createdAt: -1})
         .toArray();
 
     return Promise.all(orgs.map((org) => mapOrganizationToView(db, org)));
@@ -90,7 +90,7 @@ export async function getOrganizationById(id: string): Promise<OrganizationDocum
 
     return db
         .collection<OrganizationDocument>(COLLECTION)
-        .findOne({ _id: new ObjectId(id) });
+        .findOne({_id: new ObjectId(id)});
 }
 
 export async function getOrganizationBySlug(slug: string): Promise<OrganizationDocument | null> {
@@ -98,7 +98,7 @@ export async function getOrganizationBySlug(slug: string): Promise<OrganizationD
 
     return db
         .collection<OrganizationDocument>(COLLECTION)
-        .findOne({ slug });
+        .findOne({slug});
 }
 
 export async function getOrganizationViewBySlug(
@@ -108,7 +108,7 @@ export async function getOrganizationViewBySlug(
 
     const org = await db
         .collection<OrganizationDocument>(COLLECTION)
-        .findOne({ slug });
+        .findOne({slug});
 
     if (!org) {
         return null;
@@ -126,7 +126,7 @@ export async function updateOrganizationInDb(
     const db = await getDb();
 
     const result = await db.collection<OrganizationDocument>(COLLECTION).updateOne(
-        { _id: new ObjectId(id) },
+        {_id: new ObjectId(id)},
         {
             $set: {
                 ...updates,
@@ -145,7 +145,7 @@ export async function deleteOrganizationInDb(id: string): Promise<boolean> {
 
     const result = await db
         .collection<OrganizationDocument>(COLLECTION)
-        .deleteOne({ _id: new ObjectId(id) });
+        .deleteOne({_id: new ObjectId(id)});
 
     return result.deletedCount > 0;
 }
@@ -163,11 +163,11 @@ export async function addMemberToOrganizationInDb(
     const result = await db.collection<OrganizationDocument>(COLLECTION).updateOne(
         {
             _id: new ObjectId(organizationId),
-            "members.userId": { $ne: member.userId },
+            "members.userId": {$ne: member.userId},
         },
         {
-            $push: { members: member },
-            $set: { updatedAt: new Date() },
+            $push: {members: member},
+            $set: {updatedAt: new Date()},
         }
     );
 
@@ -181,7 +181,7 @@ export async function setOrganizationDiscordGuildId(
     const db = await getDb();
 
     const result = await db.collection<OrganizationDocument>(COLLECTION).updateOne(
-        { slug },
+        {slug},
         {
             $set: {
                 discordGuildId,
@@ -202,10 +202,10 @@ export async function removeMemberFromOrganizationInDb(
     const db = await getDb();
 
     const result = await db.collection<OrganizationDocument>(COLLECTION).updateOne(
-        { _id: new ObjectId(organizationId) },
+        {_id: new ObjectId(organizationId)},
         {
             $pull: {
-                members: { userId },
+                members: {userId},
             },
             $set: {
                 updatedAt: new Date(),
@@ -222,7 +222,7 @@ export async function clearOrganizationDiscordGuildId(
     const db = await getDb();
 
     const result = await db.collection<OrganizationDocument>(COLLECTION).updateMany(
-        { discordGuildId },
+        {discordGuildId},
         {
             $unset: {
                 discordGuildId: "",
@@ -243,7 +243,7 @@ export async function getOrganizationsByDiscordGuildId(
 
     return db
         .collection<OrganizationDocument>(COLLECTION)
-        .find({ discordGuildId })
+        .find({discordGuildId})
         .toArray();
 }
 
@@ -254,7 +254,30 @@ export async function getOrganizationByDiscordGuildId(
 
     return db
         .collection<OrganizationDocument>(COLLECTION)
-        .findOne({ discordGuildId });
+        .findOne({discordGuildId});
+}
+
+export async function changeRoleForOrgMemberInDb(
+    organizationId: string,
+    memberId: string,
+    role: "admin" | "member"
+): Promise<boolean> {
+    const db = await getDb();
+
+    const result = await db.collection(COLLECTION).updateOne(
+        {
+            _id: new ObjectId(organizationId),
+            "members.userId": memberId,
+        },
+        {
+            $set: {
+                "members.$.role": role,
+                updatedAt: new Date(),
+            },
+        }
+    );
+
+    return result.modifiedCount > 0;
 }
 
 async function mapOrganizationToView(
@@ -275,8 +298,8 @@ async function mapOrganizationToView(
     const users = objectIds.length
         ? await db
             .collection<UserDocument>("users")
-            .find({ _id: { $in: objectIds } })
-            .project({ _id: 1, name: 1 })
+            .find({_id: {$in: objectIds}})
+            .project({_id: 1, name: 1})
             .toArray()
         : [];
 
