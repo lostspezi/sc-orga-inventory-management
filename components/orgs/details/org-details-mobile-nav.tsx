@@ -2,14 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ORG_NAV_ITEMS } from "@/components/orgs/details/org-details-nav";
+import { ORG_NAV_ITEMS, type OrganizationRole } from "@/components/orgs/details/org-details-nav";
 
 type Props = {
     slug: string;
+    currentRole: OrganizationRole;
 };
 
-export default function OrgDetailsMobileNav({ slug }: Props) {
+export default function OrgDetailsMobileNav({ slug, currentRole }: Props) {
     const pathname = usePathname();
+
+    const visibleItems = ORG_NAV_ITEMS.filter(
+        (item) => !item.allowedRoles || item.allowedRoles.includes(currentRole)
+    );
 
     return (
         <div className="lg:hidden">
@@ -17,8 +22,8 @@ export default function OrgDetailsMobileNav({ slug }: Props) {
                 className="hud-panel corner-tr corner-bl relative overflow-x-auto p-2"
                 style={{ background: "rgba(8,16,24,0.55)" }}
             >
-                <div className="flex justify-center min-w-max gap-2">
-                    {ORG_NAV_ITEMS.map((item) => {
+                <div className="flex min-w-max justify-center gap-2">
+                    {visibleItems.map((item) => {
                         const href = item.href(slug);
                         const isActive = pathname === href;
                         const Icon = item.icon;

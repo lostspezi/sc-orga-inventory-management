@@ -2,14 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ORG_NAV_ITEMS } from "@/components/orgs/details/org-details-nav";
+import { ORG_NAV_ITEMS, type OrganizationRole } from "@/components/orgs/details/org-details-nav";
 
 type Props = {
     slug: string;
+    currentRole: OrganizationRole;
 };
 
-export default function OrgDetailsSidebar({ slug }: Props) {
+export default function OrgDetailsSidebar({ slug, currentRole }: Props) {
     const pathname = usePathname();
+
+    const visibleItems = ORG_NAV_ITEMS.filter(
+        (item) => !item.allowedRoles || item.allowedRoles.includes(currentRole)
+    );
 
     return (
         <aside
@@ -29,7 +34,7 @@ export default function OrgDetailsSidebar({ slug }: Props) {
             </p>
 
             <nav className="space-y-2">
-                {ORG_NAV_ITEMS.map((item) => {
+                {visibleItems.map((item) => {
                     const href = item.href(slug);
                     const isActive = pathname === href;
                     const Icon = item.icon;

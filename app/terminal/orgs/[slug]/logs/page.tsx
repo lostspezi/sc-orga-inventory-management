@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation";
+import {notFound, redirect} from "next/navigation";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import { getOrganizationAuditLogsByOrganizationId } from "@/lib/repositories/organization-audit-log-repository";
 import LogsSearchForm from "@/components/orgs/details/logs-search-form";
 import AuditLogList from "@/components/orgs/details/audit-log-list";
+import {auth} from "@/auth";
 
 type Props = {
     params: Promise<{ slug: string }>;
@@ -12,11 +13,43 @@ type Props = {
 export default async function OrgLogsPage({ params, searchParams }: Props) {
     const { slug } = await params;
     const { q } = await searchParams;
+    const session = await auth();
+
+    if (!session?.user) {
+        redirect("/login")
+    }
 
     const org = await getOrganizationBySlug(slug);
 
     if (!org) {
         notFound();
+    }
+
+    const currentMember = org.members.find((m) => m.userId === session?.user?.id);
+
+    if (!currentMember || currentMember.role !== "owner") {
+        return (
+            <div
+                className="rounded-lg border p-6"
+                style={{
+                    borderColor: "rgba(240,165,0,0.18)",
+                    background: "rgba(20,14,6,0.12)",
+                }}
+            >
+                <h2
+                    className="text-lg font-semibold uppercase tracking-[0.08em]"
+                    style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}
+                >
+                    Forbidden
+                </h2>
+                <p
+                    className="mt-2 text-sm"
+                    style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
+                >
+                    Only organization owners can access audit logs.
+                </p>
+            </div>
+        );
     }
 
     const logs = await getOrganizationAuditLogsByOrganizationId(

@@ -2,15 +2,17 @@ import Link from "next/link";
 import { ExternalLink, ChevronLeft } from "lucide-react";
 import OrgDetailsSidebar from "@/components/orgs/details/org-details-sidebar";
 import OrgDetailsMobileNav from "@/components/orgs/details/org-details-mobile-nav";
+import {OrganizationRole} from "@/components/orgs/details/org-details-nav";
 
 type Props = {
     slug: string;
     orgName: string;
     orgRsiUrl?: string;
     children: React.ReactNode;
+    currentRole: OrganizationRole;
 };
 
-export default function OrgDetailsShell({ slug, orgName, orgRsiUrl, children }: Props) {
+export default function OrgDetailsShell({ slug, orgName, orgRsiUrl, children, currentRole }: Props) {
     return (
         <main className="min-h-screen px-4 py-6 sm:px-6">
             <div className="mx-auto w-full max-w-7xl space-y-4">
@@ -73,11 +75,11 @@ export default function OrgDetailsShell({ slug, orgName, orgRsiUrl, children }: 
                 </header>
 
                 {/* Mobile nav */}
-                <OrgDetailsMobileNav slug={slug} />
+                <OrgDetailsMobileNav slug={slug} currentRole={currentRole} />
 
                 {/* Content grid */}
                 <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
-                    <OrgDetailsSidebar slug={slug} />
+                    <OrgDetailsSidebar slug={slug} currentRole={currentRole} />
 
                     <section
                         className="hud-panel corner-tr corner-bl relative p-4 sm:p-5"
