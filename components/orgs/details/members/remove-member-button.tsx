@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { startTransition, useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { removeOrgMemberAction } from "@/lib/actions/remove-org-member-action";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
@@ -25,16 +25,23 @@ export default function RemoveMemberButton({
                                            }: Props) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
-    const [state, formAction] = useActionState(removeOrgMemberAction, initialState);
+    const [state, formAction, isPending] = useActionState(removeOrgMemberAction, initialState);
+
+    useEffect(() => {
+        if (!state.success) return;
+
+        setOpen(false);
+        router.refresh();
+    }, [state.success, router]);
 
     const handleConfirm = async () => {
         const formData = new FormData();
         formData.set("organizationSlug", organizationSlug);
         formData.set("targetUserId", targetUserId);
 
-        await formAction(formData);
-        setOpen(false);
-        router.refresh();
+        startTransition(async () => {
+            await formAction(formData);
+        });
     };
 
     return (
@@ -63,6 +70,7 @@ export default function RemoveMemberButton({
                 description={`Are you sure you want to remove ${targetLabel ?? "this member"} from the organization?`}
                 confirmLabel="Remove Member"
                 cancelLabel="Cancel"
+                isLoading={isPending}
             />
 
             {state.message && (
