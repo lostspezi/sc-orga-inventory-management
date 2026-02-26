@@ -236,6 +236,17 @@ export async function clearOrganizationDiscordGuildId(
     return result.modifiedCount;
 }
 
+export async function getOrganizationsByDiscordGuildId(
+    discordGuildId: string
+): Promise<OrganizationDocument[]> {
+    const db = await getDb();
+
+    return db
+        .collection<OrganizationDocument>(COLLECTION)
+        .find({ discordGuildId })
+        .toArray();
+}
+
 async function mapOrganizationToView(
     db: Awaited<ReturnType<typeof getDb>>,
     org: OrganizationDocument
