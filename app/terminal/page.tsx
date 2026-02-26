@@ -78,7 +78,7 @@ export default async function TerminalPage() {
                             className="mt-2 mb-2 text-xs"
                             style={{color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)"}}
                         >
-                            You are not assigned to any organizations yet.
+                            Create your first organization to get started or get invited to join an existing one.
                         </p>
                         <CreateOrgDialog/>
                     </section>
