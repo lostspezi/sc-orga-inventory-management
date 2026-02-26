@@ -193,6 +193,29 @@ export async function setOrganizationDiscordGuildId(
     return result.modifiedCount > 0;
 }
 
+export async function removeMemberFromOrganizationInDb(
+    organizationId: string,
+    userId: string
+): Promise<boolean> {
+    if (!ObjectId.isValid(organizationId)) return false;
+
+    const db = await getDb();
+
+    const result = await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { _id: new ObjectId(organizationId) },
+        {
+            $pull: {
+                members: { userId },
+            },
+            $set: {
+                updatedAt: new Date(),
+            },
+        }
+    );
+
+    return result.modifiedCount > 0;
+}
+
 async function mapOrganizationToView(
     db: Awaited<ReturnType<typeof getDb>>,
     org: OrganizationDocument
@@ -234,5 +257,6 @@ async function mapOrganizationToView(
             role: m.role,
             joinedAt: m.joinedAt,
         })),
+        discordGuildId: org.discordGuildId,
     };
 }
