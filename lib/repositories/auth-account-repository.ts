@@ -19,3 +19,22 @@ export async function getDiscordAccountByUserId(userId: string): Promise<Account
         provider: "discord",
     });
 }
+
+export async function getDiscordAccountsByUserIds(userIds: string[]): Promise<AccountDocument[]> {
+    const validObjectIds = userIds
+        .filter((id) => ObjectId.isValid(id))
+        .map((id) => new ObjectId(id));
+
+    if (validObjectIds.length === 0) {
+        return [];
+    }
+
+    const db = await getDb();
+
+    return db.collection<AccountDocument>("accounts")
+        .find({
+            userId: { $in: validObjectIds },
+            provider: "discord",
+        })
+        .toArray();
+}

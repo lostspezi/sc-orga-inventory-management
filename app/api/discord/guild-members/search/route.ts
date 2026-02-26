@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import { searchGuildMembers } from "@/lib/discord/get-guild-members";
+import {getDiscordAccountsByUserIds} from "@/lib/repositories/auth-account-repository";
 
 export const runtime = "nodejs";
 
@@ -62,7 +63,22 @@ export async function GET(req: Request) {
     try {
         const results = await searchGuildMembers(org.discordGuildId, query, 10);
 
-        return NextResponse.json({ results }, { status: 200 });
+        // Existing org members -> internal userIds
+        const existingMemberUserIds = org.members.map((m) => m.userId);
+
+        // Resolve their Discord account IDs from Auth.js accounts collection
+        const existingDiscordAccounts = await getDiscordAccountsByUserIds(existingMemberUserIds);
+
+        const existingDiscordUserIds = new Set(
+            existingDiscordAccounts.map((account) => account.providerAccountId)
+        );
+
+        // Filter out users who are already members of the organization
+        const filteredResults = results.filter(
+            (member) => !existingDiscordUserIds.has(member.userId)
+        );
+
+        return NextResponse.json({ results: filteredResults.slice(0, 10) }, { status: 200 });
     } catch (error) {
         const errorMessage =
             error instanceof Error ? error.message : "Unknown error";
