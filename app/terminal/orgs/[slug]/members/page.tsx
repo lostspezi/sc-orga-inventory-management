@@ -1,5 +1,5 @@
 import {notFound, redirect} from "next/navigation";
-import {getOrganizationBySlug} from "@/lib/repositories/organization-repository";
+import {getOrganizationViewBySlug} from "@/lib/repositories/organization-repository";
 import {getPendingOrganizationInvitesByOrganizationId} from "@/lib/repositories/organization-invite-repository";
 import DiscordInviteForm from "@/components/orgs/details/members/discord-invite-form";
 import PendingOrgInvitesList from "@/components/orgs/details/members/pending-org-invites-list";
@@ -19,7 +19,7 @@ export default async function OrgMembersPage({params}: Props) {
         redirect("/login")
     }
 
-    const org = await getOrganizationBySlug(slug);
+    const org = await getOrganizationViewBySlug(slug);
 
     if (!org) {
         notFound();
@@ -94,7 +94,7 @@ export default async function OrgMembersPage({params}: Props) {
                                     className="text-xs"
                                     style={{color: "rgba(200,220,232,0.55)", fontFamily: "var(--font-mono)"}}
                                 >
-                                    {member.userId}
+                                    {member.username}
                                 </span>
                                 <span
                                     className="rounded border px-2 py-0.5 text-[10px] uppercase"
