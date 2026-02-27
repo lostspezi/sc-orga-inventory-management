@@ -120,3 +120,34 @@ export async function deleteOrganizationInventoryItemInDb(
 
     return result ?? null;
 }
+
+export async function updateOrganizationInventoryItemInDb(input: {
+    inventoryItemId: string;
+    organizationId: ObjectId;
+    buyPrice: number;
+    sellPrice: number;
+    quantity: number;
+}): Promise<boolean> {
+    if (!ObjectId.isValid(input.inventoryItemId)) {
+        return false;
+    }
+
+    const db = await getDb();
+
+    const result = await db.collection<OrganizationInventoryItemDocument>("organization_inventory_items").updateOne(
+        {
+            _id: new ObjectId(input.inventoryItemId),
+            organizationId: input.organizationId,
+        },
+        {
+            $set: {
+                buyPrice: input.buyPrice,
+                sellPrice: input.sellPrice,
+                quantity: input.quantity,
+                updatedAt: new Date(),
+            },
+        }
+    );
+
+    return result.modifiedCount > 0;
+}

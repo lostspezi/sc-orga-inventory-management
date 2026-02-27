@@ -1,14 +1,15 @@
 "use client";
 
-import { startTransition, useActionState, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import {startTransition, useActionState, useEffect, useRef, useState} from "react";
+import {useRouter} from "next/navigation";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
-import { removeOrganizationInventoryItemAction } from "@/lib/actions/remove-organization-inventory-item-action";
+import {removeOrganizationInventoryItemAction} from "@/lib/actions/remove-organization-inventory-item-action";
 
 type Props = {
     organizationSlug: string;
     inventoryItemId: string;
     itemLabel?: string;
+    onDeleteAction: () => void;
 };
 
 const initialState = {
@@ -20,6 +21,7 @@ export default function RemoveOrganizationInventoryItemButton({
                                                                   organizationSlug,
                                                                   inventoryItemId,
                                                                   itemLabel,
+                                                                  onDeleteAction
                                                               }: Props) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
@@ -54,6 +56,7 @@ export default function RemoveOrganizationInventoryItemButton({
 
         startTransition(async () => {
             await formAction(formData);
+            onDeleteAction();
         });
     };
 
@@ -63,7 +66,7 @@ export default function RemoveOrganizationInventoryItemButton({
                 type="button"
                 onClick={() => setOpen(true)}
                 disabled={isPending}
-                className="cursor-pointer rounded-md border px-3 py-1.5 text-[10px] uppercase tracking-[0.12em] disabled:opacity-50"
+                className="cursor-pointer rounded-md border px-3 py-1.5 text-[10px] uppercase tracking-[0.12em] disabled:opacity-50 w-full"
                 style={{
                     borderColor: "rgba(240,165,0,0.2)",
                     color: "rgba(240,165,0,0.85)",
@@ -71,7 +74,7 @@ export default function RemoveOrganizationInventoryItemButton({
                     background: "rgba(240,165,0,0.05)",
                 }}
             >
-                Remove
+                Remove Item from Inventory & Organization
             </button>
 
             <ConfirmDialog

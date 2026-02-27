@@ -84,7 +84,8 @@ export type OrganizationAuditLogDocument = {
         | "integration.discord_connected"
         | "item.created"
         | "inventory.item_added"
-        | "inventory.item_removed";
+        | "inventory.item_removed"
+        | "inventory.item_updated";
 
     entityType: "organization" | "member" | "item" | "inventory_item";
     entityId?: string;

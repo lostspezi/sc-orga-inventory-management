@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
-import RemoveOrganizationInventoryItemButton
-    from "@/components/orgs/details/items/remove-organization-inventory-item-button";
+import {useMemo, useState} from "react";
+import {Search} from "lucide-react";
+import InventoryItemDetailsDialog from "@/components/orgs/details/items/inventory-item-details-dialog";
 
 type InventoryItem = {
     inventoryItemId: string;
@@ -27,8 +26,10 @@ function normalize(value: string) {
     return value.trim().toLowerCase();
 }
 
-export default function InventorySearchPanel({ items, canManageItems, slug }: Props) {
+export default function InventorySearchPanel({items, canManageItems, slug}: Props) {
     const [query, setQuery] = useState("");
+    const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     const filteredItems = useMemo(() => {
         const q = normalize(query);
@@ -57,13 +58,13 @@ export default function InventorySearchPanel({ items, canManageItems, slug }: Pr
                 <div className="mb-3">
                     <p
                         className="text-[10px] uppercase tracking-[0.25em]"
-                        style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
+                        style={{color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)"}}
                     >
                         Search
                     </p>
                     <h3
                         className="mt-1 text-base font-semibold uppercase tracking-[0.08em]"
-                        style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
+                        style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
                     >
                         Search Inventory
                     </h3>
@@ -73,7 +74,7 @@ export default function InventorySearchPanel({ items, canManageItems, slug }: Pr
                     <Search
                         size={14}
                         className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2"
-                        style={{ color: "rgba(79,195,220,0.45)" }}
+                        style={{color: "rgba(79,195,220,0.45)"}}
                     />
                     <input
                         type="text"
@@ -96,13 +97,13 @@ export default function InventorySearchPanel({ items, canManageItems, slug }: Pr
                 <div className="mb-4">
                     <p
                         className="text-[10px] uppercase tracking-[0.25em]"
-                        style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
+                        style={{color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)"}}
                     >
                         Inventory Entries
                     </p>
                     <h3
                         className="mt-1 text-base font-semibold uppercase tracking-[0.08em]"
-                        style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
+                        style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
                     >
                         {filteredItems.length} Registered
                     </h3>
@@ -118,13 +119,13 @@ export default function InventorySearchPanel({ items, canManageItems, slug }: Pr
                     >
                         <p
                             className="text-sm uppercase tracking-[0.12em]"
-                            style={{ color: "rgba(240,165,0,0.8)", fontFamily: "var(--font-display)" }}
+                            style={{color: "rgba(240,165,0,0.8)", fontFamily: "var(--font-display)"}}
                         >
                             No Matching Items
                         </p>
                         <p
                             className="mt-2 text-xs"
-                            style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
+                            style={{color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)"}}
                         >
                             No inventory items matched your search.
                         </p>
@@ -133,24 +134,28 @@ export default function InventorySearchPanel({ items, canManageItems, slug }: Pr
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                         {filteredItems.map((item) => (
                             <div
-                                key={item.inventoryItemId}
-                                className="rounded-md border p-4"
+                                onClick={() => {
+                                    setSelectedItem(item);
+                                    setDialogOpen(true);
+                                }}
+                                className="cursor-pointer rounded-md border p-4 text-left cursor-pointer transition"
                                 style={{
                                     borderColor: "rgba(79,195,220,0.10)",
                                     background: "rgba(7,18,28,0.18)",
                                 }}
+                                key={item.inventoryItemId}
                             >
                                 <div className="space-y-1">
                                     <h4
                                         className="text-sm font-semibold uppercase tracking-[0.06em]"
-                                        style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
+                                        style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
                                     >
                                         {item.name}
                                     </h4>
 
                                     <p
                                         className="text-[11px]"
-                                        style={{ color: "rgba(200,220,232,0.38)", fontFamily: "var(--font-mono)" }}
+                                        style={{color: "rgba(200,220,232,0.38)", fontFamily: "var(--font-mono)"}}
                                     >
                                         {item.category ?? "Uncategorized"}
                                     </p>
@@ -159,48 +164,46 @@ export default function InventorySearchPanel({ items, canManageItems, slug }: Pr
                                 {item.description && (
                                     <p
                                         className="mt-3 text-xs"
-                                        style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
+                                        style={{color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)"}}
                                     >
                                         {item.description}
                                     </p>
                                 )}
 
                                 <div className="mt-4 space-y-2">
-                                    <InfoRow label="Buy Price" value={String(item.buyPrice)} />
-                                    <InfoRow label="Sell Price" value={String(item.sellPrice)} />
-                                    <QuantityRow label="Quantity" value={item.quantity} />
+                                    <InfoRow label="Buy Price" value={String(item.buyPrice)}/>
+                                    <InfoRow label="Sell Price" value={String(item.sellPrice)}/>
+                                    <QuantityRow label="Quantity" value={item.quantity}/>
                                 </div>
-
-                                {canManageItems && (
-                                    <div className="mt-4 flex justify-end">
-                                        <RemoveOrganizationInventoryItemButton
-                                            organizationSlug={slug}
-                                            inventoryItemId={item.inventoryItemId.toString()}
-                                            itemLabel={item.name}
-                                        />
-                                    </div>
-                                )}
                             </div>
                         ))}
                     </div>
                 )}
             </div>
+            <InventoryItemDetailsDialog
+                open={dialogOpen}
+                onCloseAction={() => setDialogOpen(false)}
+                canEdit={canManageItems}
+                organizationSlug={slug}
+                item={selectedItem}
+                slug={slug}
+            />
         </>
     );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({label, value}: { label: string; value: string }) {
     return (
         <div className="flex items-center justify-between gap-2">
             <span
                 className="text-[10px] uppercase"
-                style={{ color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)" }}
+                style={{color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)"}}
             >
                 {label}
             </span>
             <span
                 className="text-[11px]"
-                style={{ color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)" }}
+                style={{color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)"}}
             >
                 {value} aUEC
             </span>
@@ -208,18 +211,18 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     );
 }
 
-function QuantityRow({ label, value }: { label: string; value: number }) {
+function QuantityRow({label, value}: { label: string; value: number }) {
     return (
         <div className="flex items-center justify-between gap-2">
             <span
                 className="text-[10px] uppercase"
-                style={{ color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)" }}
+                style={{color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)"}}
             >
                 {label}
             </span>
             <span
                 className="text-[11px]"
-                style={{ color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)" }}
+                style={{color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)"}}
             >
                 {value > 0 ? value > 1 ? `${value} pieces` : `${value} piece` : "Out of Stock"}
             </span>
