@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
+import RemoveOrganizationInventoryItemButton
+    from "@/components/orgs/details/items/remove-organization-inventory-item-button";
 
 type InventoryItem = {
     inventoryItemId: string;
@@ -17,13 +19,15 @@ type InventoryItem = {
 
 type Props = {
     items: InventoryItem[];
+    canManageItems: boolean;
+    slug: string;
 };
 
 function normalize(value: string) {
     return value.trim().toLowerCase();
 }
 
-export default function InventorySearchPanel({ items }: Props) {
+export default function InventorySearchPanel({ items, canManageItems, slug }: Props) {
     const [query, setQuery] = useState("");
 
     const filteredItems = useMemo(() => {
@@ -166,6 +170,16 @@ export default function InventorySearchPanel({ items }: Props) {
                                     <InfoRow label="Sell Price" value={String(item.sellPrice)} />
                                     <QuantityRow label="Quantity" value={item.quantity} />
                                 </div>
+
+                                {canManageItems && (
+                                    <div className="mt-4 flex justify-end">
+                                        <RemoveOrganizationInventoryItemButton
+                                            organizationSlug={slug}
+                                            inventoryItemId={item.inventoryItemId.toString()}
+                                            itemLabel={item.name}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>

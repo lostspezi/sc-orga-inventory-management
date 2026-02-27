@@ -75,7 +75,7 @@ export default async function OrgItemsPage({ params }: Props) {
                 </HudAccordion>
             )}
 
-            <InventorySearchPanel items={serializedInventoryItems} />
+            <InventorySearchPanel items={serializedInventoryItems} canManageItems={canManageItems} slug={org.slug} />
 
         </div>
     );

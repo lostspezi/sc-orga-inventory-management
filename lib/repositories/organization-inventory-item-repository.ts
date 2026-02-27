@@ -102,3 +102,21 @@ export async function getOrganizationInventoryItemViewsByOrganizationId(
         })
         .filter((entry): entry is OrganizationInventoryItemView => entry !== null);
 }
+
+export async function deleteOrganizationInventoryItemInDb(
+    inventoryItemId: string,
+    organizationId: ObjectId
+): Promise<OrganizationInventoryItemDocument | null> {
+    if (!ObjectId.isValid(inventoryItemId)) {
+        return null;
+    }
+
+    const db = await getDb();
+
+    const result = await db.collection<OrganizationInventoryItemDocument>(COLLECTION).findOneAndDelete({
+        _id: new ObjectId(inventoryItemId),
+        organizationId,
+    });
+
+    return result ?? null;
+}
