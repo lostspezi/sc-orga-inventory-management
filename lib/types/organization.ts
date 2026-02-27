@@ -1,7 +1,7 @@
 import {ObjectId} from "mongodb";
 
 export type OrganizationDocument = {
-    _id: ObjectId
+    _id: ObjectId;
     name: string;
     slug: string;
     starCitizenOrganizationUrl: string;
@@ -10,32 +10,60 @@ export type OrganizationDocument = {
     discordGuildId?: string;
     createdAt: Date;
     updatedAt: Date;
-}
+};
 
 export type OrganizationMember = {
     userId: string;
     role: "owner" | "admin" | "member";
     joinedAt: Date;
-}
+};
 
-export type OrganizationView = {
-    _id: ObjectId
-    name: string;
-    slug: string;
-    starCitizenOrganizationUrl: string;
-    createdByUsername: string;
-    members: OrganizationMemberView[];
-    discordGuildId?: string;
+export type OrganizationInventoryItemDocument = {
+    _id: ObjectId;
+    organizationId: ObjectId;
+    organizationSlug: string;
+    itemId: ObjectId;
+
+    buyPrice: number;
+    sellPrice: number;
+    quantity: number;
+
     createdAt: Date;
     updatedAt: Date;
-}
+};
 
 export type OrganizationMemberView = {
     userId: string;
     username: string;
     role: "owner" | "admin" | "member";
     joinedAt: Date;
-}
+};
+
+export type OrganizationInventoryItemView = {
+    inventoryItemId: ObjectId;
+    itemId: ObjectId;
+    name: string;
+    normalizedName: string;
+    description?: string;
+    category?: string;
+    buyPrice: number;
+    sellPrice: number;
+    quantity: number;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
+export type OrganizationView = {
+    _id: ObjectId;
+    name: string;
+    slug: string;
+    starCitizenOrganizationUrl: string;
+    createdByUsername?: string;
+    members: OrganizationMemberView[];
+    discordGuildId?: string;
+    createdAt: Date;
+    updatedAt: Date;
+};
 
 /* AUDIT */
 export type OrganizationAuditLogDocument = {
@@ -53,15 +81,17 @@ export type OrganizationAuditLogDocument = {
         | "member.removed"
         | "member.role_changed"
         | "integration.discord_disconnected"
-        | "integration.discord_connected";
+        | "integration.discord_connected"
+        | "item.created"
+        | "inventory.item_added"
+        | "inventory.item_removed"
+        | "inventory.item_updated";
 
-    entityType: "organization" | "member";
+    entityType: "organization" | "member" | "item" | "inventory_item";
     entityId?: string;
 
     message: string;
-
     metadata?: Record<string, unknown>;
-
     createdAt: Date;
 };
 
