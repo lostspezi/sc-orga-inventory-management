@@ -9,7 +9,6 @@ type Props = {
     organizationSlug: string;
     inventoryItemId: string;
     itemLabel?: string;
-    onDeleteAction: () => void;
 };
 
 const initialState = {
@@ -21,7 +20,6 @@ export default function RemoveOrganizationInventoryItemButton({
                                                                   organizationSlug,
                                                                   inventoryItemId,
                                                                   itemLabel,
-                                                                  onDeleteAction
                                                               }: Props) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
@@ -40,14 +38,14 @@ export default function RemoveOrganizationInventoryItemButton({
 
     useEffect(() => {
         if (!state.success || handledSuccessRef.current) return;
-
         handledSuccessRef.current = true;
 
         queueMicrotask(() => {
             setOpen(false);
-            router.refresh();
+            const msg = state.message || "Item removed from inventory.";
+            router.replace(`?deleted=${encodeURIComponent(msg)}`);
         });
-    }, [state.success, router]);
+    }, [state.success, router, state.message]);
 
     const handleConfirm = async () => {
         const formData = new FormData();
@@ -56,7 +54,6 @@ export default function RemoveOrganizationInventoryItemButton({
 
         startTransition(async () => {
             await formAction(formData);
-            onDeleteAction();
         });
     };
 
@@ -88,20 +85,6 @@ export default function RemoveOrganizationInventoryItemButton({
                 confirmLabel="Remove Item"
                 cancelLabel="Cancel"
             />
-
-            {state.message && (
-                <p
-                    className="mt-1 text-[10px] text-right"
-                    style={{
-                        color: state.success
-                            ? "rgba(79,195,220,0.7)"
-                            : "rgba(240,165,0,0.85)",
-                        fontFamily: "var(--font-mono)",
-                    }}
-                >
-                    {state.message}
-                </p>
-            )}
         </>
     );
 }

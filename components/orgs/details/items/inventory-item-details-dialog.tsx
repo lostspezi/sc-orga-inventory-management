@@ -69,6 +69,10 @@ export default function InventoryItemDetailsDialog({
         onCloseAction();
     };
 
+    const handleDeleteAction = () => {
+        handleClose();
+    }
+
     return (
         <dialog
             ref={dialogRef}
@@ -292,14 +296,15 @@ export default function InventoryItemDetailsDialog({
                             className="mt-1 text-sm"
                             style={{color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)"}}
                         >
-                            By deleting this item, all associated data will be permanently removed. This action cannot be undone.
+                            By deleting this item, all associated data will be permanently removed. This action cannot
+                            be undone.
                         </p>
                         <div className="mt-4 space-y-4 flex w-full justify-center">
                             <RemoveOrganizationInventoryItemButton
                                 organizationSlug={slug}
                                 inventoryItemId={item.inventoryItemId.toString()}
                                 itemLabel={item.name}
-                                onDeleteAction={onCloseAction}
+                                onDeleteAction={handleDeleteAction}
                             />
                         </div>
                     </div>
