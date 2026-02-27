@@ -69,10 +69,6 @@ export default function InventoryItemDetailsDialog({
         onCloseAction();
     };
 
-    const handleDeleteAction = () => {
-        handleClose();
-    }
-
     return (
         <dialog
             ref={dialogRef}
@@ -304,7 +300,6 @@ export default function InventoryItemDetailsDialog({
                                 organizationSlug={slug}
                                 inventoryItemId={item.inventoryItemId.toString()}
                                 itemLabel={item.name}
-                                onDeleteAction={handleDeleteAction}
                             />
                         </div>
                     </div>
