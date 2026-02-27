@@ -164,7 +164,7 @@ export default function InventorySearchPanel({ items }: Props) {
                                 <div className="mt-4 space-y-2">
                                     <InfoRow label="Buy Price" value={String(item.buyPrice)} />
                                     <InfoRow label="Sell Price" value={String(item.sellPrice)} />
-                                    <InfoRow label="Quantity" value={String(item.quantity)} />
+                                    <QuantityRow label="Quantity" value={item.quantity} />
                                 </div>
                             </div>
                         ))}
@@ -188,7 +188,26 @@ function InfoRow({ label, value }: { label: string; value: string }) {
                 className="text-[11px]"
                 style={{ color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)" }}
             >
-                {value}
+                {value} aUEC
+            </span>
+        </div>
+    );
+}
+
+function QuantityRow({ label, value }: { label: string; value: number }) {
+    return (
+        <div className="flex items-center justify-between gap-2">
+            <span
+                className="text-[10px] uppercase"
+                style={{ color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)" }}
+            >
+                {label}
+            </span>
+            <span
+                className="text-[11px]"
+                style={{ color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)" }}
+            >
+                {value > 0 ? value > 1 ? `${value} pieces` : `${value} piece` : "Out of Stock"}
             </span>
         </div>
     );
