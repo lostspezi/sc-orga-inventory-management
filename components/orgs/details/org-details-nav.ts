@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import {LucideIcon, PackageOpen} from "lucide-react";
 import { LayoutDashboard, Users, Logs } from "lucide-react";
 
 export type OrganizationRole = "owner" | "admin" | "member";
@@ -17,6 +17,12 @@ export const ORG_NAV_ITEMS: OrgNavItem[] = [
         label: "Dashboard",
         href: (slug) => `/terminal/orgs/${slug}`,
         icon: LayoutDashboard,
+    },
+    {
+      key: "inventory",
+      label: "Inventory",
+      href: (slug) => `/terminal/orgs/${slug}/inventory`,
+      icon: PackageOpen,
     },
     {
         key: "members",
