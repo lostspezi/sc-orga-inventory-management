@@ -19,15 +19,16 @@ export type SelectedItemWithVariants = {
     item: ItemSearchResult;
     importAllVariants: boolean;
     variants: SiblingVariant[];
-    selectedVariants: SiblingVariant[]; // only the checked ones
+    selectedVariants: SiblingVariant[];
 };
 
 type Props = {
     onSelectAction: (selection: SelectedItemWithVariants | null) => void;
     disabled?: boolean;
+    excludeShopItems?: boolean;
 };
 
-export default function ScItemAutocomplete({ onSelectAction, disabled }: Props) {
+export default function ScItemAutocomplete({ onSelectAction, disabled, excludeShopItems = false }: Props) {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<ItemSearchResult[]>([]);
     const [loading, setLoading] = useState(false);
@@ -39,7 +40,6 @@ export default function ScItemAutocomplete({ onSelectAction, disabled }: Props) 
     const [baseName, setBaseName] = useState<string>("");
     const [siblingsExpanded, setSiblingsExpanded] = useState(false);
 
-    // Individual selection state
     const [checkedUuids, setCheckedUuids] = useState<Set<string>>(new Set());
     const [allChecked, setAllChecked] = useState(false);
 
@@ -56,15 +56,17 @@ export default function ScItemAutocomplete({ onSelectAction, disabled }: Props) 
         return () => document.removeEventListener("mousedown", handler);
     }, []);
 
+    // Re-trigger search when excludeShopItems changes, and we already have a query
     useEffect(() => {
-        if (selected) return;
+        if (selected || query.length < 2) return;
         if (debounceRef.current) clearTimeout(debounceRef.current);
-        if (query.length < 2) { setResults([]); setOpen(false); return; }
 
         debounceRef.current = setTimeout(async () => {
             setLoading(true);
             try {
-                const res = await fetch(`/api/sc-items/search?q=${encodeURIComponent(query)}`);
+                const params = new URLSearchParams({ q: query });
+                if (excludeShopItems) params.set("excludeShopItems", "true");
+                const res = await fetch(`/api/sc-items/search?${params}`);
                 const json = await res.json();
                 setResults(json.results ?? []);
                 setOpen(true);
@@ -74,7 +76,7 @@ export default function ScItemAutocomplete({ onSelectAction, disabled }: Props) 
                 setLoading(false);
             }
         }, 300);
-    }, [query, selected]);
+    }, [query, selected, excludeShopItems]);
 
     function emitSelection(
         item: ItemSearchResult,
@@ -97,7 +99,9 @@ export default function ScItemAutocomplete({ onSelectAction, disabled }: Props) 
         setSiblingsExpanded(false);
 
         try {
-            const res = await fetch(`/api/sc-items/search?siblingsFor=${encodeURIComponent(itemName)}`);
+            const params = new URLSearchParams({ siblingsFor: itemName });
+            if (excludeShopItems) params.set("excludeShopItems", "true");
+            const res = await fetch(`/api/sc-items/search?${params}`);
             const json = await res.json();
             const fetched: SiblingVariant[] = json.siblings ?? [];
             setSiblings(fetched);
@@ -220,7 +224,6 @@ export default function ScItemAutocomplete({ onSelectAction, disabled }: Props) 
                             {/* Header row: Select All + toggle */}
                             <div className="flex items-center justify-between">
                                 <label className="flex items-center gap-2.5 cursor-pointer">
-                                    {/* "Select all" checkbox – shows dash when partial */}
                                     <div
                                         className="relative flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors"
                                         style={{
@@ -273,7 +276,6 @@ export default function ScItemAutocomplete({ onSelectAction, disabled }: Props) 
                                                     borderLeft: `2px solid ${isChecked ? "rgba(79,195,220,0.35)" : "rgba(79,195,220,0.1)"}`,
                                                 }}
                                             >
-                                                {/* Checkbox */}
                                                 <div
                                                     className="relative flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border transition-colors"
                                                     style={{
@@ -291,7 +293,6 @@ export default function ScItemAutocomplete({ onSelectAction, disabled }: Props) 
                                                     {isChecked && <Check size={9} style={{ color: "rgba(79,195,220,0.9)" }} />}
                                                 </div>
 
-                                                {/* Name */}
                                                 <span
                                                     className="flex-1 text-[11px] truncate"
                                                     style={{

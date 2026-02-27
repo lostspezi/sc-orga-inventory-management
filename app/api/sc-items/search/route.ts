@@ -11,6 +11,7 @@ export type ScWikiItem = {
     manufacturer: { name: string } | null;
     description: { en_EN?: string } | null;
     is_base_variant: boolean;
+    uex_prices: { price_buy: number; price_sell: number; terminal_name: string }[];
 };
 
 export type ItemSearchResult = {
@@ -36,36 +37,37 @@ async function fetchScWikiItems(query: string, limit = 10): Promise<ScWikiItem[]
 
 /**
  * Extracts the base name from an item name by trying progressively shorter prefixes.
- * e.g. "Morozov-CH Backpack Brushdrift" → tries "Morozov-CH Backpack Brushdrift",
- *      "Morozov-CH Backpack", "Morozov-CH" until we find multiple matches.
+ * e.g. "Morozov-CH Backpack Brushdrift" → tries "Morozov-CH Backpack", "Morozov-CH"
  */
 function getBaseNameCandidates(name: string): string[] {
     const words = name.trim().split(/\s+/);
     const candidates: string[] = [];
-    // Try removing 1, 2, 3 words from the end
     for (let drop = 1; drop <= Math.min(3, words.length - 1); drop++) {
         candidates.push(words.slice(0, words.length - drop).join(" "));
     }
     return candidates;
 }
 
+function isSoldInShops(item: ScWikiItem): boolean {
+    return Array.isArray(item.uex_prices) && item.uex_prices.length > 0;
+}
+
 export async function GET(request: NextRequest) {
     const q = request.nextUrl.searchParams.get("q")?.trim() ?? "";
-    // Optional: if "siblings" mode is requested, find sibling variants for a selected item
     const siblingsFor = request.nextUrl.searchParams.get("siblingsFor")?.trim() ?? "";
+    const excludeShopItems = request.nextUrl.searchParams.get("excludeShopItems") === "true";
 
     if (siblingsFor) {
-        // Find all SC wiki items that share the same base name
         const candidates = getBaseNameCandidates(siblingsFor);
 
         for (const baseName of candidates) {
             if (baseName.length < 3) continue;
 
             const items = await fetchScWikiItems(baseName, 30);
-            // Only consider it a match if we find more than 1 item (otherwise it's not really a variant group)
             if (items.length > 1) {
                 const siblings = items
-                    .filter((item) => item.name !== siblingsFor) // exclude the selected item itself
+                    .filter((item) => item.name !== siblingsFor)
+                    .filter((item) => !excludeShopItems || !isSoldInShops(item))
                     .map((item) => ({
                         uuid: item.uuid,
                         name: item.name,
@@ -78,7 +80,6 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // No sibling group found
         return NextResponse.json({ baseName: siblingsFor, siblings: [] });
     }
 
@@ -106,7 +107,9 @@ export async function GET(request: NextRequest) {
         wikiResults = items
             .filter((item) => {
                 const normalized = item.name.trim().toLowerCase().replace(/\s+/g, " ");
-                return !localNames.has(normalized);
+                if (localNames.has(normalized)) return false;
+                if (excludeShopItems && isSoldInShops(item)) return false;
+                return true;
             })
             .slice(0, 8)
             .map((item) => ({
