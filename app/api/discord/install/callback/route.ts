@@ -1,50 +1,59 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getOrganizationBySlug, setOrganizationDiscordGuildId } from "@/lib/repositories/organization-repository";
+import {
+    getOrganizationBySlug,
+    setOrganizationDiscordGuildId,
+} from "@/lib/repositories/organization-repository";
 
 export const runtime = "nodejs";
+
+function redirectTo(path: string, req: Request) {
+    const baseUrl =
+        process.env.AUTH_URL ||
+        process.env.NEXTAUTH_URL ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        (() => {
+            const proto = req.headers.get("x-forwarded-proto") ?? "https";
+            const host =
+                req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "scoim.io";
+            return `${proto}://${host}`;
+        })();
+
+    return NextResponse.redirect(new URL(path, baseUrl));
+}
 
 export async function GET(req: Request) {
     const session = await auth();
 
     if (!session?.user?.id) {
-        return NextResponse.redirect(new URL("/login", req.url));
+        return redirectTo("/login", req);
     }
 
     const { searchParams } = new URL(req.url);
-
     const orgSlug = searchParams.get("state")?.trim() ?? "";
     const guildId = searchParams.get("guild_id")?.trim() ?? "";
 
     if (!orgSlug) {
-        return NextResponse.redirect(
-            new URL("/terminal?discordInstall=missing_state", req.url)
-        );
+        return redirectTo("/terminal?discordInstall=missing_state", req);
     }
 
     if (!guildId) {
-        return NextResponse.redirect(
-            new URL(`/terminal/orgs/${orgSlug}/members?discordInstall=missing_guild`, req.url)
-        );
+        return redirectTo(`/terminal/orgs/${orgSlug}/members?discordInstall=missing_guild`, req);
     }
 
     const org = await getOrganizationBySlug(orgSlug);
 
     if (!org) {
-        return NextResponse.redirect(new URL("/terminal?discordInstall=org_not_found", req.url));
+        return redirectTo("/terminal?discordInstall=org_not_found", req);
     }
 
     const currentMember = org.members.find((m) => m.userId === session.user!.id);
 
     if (!currentMember || !["owner", "admin"].includes(currentMember.role)) {
-        return NextResponse.redirect(
-            new URL(`/terminal/orgs/${orgSlug}/members?discordInstall=forbidden`, req.url)
-        );
+        return redirectTo(`/terminal/orgs/${orgSlug}/members?discordInstall=forbidden`, req);
     }
 
     await setOrganizationDiscordGuildId(orgSlug, guildId);
 
-    return NextResponse.redirect(
-        new URL(`/terminal/orgs/${orgSlug}/members?discordInstall=success`, req.url)
-    );
+    return redirectTo(`/terminal/orgs/${orgSlug}/members?discordInstall=success`, req);
 }
