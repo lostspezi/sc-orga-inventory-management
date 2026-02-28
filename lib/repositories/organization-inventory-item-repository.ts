@@ -164,6 +164,40 @@ export async function getOrganizationInventoryItemDocumentById(
         .findOne({ _id: new ObjectId(inventoryItemId) });
 }
 
+export async function getOrganizationInventoryItemViewById(
+    inventoryItemId: string
+): Promise<OrganizationInventoryItemView | null> {
+    if (!ObjectId.isValid(inventoryItemId)) return null;
+
+    const db = await getDb();
+
+    const entry = await db
+        .collection<OrganizationInventoryItemDocument>(COLLECTION)
+        .findOne({ _id: new ObjectId(inventoryItemId) });
+
+    if (!entry) return null;
+
+    const item = await db
+        .collection<ItemDocument>("items")
+        .findOne({ _id: entry.itemId });
+
+    if (!item) return null;
+
+    return {
+        inventoryItemId: entry._id,
+        itemId: item._id,
+        name: item.name,
+        normalizedName: item.normalizedName,
+        description: item.description,
+        category: item.category,
+        buyPrice: entry.buyPrice,
+        sellPrice: entry.sellPrice,
+        quantity: entry.quantity,
+        createdAt: entry.createdAt,
+        updatedAt: entry.updatedAt,
+    };
+}
+
 export async function adjustOrganizationInventoryItemQuantity(
     inventoryItemId: ObjectId,
     delta: number

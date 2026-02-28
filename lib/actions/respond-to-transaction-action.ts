@@ -4,8 +4,13 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
-import { getTransactionById, updateTransactionStatus } from "@/lib/repositories/organization-transaction-repository";
+import {
+    getTransactionById,
+    getTransactionViewById,
+    updateTransactionStatus,
+} from "@/lib/repositories/organization-transaction-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
+import { updateTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 
 export async function respondToTransactionAction(formData: FormData): Promise<void> {
     const session = await auth();
@@ -57,6 +62,13 @@ export async function respondToTransactionAction(formData: FormData): Promise<vo
         entityId: transactionId,
         message: auditMessage,
     });
+
+    if (tx.discordChannelId && tx.discordMessageId) {
+        const updatedView = await getTransactionViewById(transactionId);
+        if (updatedView) {
+            await updateTransactionEmbed(tx.discordChannelId, tx.discordMessageId, updatedView);
+        }
+    }
 
     revalidatePath(`/terminal/orgs/${tx.organizationSlug}/transactions`);
     revalidatePath(`/terminal/orgs/${tx.organizationSlug}/inventory`);

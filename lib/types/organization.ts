@@ -8,6 +8,7 @@ export type OrganizationDocument = {
     createdByUserId: string;
     members: OrganizationMember[];
     discordGuildId?: string;
+    discordTransactionChannelId?: string;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -61,6 +62,7 @@ export type OrganizationView = {
     createdByUsername?: string;
     members: OrganizationMemberView[];
     discordGuildId?: string;
+    discordTransactionChannelId?: string;
     createdAt: Date;
     updatedAt: Date;
 };

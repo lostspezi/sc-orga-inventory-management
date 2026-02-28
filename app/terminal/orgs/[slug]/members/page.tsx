@@ -3,8 +3,8 @@ import {getOrganizationViewBySlug} from "@/lib/repositories/organization-reposit
 import {getPendingOrganizationInvitesByOrganizationId} from "@/lib/repositories/organization-invite-repository";
 import DiscordInviteForm from "@/components/orgs/details/members/discord-invite-form";
 import PendingOrgInvitesList from "@/components/orgs/details/members/pending-org-invites-list";
-import ConnectDiscordServerCard from "@/components/orgs/details/members/connect-discord-server-card";
 import {auth} from "@/auth";
+import Link from "next/link";
 import RemoveMemberButton from "@/components/orgs/details/members/remove-member-button";
 import ChangeMemberRoleControl from "@/components/orgs/details/members/change-member-role-control";
 
@@ -163,7 +163,33 @@ export default async function OrgMembersPage({params}: Props) {
                 {org.discordGuildId ? (
                     <DiscordInviteForm organizationSlug={org.slug}/>
                 ) : (
-                    <ConnectDiscordServerCard organizationSlug={org.slug}/>
+                    <div
+                        className="rounded-lg border p-4"
+                        style={{
+                            borderColor: "rgba(79,195,220,0.12)",
+                            background: "rgba(7,18,28,0.18)",
+                        }}
+                    >
+                        <p
+                            className="text-[10px] uppercase tracking-[0.22em]"
+                            style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
+                        >
+                            Discord Invites
+                        </p>
+                        <p
+                            className="mt-2 text-sm"
+                            style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
+                        >
+                            Connect a Discord server to enable Discord-based invites.{" "}
+                            <Link
+                                href={`/terminal/orgs/${org.slug}/settings`}
+                                className="underline underline-offset-2"
+                                style={{ color: "rgba(79,195,220,0.7)" }}
+                            >
+                                Go to Settings
+                            </Link>
+                        </p>
+                    </div>
                 )}
 
                 {/* Pending invites */}

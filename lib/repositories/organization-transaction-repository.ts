@@ -23,6 +23,8 @@ function toView(doc: OrganizationTransactionDocument): OrganizationTransactionVi
         memberConfirmed: doc.memberConfirmed,
         adminConfirmed: doc.adminConfirmed,
         note: doc.note,
+        discordChannelId: doc.discordChannelId,
+        discordMessageId: doc.discordMessageId,
         createdAt: doc.createdAt.toISOString(),
         updatedAt: doc.updatedAt.toISOString(),
     };
@@ -100,6 +102,31 @@ export async function getTransactionById(
     return db
         .collection<OrganizationTransactionDocument>(COLLECTION)
         .findOne({ _id: new ObjectId(transactionId) });
+}
+
+export async function getTransactionViewById(
+    transactionId: string
+): Promise<OrganizationTransactionView | null> {
+    const doc = await getTransactionById(transactionId);
+    if (!doc) return null;
+    return toView(doc);
+}
+
+export async function setTransactionDiscordMessage(
+    transactionId: string,
+    channelId: string,
+    messageId: string
+): Promise<void> {
+    if (!ObjectId.isValid(transactionId)) return;
+
+    const db = await getDb();
+
+    await db
+        .collection<OrganizationTransactionDocument>(COLLECTION)
+        .updateOne(
+            { _id: new ObjectId(transactionId) },
+            { $set: { discordChannelId: channelId, discordMessageId: messageId, updatedAt: new Date() } }
+        );
 }
 
 export async function updateTransactionStatus(

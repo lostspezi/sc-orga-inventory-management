@@ -7,9 +7,13 @@ import { ObjectId } from "mongodb";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import { getOrganizationInventoryItemDocumentById } from "@/lib/repositories/organization-inventory-item-repository";
 import { getDb } from "@/lib/db";
-import { createOrganizationTransaction } from "@/lib/repositories/organization-transaction-repository";
+import {
+    createOrganizationTransaction,
+    setTransactionDiscordMessage,
+} from "@/lib/repositories/organization-transaction-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
 import type { ItemDocument } from "@/lib/types/item";
+import { sendTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 
 export type CreateTransactionActionState = {
     success: boolean;
@@ -119,6 +123,13 @@ export async function createTransactionAction(
         message: `Transaction requested: ${direction === "member_to_org" ? "sell" : "buy"} ${quantityRaw}x "${itemName}" at ${pricePerUnitRaw} aUEC/unit.`,
         metadata: { direction, quantity: quantityRaw, pricePerUnit: pricePerUnitRaw, totalPrice },
     });
+
+    if (org.discordTransactionChannelId) {
+        const embedResult = await sendTransactionEmbed(org.discordTransactionChannelId, transaction);
+        if (embedResult) {
+            await setTransactionDiscordMessage(transaction._id, embedResult.channelId, embedResult.messageId);
+        }
+    }
 
     revalidatePath(`/terminal/orgs/${org.slug}/transactions`);
     revalidatePath(`/terminal/orgs/${org.slug}/inventory`);

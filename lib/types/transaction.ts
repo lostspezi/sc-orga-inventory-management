@@ -25,6 +25,9 @@ export type OrganizationTransactionDocument = {
 
     note?: string;
 
+    discordChannelId?: string;
+    discordMessageId?: string;
+
     createdAt: Date;
     updatedAt: Date;
 };
@@ -53,6 +56,9 @@ export type OrganizationTransactionView = {
     adminConfirmed: boolean;
 
     note?: string;
+
+    discordChannelId?: string;
+    discordMessageId?: string;
 
     createdAt: string;
     updatedAt: string;

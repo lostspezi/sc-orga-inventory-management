@@ -1,5 +1,7 @@
 import { REST, Routes } from "discord.js";
 import { inviteCommand } from "@/lib/discord/bot/commands/invite";
+import { sellCommand } from "@/lib/discord/bot/commands/sell";
+import { buyCommand } from "@/lib/discord/bot/commands/buy";
 
 export async function registerSlashCommands() {
     const token = process.env.DISCORD_BOT_TOKEN;
@@ -15,6 +17,8 @@ export async function registerSlashCommands() {
 
     const commands = [
         inviteCommand.toJSON(),
+        sellCommand.toJSON(),
+        buyCommand.toJSON(),
     ];
 
     const rest = new REST({ version: "10" }).setToken(token);

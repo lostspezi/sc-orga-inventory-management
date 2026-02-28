@@ -322,5 +322,37 @@ async function mapOrganizationToView(
             joinedAt: m.joinedAt,
         })),
         discordGuildId: org.discordGuildId,
+        discordTransactionChannelId: org.discordTransactionChannelId,
     };
+}
+
+export async function unsetOrganizationDiscordGuildId(slug: string): Promise<boolean> {
+    const db = await getDb();
+
+    const result = await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { slug },
+        {
+            $unset: { discordGuildId: "" },
+            $set: { updatedAt: new Date() },
+        }
+    );
+
+    return result.modifiedCount > 0;
+}
+
+export async function setOrganizationDiscordTransactionChannelId(
+    slug: string,
+    channelId: string
+): Promise<boolean> {
+    const db = await getDb();
+
+    const update = channelId
+        ? { $set: { discordTransactionChannelId: channelId, updatedAt: new Date() } }
+        : { $unset: { discordTransactionChannelId: "" }, $set: { updatedAt: new Date() } };
+
+    const result = await db
+        .collection<OrganizationDocument>(COLLECTION)
+        .updateOne({ slug }, update);
+
+    return result.modifiedCount > 0;
 }

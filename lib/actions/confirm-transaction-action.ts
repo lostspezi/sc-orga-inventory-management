@@ -4,9 +4,14 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
-import { getTransactionById, updateTransactionStatus } from "@/lib/repositories/organization-transaction-repository";
+import {
+    getTransactionById,
+    getTransactionViewById,
+    updateTransactionStatus,
+} from "@/lib/repositories/organization-transaction-repository";
 import { adjustOrganizationInventoryItemQuantity } from "@/lib/repositories/organization-inventory-item-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
+import { updateTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 
 export async function confirmTransactionAction(formData: FormData): Promise<void> {
     const session = await auth();
@@ -80,6 +85,13 @@ export async function confirmTransactionAction(formData: FormData): Promise<void
             entityId: transactionId,
             message: `${isAdminOrOwner ? "Admin" : "Member"} confirmed in-game trade for "${tx.itemName}". Waiting for other party.`,
         });
+    }
+
+    if (tx.discordChannelId && tx.discordMessageId) {
+        const updatedView = await getTransactionViewById(transactionId);
+        if (updatedView) {
+            await updateTransactionEmbed(tx.discordChannelId, tx.discordMessageId, updatedView);
+        }
     }
 
     revalidatePath(`/terminal/orgs/${tx.organizationSlug}/transactions`);
