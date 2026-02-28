@@ -134,11 +134,12 @@ export async function sendTransactionEmbed(
         return null;
     }
 
-    if (!channel?.isTextBased()) return null;
+    if (!channel?.isTextBased() || !("send" in channel)) return null;
 
     try {
         const payload = buildTransactionMessagePayload(tx);
-        const message = await channel.send(payload);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const message = await (channel as any).send(payload);
         return { messageId: message.id, channelId };
     } catch {
         return null;
@@ -154,9 +155,10 @@ export async function updateTransactionEmbed(
 
     try {
         const channel = await client.channels.fetch(channelId);
-        if (!channel?.isTextBased()) return;
+        if (!channel?.isTextBased() || !("messages" in channel)) return;
 
-        const message = await channel.messages.fetch(messageId);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const message = await (channel as any).messages.fetch(messageId);
         await message.edit(buildTransactionMessagePayload(tx));
     } catch {
         // Silent fail — embed update is best-effort

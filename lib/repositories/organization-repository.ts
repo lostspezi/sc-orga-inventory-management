@@ -348,7 +348,7 @@ export async function setOrganizationDiscordTransactionChannelId(
 
     const update = channelId
         ? { $set: { discordTransactionChannelId: channelId, updatedAt: new Date() } }
-        : { $unset: { discordTransactionChannelId: "" }, $set: { updatedAt: new Date() } };
+        : { $unset: { discordTransactionChannelId: 1 as const }, $set: { updatedAt: new Date() } };
 
     const result = await db
         .collection<OrganizationDocument>(COLLECTION)

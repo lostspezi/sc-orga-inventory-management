@@ -146,3 +146,138 @@ export async function updateTransactionStatus(
 
     return result.modifiedCount > 0;
 }
+
+export async function getTransactionsUpdatedSince(
+    organizationId: ObjectId,
+    since: Date
+): Promise<OrganizationTransactionView[]> {
+    const db = await getDb();
+
+    const docs = await db
+        .collection<OrganizationTransactionDocument>(COLLECTION)
+        .find({ organizationId, updatedAt: { $gt: since } })
+        .sort({ updatedAt: -1 })
+        .toArray();
+
+    return docs.map(toView);
+}
+
+export async function getRecentCompletedTransactions(
+    organizationId: ObjectId,
+    limit = 10
+): Promise<OrganizationTransactionView[]> {
+    const db = await getDb();
+
+    const docs = await db
+        .collection<OrganizationTransactionDocument>(COLLECTION)
+        .find({ organizationId, status: "completed" })
+        .sort({ updatedAt: -1 })
+        .limit(limit)
+        .toArray();
+
+    return docs.map(toView);
+}
+
+export type DashboardStats = {
+    activeRequests: number;
+    completedThisMonth: number;
+    revenueThisMonth: number;
+};
+
+export async function getDashboardStats(organizationId: ObjectId): Promise<DashboardStats> {
+    const db = await getDb();
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const [activeRequests, completedThisMonth, revenueResult] = await Promise.all([
+        db.collection<OrganizationTransactionDocument>(COLLECTION).countDocuments({
+            organizationId,
+            status: { $in: ["requested", "approved"] },
+        }),
+        db.collection<OrganizationTransactionDocument>(COLLECTION).countDocuments({
+            organizationId,
+            status: "completed",
+            updatedAt: { $gte: startOfMonth },
+        }),
+        db.collection<OrganizationTransactionDocument>(COLLECTION).aggregate([
+            { $match: { organizationId, status: "completed", updatedAt: { $gte: startOfMonth } } },
+            { $group: { _id: null, total: { $sum: "$totalPrice" } } },
+        ]).toArray(),
+    ]);
+
+    return {
+        activeRequests,
+        completedThisMonth,
+        revenueThisMonth: (revenueResult[0]?.total as number | undefined) ?? 0,
+    };
+}
+
+export type DailyStats = {
+    date: string;
+    revenue: number;
+    sellCount: number;
+    buyCount: number;
+};
+
+export async function getDailyTransactionStats(
+    organizationId: ObjectId,
+    days = 30
+): Promise<DailyStats[]> {
+    const db = await getDb();
+
+    const since = new Date();
+    since.setDate(since.getDate() - (days - 1));
+    since.setHours(0, 0, 0, 0);
+
+    const docs = await db
+        .collection<OrganizationTransactionDocument>(COLLECTION)
+        .find({ organizationId, createdAt: { $gte: since } })
+        .toArray();
+
+    // Pre-fill every day with zeros
+    const map = new Map<string, DailyStats>();
+    for (let i = 0; i < days; i++) {
+        const d = new Date(since);
+        d.setDate(d.getDate() + i);
+        map.set(d.toISOString().slice(0, 10), { date: d.toISOString().slice(0, 10), revenue: 0, sellCount: 0, buyCount: 0 });
+    }
+
+    for (const doc of docs) {
+        const key = doc.createdAt.toISOString().slice(0, 10);
+        const entry = map.get(key);
+        if (!entry) continue;
+
+        if (doc.status === "completed") entry.revenue += doc.totalPrice;
+        if (doc.direction === "member_to_org") entry.sellCount++;
+        else entry.buyCount++;
+    }
+
+    return Array.from(map.values());
+}
+
+export type TopItem = { itemName: string; revenue: number; count: number };
+
+export async function getTopItemsByRevenue(
+    organizationId: ObjectId,
+    limit = 5
+): Promise<TopItem[]> {
+    const db = await getDb();
+
+    const results = await db
+        .collection<OrganizationTransactionDocument>(COLLECTION)
+        .aggregate([
+            { $match: { organizationId, status: "completed" } },
+            { $group: { _id: "$itemName", revenue: { $sum: "$totalPrice" }, count: { $sum: 1 } } },
+            { $sort: { revenue: -1 } },
+            { $limit: limit },
+        ])
+        .toArray();
+
+    return results.map((r) => ({
+        itemName: r._id as string,
+        revenue: r.revenue as number,
+        count: r.count as number,
+    }));
+}
