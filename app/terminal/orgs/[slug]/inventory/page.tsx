@@ -4,10 +4,15 @@ import {getOrganizationViewBySlug} from "@/lib/repositories/organization-reposit
 import {
     getOrganizationInventoryItemViewsByOrganizationId
 } from "@/lib/repositories/organization-inventory-item-repository";
+import {
+    getTransactionsByOrganizationId,
+    getTransactionsByMember,
+} from "@/lib/repositories/organization-transaction-repository";
 import CreateInventoryItemForm from "@/components/orgs/details/items/create-inventory-item-form";
 import HudAccordion from "@/components/ui/hud-accordion";
 import InventorySearchPanel from "@/components/orgs/details/items/inventory-search-panel";
 import ShowDeleteSuccessMessage from "@/components/orgs/details/items/show-delete-success-message";
+import type {OrganizationTransactionView} from "@/lib/types/transaction";
 
 type Props = {
     params: Promise<{ slug: string }>;
@@ -33,7 +38,14 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
     const canManageItems =
         !!currentMember && (currentMember.role === "owner" || currentMember.role === "admin");
 
-    const inventoryItems = await getOrganizationInventoryItemViewsByOrganizationId(org._id);
+    const [inventoryItems, allTransactions] = await Promise.all([
+        getOrganizationInventoryItemViewsByOrganizationId(org._id),
+        currentMember
+            ? canManageItems
+                ? getTransactionsByOrganizationId(org._id)
+                : getTransactionsByMember(org._id, session.user.id)
+            : Promise.resolve([] as OrganizationTransactionView[]),
+    ]);
 
     const serializedInventoryItems = inventoryItems.map((item) => ({
         inventoryItemId: item.inventoryItemId.toString(),
@@ -46,6 +58,14 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
         sellPrice: item.sellPrice,
         quantity: item.quantity,
     }));
+
+    const transactionsByItemId: Record<string, OrganizationTransactionView[]> = {};
+    for (const tx of allTransactions) {
+        if (!transactionsByItemId[tx.inventoryItemId]) {
+            transactionsByItemId[tx.inventoryItemId] = [];
+        }
+        transactionsByItemId[tx.inventoryItemId].push(tx);
+    }
 
     return (
         <>
@@ -81,7 +101,12 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                         <CreateInventoryItemForm organizationSlug={org.slug}/>
                     </HudAccordion>
                 )}
-                <InventorySearchPanel items={serializedInventoryItems} canManageItems={canManageItems} slug={org.slug}/>
+                <InventorySearchPanel
+                    items={serializedInventoryItems}
+                    canManageItems={canManageItems}
+                    slug={org.slug}
+                    transactionsByItemId={transactionsByItemId}
+                />
             </div>
         </>
     );

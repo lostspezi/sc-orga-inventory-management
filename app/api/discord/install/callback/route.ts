@@ -38,7 +38,7 @@ export async function GET(req: Request) {
     }
 
     if (!guildId) {
-        return redirectTo(`/terminal/orgs/${orgSlug}/members?discordInstall=missing_guild`, req);
+        return redirectTo(`/terminal/orgs/${orgSlug}/settings?discordInstall=missing_guild`, req);
     }
 
     const org = await getOrganizationBySlug(orgSlug);
@@ -50,10 +50,10 @@ export async function GET(req: Request) {
     const currentMember = org.members.find((m) => m.userId === session.user!.id);
 
     if (!currentMember || !["owner", "admin"].includes(currentMember.role)) {
-        return redirectTo(`/terminal/orgs/${orgSlug}/members?discordInstall=forbidden`, req);
+        return redirectTo(`/terminal/orgs/${orgSlug}/settings?discordInstall=forbidden`, req);
     }
 
     await setOrganizationDiscordGuildId(orgSlug, guildId);
 
-    return redirectTo(`/terminal/orgs/${orgSlug}/members?discordInstall=success`, req);
+    return redirectTo(`/terminal/orgs/${orgSlug}/settings?discordInstall=success`, req);
 }

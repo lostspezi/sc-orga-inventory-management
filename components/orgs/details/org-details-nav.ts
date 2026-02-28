@@ -1,5 +1,5 @@
 import {LucideIcon, PackageOpen} from "lucide-react";
-import { LayoutDashboard, Users, Logs } from "lucide-react";
+import { LayoutDashboard, Users, Logs, ArrowLeftRight, Settings2 } from "lucide-react";
 
 export type OrganizationRole = "owner" | "admin" | "member";
 
@@ -25,6 +25,12 @@ export const ORG_NAV_ITEMS: OrgNavItem[] = [
       icon: PackageOpen,
     },
     {
+        key: "transactions",
+        label: "Transactions",
+        href: (slug) => `/terminal/orgs/${slug}/transactions`,
+        icon: ArrowLeftRight,
+    },
+    {
         key: "members",
         label: "Members",
         href: (slug) => `/terminal/orgs/${slug}/members`,
@@ -37,5 +43,12 @@ export const ORG_NAV_ITEMS: OrgNavItem[] = [
         href: (slug) => `/terminal/orgs/${slug}/logs`,
         icon: Logs,
         allowedRoles: ["owner"],
+    },
+    {
+        key: "settings",
+        label: "Settings",
+        href: (slug) => `/terminal/orgs/${slug}/settings`,
+        icon: Settings2,
+        allowedRoles: ["owner", "admin"],
     },
 ];
