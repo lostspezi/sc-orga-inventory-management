@@ -151,3 +151,31 @@ export async function updateOrganizationInventoryItemInDb(input: {
 
     return result.modifiedCount > 0;
 }
+
+export async function getOrganizationInventoryItemDocumentById(
+    inventoryItemId: string
+): Promise<OrganizationInventoryItemDocument | null> {
+    if (!ObjectId.isValid(inventoryItemId)) return null;
+
+    const db = await getDb();
+
+    return db
+        .collection<OrganizationInventoryItemDocument>(COLLECTION)
+        .findOne({ _id: new ObjectId(inventoryItemId) });
+}
+
+export async function adjustOrganizationInventoryItemQuantity(
+    inventoryItemId: ObjectId,
+    delta: number
+): Promise<boolean> {
+    const db = await getDb();
+
+    const result = await db
+        .collection<OrganizationInventoryItemDocument>(COLLECTION)
+        .updateOne(
+            { _id: inventoryItemId },
+            { $inc: { quantity: delta }, $set: { updatedAt: new Date() } }
+        );
+
+    return result.modifiedCount > 0;
+}

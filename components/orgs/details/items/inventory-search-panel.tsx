@@ -3,6 +3,8 @@
 import {useMemo, useState} from "react";
 import {Search} from "lucide-react";
 import InventoryItemDetailsDialog from "@/components/orgs/details/items/inventory-item-details-dialog";
+import CreateTransactionDialog from "@/components/orgs/details/transactions/create-transaction-dialog";
+import type {OrganizationTransactionView} from "@/lib/types/transaction";
 
 type InventoryItem = {
     inventoryItemId: string;
@@ -20,31 +22,47 @@ type Props = {
     items: InventoryItem[];
     canManageItems: boolean;
     slug: string;
+    transactionsByItemId?: Record<string, OrganizationTransactionView[]>;
+};
+
+type TransactionIntent = {
+    inventoryItemId: string;
+    direction: "org_to_member" | "member_to_org";
 };
 
 function normalize(value: string) {
     return value.trim().toLowerCase();
 }
 
-export default function InventorySearchPanel({items, canManageItems, slug}: Props) {
+export default function InventorySearchPanel({items, canManageItems, slug, transactionsByItemId = {}}: Props) {
     const [query, setQuery] = useState("");
     const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [txIntent, setTxIntent] = useState<TransactionIntent | null>(null);
 
     const filteredItems = useMemo(() => {
         const q = normalize(query);
-
         if (!q) return items;
-
-        return items.filter((item) => {
-            return (
-                item.name.toLowerCase().includes(q) ||
-                item.normalizedName.includes(q) ||
-                item.category?.toLowerCase().includes(q) ||
-                item.description?.toLowerCase().includes(q)
-            );
-        });
+        return items.filter((item) =>
+            item.name.toLowerCase().includes(q) ||
+            item.normalizedName.includes(q) ||
+            item.category?.toLowerCase().includes(q) ||
+            item.description?.toLowerCase().includes(q)
+        );
     }, [items, query]);
+
+    const selectedTransactions = selectedItem
+        ? (transactionsByItemId[selectedItem.inventoryItemId] ?? [])
+        : [];
+
+    const inventoryItemOptions = items.map((item) => ({
+        inventoryItemId: item.inventoryItemId,
+        name: item.name,
+    }));
+
+    const openTransaction = (item: InventoryItem, direction: "org_to_member" | "member_to_org") => {
+        setTxIntent({ inventoryItemId: item.inventoryItemId, direction });
+    };
 
     return (
         <>
@@ -138,7 +156,7 @@ export default function InventorySearchPanel({items, canManageItems, slug}: Prop
                                     setSelectedItem(item);
                                     setDialogOpen(true);
                                 }}
-                                className="cursor-pointer rounded-md border p-4 text-left cursor-pointer transition"
+                                className="cursor-pointer rounded-md border p-4 text-left transition"
                                 style={{
                                     borderColor: "rgba(79,195,220,0.10)",
                                     background: "rgba(7,18,28,0.18)",
@@ -152,7 +170,6 @@ export default function InventorySearchPanel({items, canManageItems, slug}: Prop
                                     >
                                         {item.name}
                                     </h4>
-
                                     <p
                                         className="text-[11px]"
                                         style={{color: "rgba(200,220,232,0.38)", fontFamily: "var(--font-mono)"}}
@@ -175,11 +192,43 @@ export default function InventorySearchPanel({items, canManageItems, slug}: Prop
                                     <InfoRow label="Sell Price" value={String(item.sellPrice)}/>
                                     <QuantityRow label="Quantity" value={item.quantity}/>
                                 </div>
+
+                                <div className="mt-4 flex gap-2" onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                        type="button"
+                                        onClick={() => openTransaction(item, "org_to_member")}
+                                        className="flex-1 rounded border py-1.5 text-[10px] uppercase tracking-[0.15em] transition"
+                                        style={{
+                                            borderColor: "rgba(79,195,220,0.25)",
+                                            color: "rgba(79,195,220,0.8)",
+                                            background: "rgba(79,195,220,0.06)",
+                                            fontFamily: "var(--font-mono)",
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        Buy
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => openTransaction(item, "member_to_org")}
+                                        className="flex-1 rounded border py-1.5 text-[10px] uppercase tracking-[0.15em] transition"
+                                        style={{
+                                            borderColor: "rgba(80,210,120,0.25)",
+                                            color: "rgba(80,210,120,0.8)",
+                                            background: "rgba(80,210,120,0.06)",
+                                            fontFamily: "var(--font-mono)",
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        Sell
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
                 )}
             </div>
+
             <InventoryItemDetailsDialog
                 open={dialogOpen}
                 onCloseAction={() => setDialogOpen(false)}
@@ -187,7 +236,20 @@ export default function InventorySearchPanel({items, canManageItems, slug}: Prop
                 organizationSlug={slug}
                 item={selectedItem}
                 slug={slug}
+                transactions={selectedTransactions}
             />
+
+            {txIntent && (
+                <CreateTransactionDialog
+                    key={txIntent.inventoryItemId + "-" + txIntent.direction}
+                    open={true}
+                    onCloseAction={() => setTxIntent(null)}
+                    organizationSlug={slug}
+                    inventoryItems={inventoryItemOptions}
+                    defaultInventoryItemId={txIntent.inventoryItemId}
+                    defaultDirection={txIntent.direction}
+                />
+            )}
         </>
     );
 }

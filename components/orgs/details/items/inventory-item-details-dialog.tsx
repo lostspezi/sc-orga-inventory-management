@@ -5,6 +5,8 @@ import {useRouter} from "next/navigation";
 import {updateOrganizationInventoryItemAction} from "@/lib/actions/update-organization-inventory-item-action";
 import RemoveOrganizationInventoryItemButton
     from "@/components/orgs/details/items/remove-organization-inventory-item-button";
+import TransactionStatusBadge from "@/components/orgs/details/transactions/transaction-status-badge";
+import type {OrganizationTransactionView} from "@/lib/types/transaction";
 
 type Props = {
     open: boolean;
@@ -22,6 +24,7 @@ type Props = {
         quantity: number;
     } | null;
     slug: string;
+    transactions?: OrganizationTransactionView[];
 };
 
 const initialState = {
@@ -37,6 +40,7 @@ export default function InventoryItemDetailsDialog({
                                                        organizationSlug,
                                                        item,
                                                        slug,
+                                                       transactions = [],
                                                    }: Props) {
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const router = useRouter();
@@ -181,30 +185,58 @@ export default function InventoryItemDetailsDialog({
                                 </p>
 
                                 <div className="mt-3 space-y-2">
-                                    {[
-                                        "Incoming stock entry recorded",
-                                        "Price review pending",
-                                        "Awaiting live transaction implementation",
-                                    ].map((entry, index) => (
-                                        <div
-                                            key={index}
-                                            className="rounded-md border px-3 py-2"
-                                            style={{
-                                                borderColor: "rgba(79,195,220,0.08)",
-                                                background: "rgba(79,195,220,0.02)",
-                                            }}
+                                    {transactions.length === 0 ? (
+                                        <p
+                                            className="text-[11px]"
+                                            style={{color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)"}}
                                         >
-                                            <p
-                                                className="text-[11px]"
-                                                style={{
-                                                    color: "rgba(200,220,232,0.45)",
-                                                    fontFamily: "var(--font-mono)"
-                                                }}
-                                            >
-                                                [DUMMY] {entry}
-                                            </p>
-                                        </div>
-                                    ))}
+                                            No transactions for this item yet.
+                                        </p>
+                                    ) : (
+                                        transactions.map((tx) => {
+                                            const directionLabel =
+                                                tx.direction === "member_to_org" ? "Sell → Org" : "Buy ← Org";
+                                            const date = new Date(tx.createdAt).toLocaleDateString("en-US", {
+                                                month: "short",
+                                                day: "numeric",
+                                                year: "numeric",
+                                            });
+                                            return (
+                                                <div
+                                                    key={tx._id}
+                                                    className="rounded-md border px-3 py-2"
+                                                    style={{
+                                                        borderColor: "rgba(79,195,220,0.08)",
+                                                        background: "rgba(79,195,220,0.02)",
+                                                    }}
+                                                >
+                                                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <span
+                                                                className="text-[10px] uppercase"
+                                                                style={{color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)"}}
+                                                            >
+                                                                {directionLabel}
+                                                            </span>
+                                                            <TransactionStatusBadge status={tx.status}/>
+                                                        </div>
+                                                        <span
+                                                            className="text-[10px]"
+                                                            style={{color: "rgba(200,220,232,0.3)", fontFamily: "var(--font-mono)"}}
+                                                        >
+                                                            {date}
+                                                        </span>
+                                                    </div>
+                                                    <p
+                                                        className="mt-1 text-[11px]"
+                                                        style={{color: "rgba(200,220,232,0.5)", fontFamily: "var(--font-mono)"}}
+                                                    >
+                                                        {tx.quantity}x · {tx.totalPrice.toLocaleString()} aUEC total
+                                                    </p>
+                                                </div>
+                                            );
+                                        })
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -85,9 +85,15 @@ export type OrganizationAuditLogDocument = {
         | "item.created"
         | "inventory.item_added"
         | "inventory.item_removed"
-        | "inventory.item_updated";
+        | "inventory.item_updated"
+        | "transaction.requested"
+        | "transaction.approved"
+        | "transaction.rejected"
+        | "transaction.confirmed"
+        | "transaction.completed"
+        | "transaction.cancelled";
 
-    entityType: "organization" | "member" | "item" | "inventory_item";
+    entityType: "organization" | "member" | "item" | "inventory_item" | "transaction";
     entityId?: string;
 
     message: string;

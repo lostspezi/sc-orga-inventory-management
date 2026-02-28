@@ -1,0 +1,87 @@
+"use server";
+
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
+import { getTransactionById, updateTransactionStatus } from "@/lib/repositories/organization-transaction-repository";
+import { adjustOrganizationInventoryItemQuantity } from "@/lib/repositories/organization-inventory-item-repository";
+import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
+
+export async function confirmTransactionAction(formData: FormData): Promise<void> {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+        redirect("/login");
+    }
+
+    const transactionId = String(formData.get("transactionId") ?? "").trim();
+
+    if (!transactionId) return;
+
+    const tx = await getTransactionById(transactionId);
+
+    if (!tx || tx.status !== "approved") return;
+
+    const org = await getOrganizationBySlug(tx.organizationSlug);
+
+    if (!org) return;
+
+    const actor = org.members.find((m) => m.userId === session.user!.id);
+
+    if (!actor) return;
+
+    const isAdminOrOwner = actor.role === "owner" || actor.role === "admin";
+    const isMemberParty = tx.memberId === session.user!.id;
+
+    if (!isAdminOrOwner && !isMemberParty) return;
+
+    const patch: { memberConfirmed?: boolean; adminConfirmed?: boolean } = {};
+
+    if (isAdminOrOwner && !tx.adminConfirmed) {
+        patch.adminConfirmed = true;
+    } else if (isMemberParty && !tx.memberConfirmed) {
+        patch.memberConfirmed = true;
+    } else {
+        return; // already confirmed by this side
+    }
+
+    const updatedMemberConfirmed = patch.memberConfirmed ?? tx.memberConfirmed;
+    const updatedAdminConfirmed = patch.adminConfirmed ?? tx.adminConfirmed;
+
+    if (updatedMemberConfirmed && updatedAdminConfirmed) {
+        await updateTransactionStatus(transactionId, { ...patch, status: "completed" });
+
+        // Adjust inventory: member_to_org = org gains stock; org_to_member = org loses stock
+        const delta = tx.direction === "member_to_org" ? tx.quantity : -tx.quantity;
+        await adjustOrganizationInventoryItemQuantity(tx.inventoryItemId, delta);
+
+        await createOrganizationAuditLog({
+            organizationId: tx.organizationId,
+            organizationSlug: tx.organizationSlug,
+            actorUserId: session.user.id,
+            actorUsername: session.user.name ?? "Unknown",
+            action: "transaction.completed",
+            entityType: "transaction",
+            entityId: transactionId,
+            message: `Transaction for "${tx.itemName}" completed. Inventory adjusted by ${delta > 0 ? "+" : ""}${delta}.`,
+            metadata: { delta, direction: tx.direction, quantity: tx.quantity },
+        });
+    } else {
+        await updateTransactionStatus(transactionId, patch);
+
+        await createOrganizationAuditLog({
+            organizationId: tx.organizationId,
+            organizationSlug: tx.organizationSlug,
+            actorUserId: session.user.id,
+            actorUsername: session.user.name ?? "Unknown",
+            action: "transaction.confirmed",
+            entityType: "transaction",
+            entityId: transactionId,
+            message: `${isAdminOrOwner ? "Admin" : "Member"} confirmed in-game trade for "${tx.itemName}". Waiting for other party.`,
+        });
+    }
+
+    revalidatePath(`/terminal/orgs/${tx.organizationSlug}/transactions`);
+    revalidatePath(`/terminal/orgs/${tx.organizationSlug}/inventory`);
+}
