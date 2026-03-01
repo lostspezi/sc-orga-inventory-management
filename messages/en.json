@@ -408,6 +408,100 @@
       "published": "{count, plural, one {# post published} other {# posts published}}"
     }
   },
+  "home": {
+    "systemsOnline": "Systems Online",
+    "accessTerminal": "Access Terminal",
+    "goToTerminal": "Go to Terminal",
+    "hero": {
+      "eyebrow": "United Empire of Earth — Org Commerce",
+      "title1": "Trade Command",
+      "title2": "Center",
+      "subtitle": "For Star Citizen Organizations",
+      "desc": "Real-time inventory management, Discord-native buy/sell requests with interactive bot embeds, full transaction approval workflows, and live dashboards — all in one HUD built for serious orgs.",
+      "pill1": "Real-time Dashboard",
+      "pill2": "Discord Bot Included",
+      "pill3": "Buy / Sell Workflows",
+      "pill4": "Auto Stock Tracking",
+      "pill5": "Role-based Access",
+      "pill6": "Full Audit Trail"
+    },
+    "howItWorks": {
+      "label": "How it works",
+      "step1Title": "Create Request",
+      "step1Desc": "A member initiates a buy or sell via the web terminal or Discord slash commands — with inventory autocomplete.",
+      "step2Title": "Review & Approve",
+      "step2Desc": "An admin approves or rejects — directly in the terminal or by clicking a button on the Discord embed.",
+      "step3Title": "In-Game Trade",
+      "step3Desc": "Both parties complete the exchange inside Star Citizen, then each confirms it in the terminal or via Discord.",
+      "step4Title": "Auto Complete",
+      "step4Desc": "Once both sides confirm, the transaction closes and inventory stock adjusts automatically. Charts update in real time."
+    },
+    "features": {
+      "label": "Features",
+      "dashboardTitle": "Live Dashboard",
+      "dashboardDesc": "Real-time KPI cards, 30-day revenue and volume charts, top-performing items, and a live activity feed — all updated the moment any transaction changes state.",
+      "dashboardTag1": "SSE push",
+      "dashboardTag2": "SVG charts",
+      "dashboardTag3": "Auto-refresh",
+      "inventoryTitle": "Inventory Management",
+      "inventoryDesc": "Full catalogue of org goods with auto stock sync. Stock adjusts automatically when trades complete. Search the Star Citizen item database directly.",
+      "inventoryTag1": "Auto stock sync",
+      "inventoryTag2": "SC item search",
+      "workflowsTitle": "Buy & Sell Workflows",
+      "workflowsDesc": "Full multi-step lifecycle: request → approve → in-game confirm → complete. Either party can initiate, both must confirm before stock moves.",
+      "workflowsTag1": "5 statuses",
+      "workflowsTag2": "Dual confirm",
+      "workflowsTag3": "Cancel anytime",
+      "discordTitle": "Discord Bot",
+      "discordDesc": "Members use /sell and /buy with inventory autocomplete. Every transaction posts a rich embed with live action buttons — approve, confirm, cancel — without leaving Discord.",
+      "discordTag1": "Slash commands",
+      "discordTag2": "Autocomplete",
+      "discordTag3": "Interactive embeds",
+      "membersTitle": "Member Management",
+      "membersDesc": "Three-tier role system (owner / admin / member). Invite new members via Discord DM. Manage roles and remove members from the web terminal.",
+      "membersTag1": "3 roles",
+      "membersTag2": "Discord invites",
+      "auditTitle": "Audit Trail",
+      "auditDesc": "Every action — transaction changes, inventory edits, role changes, settings updates — is recorded with timestamp and actor. Full history for org owners.",
+      "auditTag1": "Immutable log",
+      "auditTag2": "Owner only",
+      "notificationsTitle": "Real-time Notifications",
+      "notificationsDesc": "Instant in-app alerts for every transaction update, invitation, and org event. Live bell icon in the terminal header with unread badge, notification inbox, and one-click mark-as-read.",
+      "notificationsTag1": "Bell badge",
+      "notificationsTag2": "Notification inbox",
+      "notificationsTag3": "Live SSE"
+    },
+    "discordSection": {
+      "label": "Discord Integration",
+      "tag": "Discord-native trading",
+      "title": "Never leave Discord",
+      "desc": "The bot integrates fully into your org's workflow. Members create trade requests, admins approve them, and both sides confirm the in-game exchange — all through interactive Discord embeds that update in real time.",
+      "sellDesc": "Sell goods to the org — picks items from your inventory with live autocomplete",
+      "buyDesc": "Request to purchase from the org stockpile — same autocomplete experience",
+      "footnote": "↳ One Discord server per org · Notification channel configurable in Settings"
+    },
+    "dashboardSection": {
+      "label": "Live Dashboard",
+      "tag": "Always in the know",
+      "title": "Real-time org overview",
+      "desc": "The dashboard connects live to the server. The moment any transaction changes state — anywhere, by anyone — you receive a toast notification and the dashboard silently refreshes. No manual refresh, no polling.",
+      "li1": "KPI cards: active requests, completed trades, revenue, item count",
+      "li2": "30-day revenue area chart and sell/buy volume bar chart",
+      "li3": "Top 5 items by revenue with percentage bars",
+      "li4": "Last 10 completed trades at a glance",
+      "li5": "Live activity feed with real-time status updates"
+    },
+    "cta": {
+      "eyebrow": "Ready to launch",
+      "title": "Get your org online",
+      "desc": "Log in with Discord, create an organization, connect the bot to your server, and start managing trades in minutes.",
+      "button": "Access Terminal"
+    },
+    "footer": {
+      "disclaimer": "Unauthorized access is a violation of UEE code §18.7 — v0.1.0",
+      "legalButton": "Legal"
+    }
+  },
   "faq": {
     "eyebrow": "Documentation",
     "title": "Help & FAQ",

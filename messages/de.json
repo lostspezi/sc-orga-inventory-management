@@ -408,6 +408,100 @@
       "published": "{count, plural, one {# Beitrag veröffentlicht} other {# Beiträge veröffentlicht}}"
     }
   },
+  "home": {
+    "systemsOnline": "Systeme Online",
+    "accessTerminal": "Terminal aufrufen",
+    "goToTerminal": "Zum Terminal",
+    "hero": {
+      "eyebrow": "Vereintes Erdreich — Org-Handel",
+      "title1": "Handels-Kommando-",
+      "title2": "Zentrale",
+      "subtitle": "Für Star Citizen Organisationen",
+      "desc": "Echtzeit-Lagerverwaltung, Discord-native Kauf-/Verkaufsanfragen mit interaktiven Bot-Einbettungen, vollständige Transaktions-Workflows und Live-Dashboards — alles in einem HUD für ernsthafte Orgs.",
+      "pill1": "Echtzeit-Dashboard",
+      "pill2": "Discord-Bot inklusive",
+      "pill3": "Kauf-/Verkauf-Workflows",
+      "pill4": "Automatisches Lagertracking",
+      "pill5": "Rollenbasierter Zugriff",
+      "pill6": "Vollständiges Audit-Log"
+    },
+    "howItWorks": {
+      "label": "So funktioniert es",
+      "step1Title": "Anfrage stellen",
+      "step1Desc": "Ein Mitglied initiiert einen Kauf oder Verkauf über das Web-Terminal oder Discord-Slash-Commands — mit Lager-Autocomplete.",
+      "step2Title": "Prüfen & Genehmigen",
+      "step2Desc": "Ein Admin genehmigt oder lehnt ab — direkt im Terminal oder per Klick auf einen Button im Discord-Embed.",
+      "step3Title": "Im Spiel tauschen",
+      "step3Desc": "Beide Parteien schließen den Tausch in Star Citizen ab und bestätigen ihn jeweils im Terminal oder via Discord.",
+      "step4Title": "Auto-Abschluss",
+      "step4Desc": "Sobald beide Seiten bestätigen, wird die Transaktion abgeschlossen und der Lagerbestand automatisch angepasst. Charts aktualisieren sich in Echtzeit."
+    },
+    "features": {
+      "label": "Funktionen",
+      "dashboardTitle": "Live-Dashboard",
+      "dashboardDesc": "Echtzeit-KPI-Karten, 30-Tage-Umsatz- und Volumen-Charts, Topprodukte und ein Live-Aktivitätsfeed — alles aktualisiert sich, sobald sich ein Transaktionsstatus ändert.",
+      "dashboardTag1": "SSE-Push",
+      "dashboardTag2": "SVG-Charts",
+      "dashboardTag3": "Auto-Refresh",
+      "inventoryTitle": "Lagerverwaltung",
+      "inventoryDesc": "Vollständiger Katalog der Org-Waren mit automatischer Lagersynchro. Der Bestand wird automatisch angepasst, wenn Trades abgeschlossen werden. Direktsuche in der Star Citizen Artikeldatenbank.",
+      "inventoryTag1": "Auto-Lagersynchro",
+      "inventoryTag2": "SC-Artikelsuche",
+      "workflowsTitle": "Kauf- & Verkauf-Workflows",
+      "workflowsDesc": "Vollständiger mehrstufiger Ablauf: Anfrage → Genehmigung → In-Game-Bestätigung → Abschluss. Beide Parteien müssen bestätigen, bevor der Bestand bewegt wird.",
+      "workflowsTag1": "5 Status",
+      "workflowsTag2": "Doppelte Bestätigung",
+      "workflowsTag3": "Jederzeit abbrechen",
+      "discordTitle": "Discord-Bot",
+      "discordDesc": "Mitglieder nutzen /sell und /buy mit Lager-Autocomplete. Jede Transaktion postet ein Rich-Embed mit Live-Aktionsbuttons — genehmigen, bestätigen, abbrechen — ohne Discord zu verlassen.",
+      "discordTag1": "Slash-Befehle",
+      "discordTag2": "Autocomplete",
+      "discordTag3": "Interaktive Embeds",
+      "membersTitle": "Mitgliederverwaltung",
+      "membersDesc": "Drei-Stufen-Rollensystem (Eigentümer / Admin / Mitglied). Neue Mitglieder per Discord-DM einladen. Rollen verwalten und Mitglieder über das Web-Terminal entfernen.",
+      "membersTag1": "3 Rollen",
+      "membersTag2": "Discord-Einladungen",
+      "auditTitle": "Audit-Log",
+      "auditDesc": "Jede Aktion — Transaktionsänderungen, Lagerbearbeitungen, Rollenänderungen, Einstellungsänderungen — wird mit Zeitstempel und Akteur aufgezeichnet. Vollständige Historie für Org-Eigentümer.",
+      "auditTag1": "Unveränderliches Log",
+      "auditTag2": "Nur für Eigentümer",
+      "notificationsTitle": "Echtzeit-Benachrichtigungen",
+      "notificationsDesc": "Sofortige In-App-Benachrichtigungen für jede Transaktionsänderung, Einladung und Org-Aktivität. Live-Glocken-Symbol im Terminal-Header mit ungelesenen Badge, Benachrichtigungsposteingang und Ein-Klick-Als-Gelesen.",
+      "notificationsTag1": "Glocken-Badge",
+      "notificationsTag2": "Benachrichtigungs-Posteingang",
+      "notificationsTag3": "Live SSE"
+    },
+    "discordSection": {
+      "label": "Discord-Integration",
+      "tag": "Discord-nativer Handel",
+      "title": "Discord nie verlassen",
+      "desc": "Der Bot integriert sich vollständig in den Workflow deiner Org. Mitglieder erstellen Handelsanfragen, Admins genehmigen sie, und beide Seiten bestätigen den In-Game-Tausch — alles über interaktive Discord-Einbettungen, die sich in Echtzeit aktualisieren.",
+      "sellDesc": "Waren an die Org verkaufen — mit Live-Autocomplete aus dem Lager",
+      "buyDesc": "Kauf aus dem Org-Lager anfragen — gleiche Autocomplete-Erfahrung",
+      "footnote": "↳ Ein Discord-Server pro Org · Benachrichtigungskanal in den Einstellungen konfigurierbar"
+    },
+    "dashboardSection": {
+      "label": "Live-Dashboard",
+      "tag": "Immer auf dem Laufenden",
+      "title": "Echtzeit-Org-Übersicht",
+      "desc": "Das Dashboard verbindet sich live mit dem Server. Sobald sich irgendwo ein Transaktionsstatus ändert, erhältst du eine Toast-Benachrichtigung und das Dashboard aktualisiert sich still im Hintergrund. Kein manuelles Aktualisieren.",
+      "li1": "KPI-Karten: aktive Anfragen, abgeschlossene Trades, Umsatz, Artikelanzahl",
+      "li2": "30-Tage-Umsatz-Flächenchart und Kauf/Verkauf-Volumen-Balkendiagramm",
+      "li3": "Top 5 Artikel nach Umsatz mit prozentualen Balken",
+      "li4": "Die letzten 10 abgeschlossenen Trades auf einen Blick",
+      "li5": "Live-Aktivitätsfeed mit Echtzeit-Statusupdates"
+    },
+    "cta": {
+      "eyebrow": "Bereit zum Start",
+      "title": "Deine Org online bringen",
+      "desc": "Mit Discord einloggen, eine Organisation erstellen, den Bot mit deinem Server verbinden und in wenigen Minuten Trades verwalten.",
+      "button": "Terminal aufrufen"
+    },
+    "footer": {
+      "disclaimer": "Unbefugter Zugriff verstößt gegen UEE-Code §18.7 — v0.1.0",
+      "legalButton": "Impressum"
+    }
+  },
   "faq": {
     "eyebrow": "Dokumentation",
     "title": "Hilfe & FAQ",
