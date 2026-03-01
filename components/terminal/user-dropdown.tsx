@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Settings, LogOut, ChevronDown } from "lucide-react";
+import { Settings, LogOut, ChevronDown, Bell } from "lucide-react";
 import { signOutAction } from "@/lib/actions";
 
 type Props = {
@@ -129,6 +129,27 @@ export default function UserDropdown({ userName, userImage }: Props) {
 
                     {/* Menu items */}
                     <div className="p-1.5">
+                        <Link
+                            href="/terminal/notifications"
+                            onClick={() => setOpen(false)}
+                            className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors"
+                            style={{
+                                fontFamily: "var(--font-mono)",
+                                color: "rgba(200,220,232,0.65)",
+                            }}
+                            onMouseEnter={(e) => {
+                                (e.currentTarget as HTMLElement).style.background = "rgba(79,195,220,0.07)";
+                                (e.currentTarget as HTMLElement).style.color = "rgba(200,220,232,0.9)";
+                            }}
+                            onMouseLeave={(e) => {
+                                (e.currentTarget as HTMLElement).style.background = "transparent";
+                                (e.currentTarget as HTMLElement).style.color = "rgba(200,220,232,0.65)";
+                            }}
+                        >
+                            <Bell size={14} style={{ color: "rgba(79,195,220,0.55)" }} />
+                            <span className="uppercase tracking-widest">Notifications</span>
+                        </Link>
+
                         <Link
                             href="/terminal/settings"
                             onClick={() => setOpen(false)}
