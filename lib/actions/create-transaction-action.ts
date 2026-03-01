@@ -14,6 +14,7 @@ import {
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
 import type { ItemDocument } from "@/lib/types/item";
 import { sendTransactionEmbed } from "@/lib/discord/send-transaction-embed";
+import { notifyMany } from "@/lib/notify";
 
 export type CreateTransactionActionState = {
     success: boolean;
@@ -123,6 +124,25 @@ export async function createTransactionAction(
         message: `Transaction requested: ${direction === "member_to_org" ? "sell" : "buy"} ${quantityRaw}x "${itemName}" at ${pricePerUnitRaw} aUEC/unit.`,
         metadata: { direction, quantity: quantityRaw, pricePerUnit: pricePerUnitRaw, totalPrice },
     });
+
+    // Notify relevant org members
+    const txLink = `/terminal/orgs/${org.slug}/transactions`;
+    const directionLabel = direction === "member_to_org" ? "sell" : "buy";
+    if (member.role === "member") {
+        // Member initiated → notify all admins/owners
+        const adminIds = org.members
+            .filter((m) => (m.role === "admin" || m.role === "owner") && m.userId !== session.user.id)
+            .map((m) => m.userId);
+        await notifyMany(
+            adminIds,
+            "trade.requested",
+            "New Trade Request",
+            `${session.user.name ?? "A member"} wants to ${directionLabel} ${quantityRaw}x ${itemName}.`,
+            txLink
+        );
+    } else {
+        // Admin initiated → notify the member (themselves here, so skip — no self-notifications needed)
+    }
 
     if (org.discordTransactionChannelId) {
         const embedResult = await sendTransactionEmbed(org.discordTransactionChannelId, transaction);

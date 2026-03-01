@@ -11,6 +11,7 @@ import {
 } from "@/lib/repositories/organization-transaction-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
 import { updateTransactionEmbed } from "@/lib/discord/send-transaction-embed";
+import { notify } from "@/lib/notify";
 
 export async function respondToTransactionAction(formData: FormData): Promise<void> {
     const session = await auth();
@@ -62,6 +63,28 @@ export async function respondToTransactionAction(formData: FormData): Promise<vo
         entityId: transactionId,
         message: auditMessage,
     });
+
+    // Notify the member about the decision (only when admin/owner responds)
+    if (isAdminOrOwner && tx.memberId !== session.user!.id) {
+        const txLink = `/terminal/orgs/${tx.organizationSlug}/transactions`;
+        if (response === "approved") {
+            await notify(
+                tx.memberId,
+                "trade.approved",
+                "Trade Approved",
+                `Your trade for ${tx.itemName} has been approved. Confirm in-game delivery.`,
+                txLink
+            );
+        } else {
+            await notify(
+                tx.memberId,
+                "trade.rejected",
+                "Trade Rejected",
+                `Your trade for ${tx.itemName} has been rejected.`,
+                txLink
+            );
+        }
+    }
 
     if (tx.discordChannelId && tx.discordMessageId) {
         const updatedView = await getTransactionViewById(transactionId);

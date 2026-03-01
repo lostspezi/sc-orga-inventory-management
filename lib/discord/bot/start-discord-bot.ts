@@ -3,7 +3,7 @@ import { registerCoreDiscordBotEvents } from "@/lib/discord/bot/register-core-ev
 import {registerSlashCommands} from "@/lib/discord/bot/register-slash-commands";
 
 declare global {
-    // eslint-disable-next-line no-var
+     
     var __discordBotStarted: boolean | undefined;
 }
 

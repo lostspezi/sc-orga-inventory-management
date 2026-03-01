@@ -8,6 +8,7 @@ import {
     markOrganizationInviteAccepted,
 } from "@/lib/repositories/organization-invite-repository";
 import { getDiscordAccountByUserId } from "@/lib/repositories/auth-account-repository";
+import { notify } from "@/lib/notify";
 import { ArrowLeft, LogIn, ShieldAlert, Clock3, Link2Off, CheckCircle2 } from "lucide-react";
 import React from "react";
 import InviteSuccessRedirect from "@/components/invite/invite-success-redirect";
@@ -149,6 +150,17 @@ export default async function InviteAcceptPage({ params }: Props) {
     }
 
     await markOrganizationInviteAccepted(invite._id);
+
+    // Notify the inviter
+    if (invite.invitedByUserId && !alreadyMember) {
+        await notify(
+            invite.invitedByUserId,
+            "invite.accepted",
+            "Invite Accepted",
+            `${session.user.name ?? "A user"} accepted your invite and joined ${org.name}.`,
+            `/terminal/orgs/${org.slug}/members`
+        );
+    }
 
     const targetUrl = `/terminal/orgs/${org.slug}`;
 

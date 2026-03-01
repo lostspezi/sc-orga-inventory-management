@@ -5,7 +5,7 @@ import { registerGuildDeleteEvent } from "@/lib/discord/bot/events/guild-delete"
 import {registerInteractionCreateEvent} from "@/lib/discord/bot/commands/interaction-create";
 
 declare global {
-    // eslint-disable-next-line no-var
+     
     var __discordBotEventsRegistered: boolean | undefined;
 }
 
