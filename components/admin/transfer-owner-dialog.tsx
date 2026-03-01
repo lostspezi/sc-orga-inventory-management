@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { OrganizationMemberView } from "@/lib/types/organization";
 import { superAdminTransferOwnerAction } from "@/lib/actions/super-admin-transfer-owner-action";
 
@@ -14,6 +15,8 @@ type Props = {
 export default function TransferOwnerDialog({ orgSlug, orgName, members }: Props) {
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const router = useRouter();
+    const t = useTranslations("adminComponents");
+    const tc = useTranslations("common");
 
     const nonOwners = members.filter((m) => m.role !== "owner");
 
@@ -58,7 +61,7 @@ export default function TransferOwnerDialog({ orgSlug, orgName, members }: Props
                 className="sc-btn sc-btn-outline"
                 style={{ fontSize: "0.75rem", padding: "0.25rem 0.65rem" }}
             >
-                Transfer Owner
+                {t("transferOwner")}
             </button>
 
             <dialog
@@ -85,13 +88,13 @@ export default function TransferOwnerDialog({ orgSlug, orgName, members }: Props
                                 className="mb-1 text-[10px] uppercase tracking-[0.3em]"
                                 style={{ color: "rgba(240,165,0,0.5)", fontFamily: "var(--font-mono)" }}
                             >
-                                SUPER ADMIN · TRANSFER
+                                {t("transferLabel")}
                             </p>
                             <h2
                                 className="text-lg font-semibold uppercase tracking-[0.08em]"
                                 style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}
                             >
-                                Transfer Ownership
+                                {t("transferTitle")}
                             </h2>
                             <p
                                 className="mt-1 text-sm"
@@ -112,7 +115,7 @@ export default function TransferOwnerDialog({ orgSlug, orgName, members }: Props
                                 background: "rgba(79,195,220,0.04)",
                             }}
                         >
-                            CLOSE
+                            {tc("close").toUpperCase()}
                         </button>
                     </div>
 
@@ -121,7 +124,7 @@ export default function TransferOwnerDialog({ orgSlug, orgName, members }: Props
                             className="text-sm"
                             style={{ color: "rgba(240,165,0,0.7)", fontFamily: "var(--font-mono)" }}
                         >
-                            No eligible members to transfer ownership to.
+                            {t("noEligibleMembers")}
                         </p>
                     ) : (
                         <div className="space-y-4">
@@ -134,7 +137,7 @@ export default function TransferOwnerDialog({ orgSlug, orgName, members }: Props
                                         fontFamily: "var(--font-mono)",
                                     }}
                                 >
-                                    New Owner
+                                    {t("newOwner")}
                                 </label>
                                 <select
                                     id="transfer-target"
@@ -171,7 +174,7 @@ export default function TransferOwnerDialog({ orgSlug, orgName, members }: Props
                                     fontFamily: "var(--font-mono)",
                                 }}
                             >
-                                The current owner will be demoted to admin. This action is logged.
+                                {t("transferWarning")}
                             </div>
 
                             <div className="flex justify-end gap-2 pt-1">
@@ -180,7 +183,7 @@ export default function TransferOwnerDialog({ orgSlug, orgName, members }: Props
                                     onClick={close}
                                     className="sc-btn sc-btn-outline"
                                 >
-                                    Cancel
+                                    {tc("cancel")}
                                 </button>
                                 <button
                                     type="button"
@@ -195,7 +198,7 @@ export default function TransferOwnerDialog({ orgSlug, orgName, members }: Props
                                         color: "rgba(240,165,0,0.9)",
                                     }}
                                 >
-                                    {isPending ? "Transferring…" : "Confirm Transfer"}
+                                    {isPending ? t("transferring") : t("confirmTransfer")}
                                 </button>
                             </div>
                         </div>

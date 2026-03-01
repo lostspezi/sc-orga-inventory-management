@@ -1,4 +1,5 @@
 import { CheckCircle } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import type { OrganizationTransactionView } from "@/lib/types/transaction";
 
 function formatDate(iso: string): string {
@@ -10,11 +11,13 @@ function formatDate(iso: string): string {
     });
 }
 
-export default function RecentCompletedList({
+export default async function RecentCompletedList({
     transactions,
 }: {
     transactions: OrganizationTransactionView[];
 }) {
+    const t = await getTranslations("recentTrades");
+
     return (
         <div
             className="rounded-lg border p-4"
@@ -27,7 +30,7 @@ export default function RecentCompletedList({
                 className="mb-3 text-[10px] uppercase tracking-[0.25em]"
                 style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
             >
-                Recent Completed Trades
+                {t("title")}
             </p>
 
             {transactions.length === 0 ? (
@@ -41,13 +44,13 @@ export default function RecentCompletedList({
                         className="text-[11px] uppercase tracking-[0.15em]"
                         style={{ color: "rgba(80,210,120,0.3)", fontFamily: "var(--font-mono)" }}
                     >
-                        No completed trades yet.
+                        {t("empty")}
                     </p>
                 </div>
             ) : (
                 <div className="space-y-2">
                     {transactions.map((tx) => {
-                        const dirLabel = tx.direction === "member_to_org" ? "Sell" : "Buy";
+                        const dirLabel = tx.direction === "member_to_org" ? t("sell") : t("buy");
                         const dirColor =
                             tx.direction === "member_to_org"
                                 ? "rgba(80,210,120,0.75)"

@@ -1,6 +1,7 @@
 import {notFound, redirect} from "next/navigation";
 import {getOrganizationViewBySlug} from "@/lib/repositories/organization-repository";
 import {getPendingOrganizationInvitesByOrganizationId} from "@/lib/repositories/organization-invite-repository";
+import {getTranslations} from "next-intl/server";
 import DiscordInviteForm from "@/components/orgs/details/members/discord-invite-form";
 import PendingOrgInvitesList from "@/components/orgs/details/members/pending-org-invites-list";
 import {auth} from "@/auth";
@@ -30,6 +31,7 @@ export default async function OrgMembersPage({params}: Props) {
     const currentMember = org.members.find((m) => m.userId === session?.user?.id);
 
     const isAdminOrOwner = currentMember && (currentMember.role === "admin" || currentMember.role === "owner");
+    const t = await getTranslations("members");
 
     if (!currentMember || !isAdminOrOwner) {
         return (
@@ -44,13 +46,13 @@ export default async function OrgMembersPage({params}: Props) {
                     className="text-lg font-semibold uppercase tracking-[0.08em]"
                     style={{color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)"}}
                 >
-                    Forbidden
+                    {t("forbidden")}
                 </h2>
                 <p
                     className="mt-2 text-sm"
                     style={{color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)"}}
                 >
-                    Only organization admins & owners can access member management.
+                    {t("forbiddenMessage")}
                 </p>
             </div>
         );
@@ -65,19 +67,19 @@ export default async function OrgMembersPage({params}: Props) {
                     className="text-[10px] uppercase tracking-[0.25em]"
                     style={{color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)"}}
                 >
-                    Members
+                    {t("eyebrow")}
                 </p>
                 <h2
                     className="mt-1 text-lg font-semibold uppercase tracking-[0.08em]"
                     style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
                 >
-                    Member Management
+                    {t("title")}
                 </h2>
                 <p
                     className="mt-1 text-sm"
                     style={{color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)"}}
                 >
-                    Invite users, manage roles, and review pending member onboarding.
+                    {t("description")}
                 </p>
             </div>
 
@@ -95,13 +97,13 @@ export default async function OrgMembersPage({params}: Props) {
                             className="text-[10px] uppercase tracking-[0.25em]"
                             style={{color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)"}}
                         >
-                            Active Members
+                            {t("activeMembers")}
                         </p>
                         <h3
                             className="mt-1 text-base font-semibold uppercase tracking-[0.08em]"
                             style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
                         >
-                            {org.members.length} Registered
+                            {t("activeMembersCount", { count: org.members.length })}
                         </h3>
                     </div>
                 </div>
@@ -174,19 +176,19 @@ export default async function OrgMembersPage({params}: Props) {
                             className="text-[10px] uppercase tracking-[0.22em]"
                             style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                         >
-                            Discord Invites
+                            {t("discordInvites")}
                         </p>
                         <p
                             className="mt-2 text-sm"
                             style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                         >
-                            Connect a Discord server to enable Discord-based invites.{" "}
+                            {t("discordNotConnected")}{" "}
                             <Link
                                 href={`/terminal/orgs/${org.slug}/settings`}
                                 className="underline underline-offset-2"
                                 style={{ color: "rgba(79,195,220,0.7)" }}
                             >
-                                Go to Settings
+                                {t("goToSettings")}
                             </Link>
                         </p>
                     </div>
@@ -205,13 +207,13 @@ export default async function OrgMembersPage({params}: Props) {
                             className="text-[10px] uppercase tracking-[0.25em]"
                             style={{color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)"}}
                         >
-                            Pending Invitations
+                            {t("pendingInvitations")}
                         </p>
                         <h3
                             className="mt-1 text-base font-semibold uppercase tracking-[0.08em]"
                             style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
                         >
-                            Open Invites
+                            {t("openInvites")}
                         </h3>
                     </div>
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Hash, Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type ChannelOption = {
     id: string;
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export default function DiscordChannelSelect({ organizationSlug, currentChannelId }: Props) {
+    const t = useTranslations("orgSettings");
     const [channels, setChannels] = useState<ChannelOption[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState("");
@@ -105,7 +107,7 @@ export default function DiscordChannelSelect({ organizationSlug, currentChannelI
                 className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                 style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
             >
-                Discord Notification Channel
+                {t("channelLabel")}
             </label>
 
             <input
@@ -127,7 +129,7 @@ export default function DiscordChannelSelect({ organizationSlug, currentChannelI
                     value={query}
                     onChange={handleInputChange}
                     onFocus={() => { if (!selected && channels.length > 0) setIsOpen(true); }}
-                    placeholder={isLoading ? "Loading channels…" : "Search channels…"}
+                    placeholder={isLoading ? t("loadingChannels") : t("searchChannels")}
                     disabled={isLoading || !!errorMessage}
                     autoComplete="off"
                     className="w-full rounded-md border bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-[rgba(79,195,220,0.5)] disabled:opacity-50"
@@ -192,11 +194,11 @@ export default function DiscordChannelSelect({ organizationSlug, currentChannelI
                     <span style={{ color: "rgba(240,165,0,0.85)" }}>{errorMessage}</span>
                 ) : selected ? (
                     <span style={{ color: "rgba(79,195,220,0.7)" }}>
-                        Selected: #{selected.name}
+                        {t("channelSelected", { name: selected.name })}
                     </span>
                 ) : (
                     <span style={{ color: "rgba(200,220,232,0.35)" }}>
-                        Leave empty to disable transaction notifications.
+                        {t("noChannel")}
                     </span>
                 )}
             </div>

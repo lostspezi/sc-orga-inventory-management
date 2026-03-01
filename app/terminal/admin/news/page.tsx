@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { getAllAppNews } from "@/lib/repositories/app-news-repository";
 import type { AppNewsView } from "@/lib/types/app-news";
 import {
@@ -17,6 +18,7 @@ function formatDate(date: string) {
 }
 
 export default async function AdminNewsPage() {
+    const t = await getTranslations("news.admin");
     const docs = await getAllAppNews();
     const posts: AppNewsView[] = docs.map((p) => ({
         _id: p._id.toString(),
@@ -49,19 +51,19 @@ export default async function AdminNewsPage() {
                                 className="mb-1 text-xs uppercase tracking-[0.35em]"
                                 style={{ color: "rgba(240,165,0,0.5)", fontFamily: "var(--font-display)" }}
                             >
-                                Super Admin
+                                {t("superAdmin")}
                             </p>
                             <h1
                                 className="text-2xl font-semibold uppercase tracking-[0.08em] sm:text-3xl"
                                 style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}
                             >
-                                News &amp; Updates
+                                {t("title")}
                             </h1>
                             <p
                                 className="mt-1 text-sm"
                                 style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                             >
-                                {posts.length} post{posts.length !== 1 ? "s" : ""} published.
+                                {t("published", { count: posts.length })}
                             </p>
                         </div>
                         <div className="shrink-0 pt-1">
@@ -87,7 +89,7 @@ export default async function AdminNewsPage() {
                             className="p-6 text-sm"
                             style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                         >
-                            No posts yet. Create the first one.
+                            {t("noPosts")}
                         </p>
                     ) : (
                         <ul className="divide-y" style={{ borderColor: "rgba(79,195,220,0.08)" }}>

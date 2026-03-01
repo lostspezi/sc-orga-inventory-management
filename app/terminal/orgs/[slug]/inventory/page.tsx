@@ -1,5 +1,6 @@
 import {notFound, redirect} from "next/navigation";
 import {auth} from "@/auth";
+import {getTranslations} from "next-intl/server";
 import {getOrganizationViewBySlug} from "@/lib/repositories/organization-repository";
 import {
     getOrganizationInventoryItemViewsByOrganizationId
@@ -37,6 +38,8 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
     const currentMember = org.members.find((m) => m.userId === session?.user?.id);
     const canManageItems =
         !!currentMember && (currentMember.role === "owner" || currentMember.role === "admin");
+
+    const t = await getTranslations("inventory");
 
     const [inventoryItems, allTransactions] = await Promise.all([
         getOrganizationInventoryItemViewsByOrganizationId(org._id),
@@ -76,27 +79,27 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                         className="text-[10px] uppercase tracking-[0.25em]"
                         style={{color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)"}}
                     >
-                        Inventory
+                        {t("eyebrow")}
                     </p>
                     <h2
                         className="mt-1 text-lg font-semibold uppercase tracking-[0.08em]"
                         style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
                     >
-                        Item Management
+                        {t("title")}
                     </h2>
                     <p
                         className="mt-1 text-sm"
                         style={{color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)"}}
                     >
-                        View all inventory entries. Owners and admins can add and configure items.
+                        {t("description")}
                     </p>
                 </div>
 
                 {canManageItems && (
                     <HudAccordion
-                        eyebrow="Inventory"
-                        title="Add Item"
-                        description="Create a new item or reuse an existing one for this organization."
+                        eyebrow={t("eyebrow")}
+                        title={t("addItem")}
+                        description={t("addItemDesc")}
                     >
                         <CreateInventoryItemForm organizationSlug={org.slug}/>
                     </HudAccordion>

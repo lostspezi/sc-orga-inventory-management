@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import type { OrganizationInviteDocument } from "@/lib/types/organization";
 
 type Props = {
@@ -5,6 +8,8 @@ type Props = {
 };
 
 export default function PendingOrgInvitesList({ invites }: Props) {
+    const t = useTranslations("members");
+
     if (invites.length === 0) {
         return (
             <div
@@ -18,13 +23,13 @@ export default function PendingOrgInvitesList({ invites }: Props) {
                     className="text-sm uppercase tracking-[0.12em]"
                     style={{ color: "rgba(240,165,0,0.8)", fontFamily: "var(--font-display)" }}
                 >
-                    No Pending Invites
+                    {t("noPendingInvites")}
                 </p>
                 <p
                     className="mt-2 text-xs"
                     style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                 >
-                    There are currently no open invitations for this organization.
+                    {t("noPendingInvitesDesc")}
                 </p>
             </div>
         );
@@ -40,6 +45,8 @@ export default function PendingOrgInvitesList({ invites }: Props) {
 }
 
 function PendingInviteCard({ invite }: { invite: OrganizationInviteDocument }) {
+    const t = useTranslations("members");
+
     const expiresAt = new Date(invite.expiresAt).toLocaleString("en-GB", {
         dateStyle: "medium",
         timeStyle: "short",
@@ -58,7 +65,7 @@ function PendingInviteCard({ invite }: { invite: OrganizationInviteDocument }) {
                     className="text-sm uppercase tracking-[0.08em]"
                     style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                 >
-                    {invite.deliveryMethod === "discord_dm" ? "Discord DM Invite" : "Invite"}
+                    {invite.deliveryMethod === "discord_dm" ? t("discordDmInvite") : t("invite")}
                 </div>
 
                 <span
@@ -76,16 +83,16 @@ function PendingInviteCard({ invite }: { invite: OrganizationInviteDocument }) {
             <div className="space-y-1 text-[11px]" style={{ fontFamily: "var(--font-mono)" }}>
                 {invite.discordUserId && (
                     <p style={{ color: "rgba(200,220,232,0.5)" }}>
-                        Discord User ID: {invite.discordUserId}
+                        {t("discordUserIdLabel")}: {invite.discordUserId}
                     </p>
                 )}
 
                 <p style={{ color: "rgba(200,220,232,0.42)" }}>
-                    Invited by: {invite.invitedByUsername ?? invite.invitedByUserId}
+                    {t("invitedByLabel")}: {invite.invitedByUsername ?? invite.invitedByUserId}
                 </p>
 
                 <p style={{ color: "rgba(200,220,232,0.35)" }}>
-                    Expires: {expiresAt}
+                    {t("expiresLabel")}: {expiresAt}
                 </p>
             </div>
         </div>

@@ -5,6 +5,7 @@ import {
     Search, Database, Globe, Loader2, X,
     Layers, ChevronDown, ChevronUp, Check
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { ItemSearchResult } from "@/app/api/sc-items/search/route";
 
 type SiblingVariant = {
@@ -29,6 +30,7 @@ type Props = {
 };
 
 export default function ScItemAutocomplete({ onSelectAction, disabled, excludeShopItems = false }: Props) {
+    const t = useTranslations("inventory");
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<ItemSearchResult[]>([]);
     const [loading, setLoading] = useState(false);
@@ -175,7 +177,7 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
                         if (selected) { setSelected(null); setSiblings([]); setBaseName(""); setCheckedUuids(new Set()); setAllChecked(false); onSelectAction(null); }
                         setQuery(e.target.value);
                     }}
-                    placeholder="Search Star Citizen items..."
+                    placeholder={t("searchItems")}
                     className="sc-input w-full pl-9! pr-8!"
                     autoComplete="off"
                     disabled={disabled}
@@ -199,7 +201,7 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
                     }}
                 >
                     {selected.source === "local" ? <Database size={10} /> : <Globe size={10} />}
-                    {selected.source === "local" ? "From local database" : "From Star Citizen Wiki"}
+                    {selected.source === "local" ? t("fromLocalDb") : t("fromWiki")}
                 </div>
             )}
 
@@ -209,15 +211,15 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
                     {siblingsLoading ? (
                         <div className="flex items-center gap-2">
                             <Loader2 size={12} className="animate-spin" style={{ color: "rgba(79,195,220,0.5)" }} />
-                            <span className="text-[10px]" style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}>Searching for variants...</span>
+                            <span className="text-[10px]" style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}>{t("searchingVariants")}</span>
                         </div>
                     ) : siblings.length === 0 ? (
-                        <p className="text-[10px]" style={{ color: "rgba(200,220,232,0.3)", fontFamily: "var(--font-mono)" }}>No other variants found for this item.</p>
+                        <p className="text-[10px]" style={{ color: "rgba(200,220,232,0.3)", fontFamily: "var(--font-mono)" }}>{t("noVariants")}</p>
                     ) : (
                         <>
                             {baseName && baseName !== selected.name && (
                                 <p className="text-[10px]" style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}>
-                                    Grouped by: <span style={{ color: "rgba(79,195,220,0.7)" }}>{baseName}</span>
+                                    {t("groupedBy", { name: baseName })}
                                 </p>
                             )}
 
@@ -243,7 +245,7 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
                                         {someChecked && <span style={{ color: "rgba(79,195,220,0.9)", fontSize: 10, lineHeight: 1 }}>–</span>}
                                     </div>
                                     <span className="text-xs" style={{ color: allChecked ? "rgba(200,220,232,0.8)" : "rgba(200,220,232,0.5)", fontFamily: "var(--font-mono)" }}>
-                                        {allChecked ? "All variants selected" : someChecked ? `${checkedUuids.size} of ${siblings.length} selected` : "Select variants to import"}
+                                        {allChecked ? t("allVariants") : someChecked ? t("variantCount", { selected: checkedUuids.size, total: siblings.length }) : t("selectVariants")}
                                     </span>
                                     <span className="text-[10px]" style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}>
                                         <Layers size={9} className="inline mr-1 -mt-0.5" />
@@ -258,7 +260,7 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
                                     style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                                 >
                                     {siblingsExpanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-                                    {siblingsExpanded ? "Hide" : "Show"}
+                                    {siblingsExpanded ? t("hide") : t("show")}
                                 </button>
                             </div>
 
@@ -360,7 +362,7 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
 
             {open && results.length === 0 && !loading && query.length >= 2 && (
                 <div className="absolute z-50 mt-1 w-full rounded-lg border px-3 py-3 text-[11px]" style={{ borderColor: "rgba(79,195,220,0.14)", background: "rgba(7,14,24,0.98)", color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}>
-                    No items found for &quot;{query}&quot;
+                    {t("noItemsFound", { query })}
                 </div>
             )}
         </div>

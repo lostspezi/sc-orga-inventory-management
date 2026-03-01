@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const tabs = [
-    { label: "Overview", href: "/terminal/admin" },
-    { label: "Organizations", href: "/terminal/admin/organizations" },
-    { label: "Discord Servers", href: "/terminal/admin/discord-servers" },
-    { label: "News", href: "/terminal/admin/news" },
-];
+import { useTranslations } from "next-intl";
 
 export default function AdminNav() {
     const pathname = usePathname();
+    const t = useTranslations("adminNav");
+
+    const tabs = [
+        { label: t("overview"), href: "/terminal/admin" },
+        { label: t("organizations"), href: "/terminal/admin/organizations" },
+        { label: t("discordServers"), href: "/terminal/admin/discord-servers" },
+        { label: t("news"), href: "/terminal/admin/news" },
+    ];
 
     return (
         <nav

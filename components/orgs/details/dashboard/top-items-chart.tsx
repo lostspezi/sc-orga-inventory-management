@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import type { TopItem } from "@/lib/repositories/organization-transaction-repository";
 
 function formatRevenue(v: number): string {
@@ -14,7 +15,9 @@ const BAR_COLORS = [
     "rgba(220,120,80,0.75)",
 ];
 
-export default function TopItemsChart({ items }: { items: TopItem[] }) {
+export default async function TopItemsChart({ items }: { items: TopItem[] }) {
+    const t = await getTranslations("charts");
+
     if (items.length === 0) {
         return (
             <div
@@ -28,13 +31,13 @@ export default function TopItemsChart({ items }: { items: TopItem[] }) {
                     className="mb-3 text-[10px] uppercase tracking-[0.25em]"
                     style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                 >
-                    Top Items · Revenue
+                    {t("topItems")}
                 </p>
                 <p
                     className="py-4 text-center text-[11px]"
                     style={{ color: "rgba(200,220,232,0.25)", fontFamily: "var(--font-mono)" }}
                 >
-                    No completed transactions yet.
+                    {t("noTopItems")}
                 </p>
             </div>
         );
@@ -54,7 +57,7 @@ export default function TopItemsChart({ items }: { items: TopItem[] }) {
                 className="mb-3 text-[10px] uppercase tracking-[0.25em]"
                 style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
             >
-                Top Items · Revenue
+                {t("topItems")}
             </p>
 
             <div className="space-y-3">

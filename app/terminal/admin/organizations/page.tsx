@@ -1,5 +1,6 @@
 import { getAllOrganizationsForAdmin } from "@/lib/repositories/organization-repository";
 import TransferOwnerDialog from "@/components/admin/transfer-owner-dialog";
+import { getTranslations } from "next-intl/server";
 
 export const metadata = { title: "Admin · Organizations" };
 
@@ -8,7 +9,10 @@ function formatDate(date: Date) {
 }
 
 export default async function AdminOrganizationsPage() {
-    const rows = await getAllOrganizationsForAdmin();
+    const [rows, t] = await Promise.all([
+        getAllOrganizationsForAdmin(),
+        getTranslations("adminOrgs"),
+    ]);
 
     return (
         <main className="px-4 py-6 sm:px-6">
@@ -31,19 +35,19 @@ export default async function AdminOrganizationsPage() {
                         className="mb-1 text-xs uppercase tracking-[0.35em]"
                         style={{ color: "rgba(240,165,0,0.5)", fontFamily: "var(--font-display)" }}
                     >
-                        Super Admin
+                        {t("eyebrow")}
                     </p>
                     <h1
                         className="text-2xl font-semibold uppercase tracking-[0.08em] sm:text-3xl"
                         style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}
                     >
-                        Organizations
+                        {t("title")}
                     </h1>
                     <p
                         className="mt-1 text-sm"
                         style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                     >
-                        {rows.length} organization{rows.length !== 1 ? "s" : ""} registered.
+                        {t("orgCount", { count: rows.length })}
                     </p>
                     <div
                         className="absolute -bottom-px left-8 right-8 h-px"
@@ -63,7 +67,7 @@ export default async function AdminOrganizationsPage() {
                             className="p-6 text-sm"
                             style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                         >
-                            No organizations found.
+                            {t("noOrgs")}
                         </p>
                     ) : (
                         <div className="overflow-x-auto">
@@ -78,7 +82,7 @@ export default async function AdminOrganizationsPage() {
                                             color: "rgba(79,195,220,0.5)",
                                         }}
                                     >
-                                        {["Org Name", "Slug", "Owner", "Members", "Discord", "Created", ""].map(
+                                        {[t("colName"), t("colSlug"), t("colOwner"), t("colMembers"), t("colDiscord"), t("colCreated"), ""].map(
                                             (h) => (
                                                 <th
                                                     key={h}
@@ -109,7 +113,7 @@ export default async function AdminOrganizationsPage() {
                                             <td className="px-4 py-3">
                                                 {ownerUsername ?? (
                                                     <span style={{ color: "rgba(200,220,232,0.3)" }}>
-                                                        unknown
+                                                        {t("unknownOwner")}
                                                     </span>
                                                 )}
                                             </td>
@@ -117,7 +121,7 @@ export default async function AdminOrganizationsPage() {
                                             <td className="px-4 py-3">
                                                 {org.discordGuildId ? (
                                                     <span style={{ color: "rgba(88,196,120,0.8)" }}>
-                                                        connected
+                                                        {t("connected")}
                                                     </span>
                                                 ) : (
                                                     <span style={{ color: "rgba(200,220,232,0.25)" }}>

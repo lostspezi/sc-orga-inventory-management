@@ -1,4 +1,5 @@
 import { Activity, CheckCircle, TrendingUp, Package } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import type { DashboardStats } from "@/lib/repositories/organization-transaction-repository";
 
 type KpiCardProps = {
@@ -61,7 +62,9 @@ type Props = {
     inventoryItemCount: number;
 };
 
-export default function DashboardKpiCards({ stats, inventoryItemCount }: Props) {
+export default async function DashboardKpiCards({ stats, inventoryItemCount }: Props) {
+    const t = await getTranslations("kpi");
+
     const revenueFormatted =
         stats.revenueThisMonth >= 1_000_000
             ? `${(stats.revenueThisMonth / 1_000_000).toFixed(1)}M`
@@ -73,30 +76,30 @@ export default function DashboardKpiCards({ stats, inventoryItemCount }: Props) 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <KpiCard
                 icon={<Activity size={16} />}
-                label="Active Requests"
+                label={t("activeRequests")}
                 value={String(stats.activeRequests)}
-                sub="pending approval"
+                sub={t("pendingApproval")}
                 color="rgba(240,165,0,1)"
             />
             <KpiCard
                 icon={<CheckCircle size={16} />}
-                label="Completed"
+                label={t("completed")}
                 value={String(stats.completedThisMonth)}
-                sub="this month"
+                sub={t("completedThis")}
                 color="rgba(80,210,120,1)"
             />
             <KpiCard
                 icon={<TrendingUp size={16} />}
-                label="Revenue"
-                value={`${revenueFormatted} aUEC`}
-                sub="this month"
+                label={t("revenue")}
+                value={`${revenueFormatted} ${t("currency")}`}
+                sub={t("completedThis")}
                 color="rgba(79,195,220,1)"
             />
             <KpiCard
                 icon={<Package size={16} />}
-                label="Inventory"
+                label={t("inventory")}
                 value={String(inventoryItemCount)}
-                sub="listed items"
+                sub={t("listedItems")}
                 color="rgba(160,120,220,1)"
             />
         </div>

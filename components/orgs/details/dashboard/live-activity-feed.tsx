@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeftRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { ActivityEntry } from "@/components/orgs/details/dashboard/dashboard-shell";
 
 const STATUS_COLOR: Record<string, string> = {
@@ -11,19 +12,11 @@ const STATUS_COLOR: Record<string, string> = {
     cancelled:  "rgba(140,140,160,0.65)",
 };
 
-const STATUS_LABEL: Record<string, string> = {
-    requested: "Requested",
-    approved:  "Approved",
-    completed: "Completed",
-    rejected:  "Rejected",
-    cancelled: "Cancelled",
-};
-
-function timeAgo(ms: number): string {
+function timeAgo(ms: number, t: ReturnType<typeof useTranslations>): string {
     const diff = Math.floor((Date.now() - ms) / 1000);
-    if (diff < 60) return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    return `${Math.floor(diff / 3600)}h ago`;
+    if (diff < 60) return t("timeAgoSec", { n: diff });
+    if (diff < 3600) return t("timeAgoMin", { n: Math.floor(diff / 60) });
+    return t("timeAgoHour", { n: Math.floor(diff / 3600) });
 }
 
 export default function LiveActivityFeed({
@@ -33,6 +26,18 @@ export default function LiveActivityFeed({
     entries: ActivityEntry[];
     isConnected: boolean;
 }) {
+    const t = useTranslations("dashboard");
+    const td = useTranslations("transactions");
+    const tr = useTranslations("recentTrades");
+
+    const STATUS_LABEL: Record<string, string> = {
+        requested: td("statusRequested"),
+        approved:  td("statusApproved"),
+        completed: td("statusCompleted"),
+        rejected:  td("statusRejected"),
+        cancelled: td("statusCancelled"),
+    };
+
     return (
         <div
             className="rounded-lg border p-4"
@@ -46,7 +51,7 @@ export default function LiveActivityFeed({
                     className="text-[10px] uppercase tracking-[0.25em]"
                     style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                 >
-                    Live Activity Feed
+                    {t("liveActivity")}
                 </p>
                 <div className="flex items-center gap-1.5">
                     <span
@@ -63,7 +68,7 @@ export default function LiveActivityFeed({
                             fontFamily: "var(--font-mono)",
                         }}
                     >
-                        {isConnected ? "Live" : "Connecting..."}
+                        {isConnected ? t("live") : t("connecting")}
                     </span>
                 </div>
             </div>
@@ -79,7 +84,7 @@ export default function LiveActivityFeed({
                         className="text-[11px] uppercase tracking-[0.15em]"
                         style={{ color: "rgba(79,195,220,0.3)", fontFamily: "var(--font-mono)" }}
                     >
-                        Waiting for activity...
+                        {t("waitingActivity")}
                     </p>
                 </div>
             ) : (
@@ -88,7 +93,7 @@ export default function LiveActivityFeed({
                         const tx = entry.transaction;
                         const color = STATUS_COLOR[tx.status] ?? STATUS_COLOR.cancelled;
                         const label = STATUS_LABEL[tx.status] ?? tx.status;
-                        const dirLabel = tx.direction === "member_to_org" ? "Sell" : "Buy";
+                        const dirLabel = tx.direction === "member_to_org" ? tr("sell") : tr("buy");
 
                         return (
                             <div
@@ -122,7 +127,7 @@ export default function LiveActivityFeed({
                                     className="w-10 shrink-0 text-right text-[10px]"
                                     style={{ color: "rgba(200,220,232,0.25)", fontFamily: "var(--font-mono)" }}
                                 >
-                                    {timeAgo(entry.at)}
+                                    {timeAgo(entry.at, t)}
                                 </span>
                             </div>
                         );

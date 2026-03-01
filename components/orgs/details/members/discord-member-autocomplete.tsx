@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type DiscordGuildMemberOption = {
     userId: string;
@@ -23,6 +24,7 @@ export default function DiscordMemberAutocomplete({
                                                       name = "discordUserId",
                                                       required = true,
                                                   }: Props) {
+    const t = useTranslations("members");
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<DiscordGuildMemberOption[]>([]);
     const [selected, setSelected] = useState<DiscordGuildMemberOption | null>(null);
@@ -70,7 +72,7 @@ export default function DiscordMemberAutocomplete({
                     setResults([]);
                     setIsOpen(false);
                     setErrorMessage(
-                        data.message ?? "Could not load Discord members."
+                        data.message ?? t("loadError")
                     );
                     return;
                 }
@@ -82,7 +84,7 @@ export default function DiscordMemberAutocomplete({
                 if (isCancelled) return;
                 setResults([]);
                 setIsOpen(false);
-                setErrorMessage("Could not load Discord members.");
+                setErrorMessage(t("loadError"));
             } finally {
                 if (!isCancelled) {
                     setIsLoading(false);
@@ -94,7 +96,7 @@ export default function DiscordMemberAutocomplete({
             isCancelled = true;
             clearTimeout(timeout);
         };
-    }, [trimmedQuery, organizationSlug, selected]);
+    }, [trimmedQuery, organizationSlug, selected, t]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -131,7 +133,7 @@ export default function DiscordMemberAutocomplete({
                 className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                 style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
             >
-                Discord Member
+                {t("discordMemberLabel")}
             </label>
 
             {/* hidden submitted value */}
@@ -161,7 +163,7 @@ export default function DiscordMemberAutocomplete({
                     onFocus={() => {
                         if (results.length > 0) setIsOpen(true);
                     }}
-                    placeholder="Search Discord members..."
+                    placeholder={t("searchMembers")}
                     className="sc-input w-full"
                     style={{ paddingLeft: "2.75rem", paddingRight: "2.5rem" }}
                     autoComplete="off"
@@ -250,19 +252,19 @@ export default function DiscordMemberAutocomplete({
 
                 {!selected && isLoading && (
                     <span style={{ color: "rgba(79,195,220,0.55)" }}>
-                        Searching Discord members…
+                        {t("searchingMembers")}
                     </span>
                 )}
 
                 {!selected && !isLoading && !errorMessage && trimmedQuery && results.length === 0 && (
                     <span style={{ color: "rgba(240,165,0,0.8)" }}>
-                        No matching members found.
+                        {t("noMembersFound")}
                     </span>
                 )}
 
                 {!selected && !isLoading && !trimmedQuery && (
                     <span style={{ color: "rgba(200,220,232,0.35)" }}>
-                        Start typing to search members from the connected Discord server.
+                        {t("startTyping")}
                     </span>
                 )}
 

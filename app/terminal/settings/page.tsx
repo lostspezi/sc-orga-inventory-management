@@ -4,6 +4,7 @@ import Image from "next/image";
 import { getOrganizationViewsByUserId } from "@/lib/repositories/organization-repository";
 import LeaveOrgButton from "@/components/settings/leave-org-button";
 import DeleteAccountButton from "@/components/settings/delete-account-button";
+import { getTranslations } from "next-intl/server";
 
 export const metadata = { title: "User Settings" };
 
@@ -14,7 +15,11 @@ export default async function SettingsPage() {
         redirect("/login");
     }
 
-    const orgs = await getOrganizationViewsByUserId(session.user.id);
+    const [orgs, t] = await Promise.all([
+        getOrganizationViewsByUserId(session.user.id),
+        getTranslations("settings"),
+    ]);
+
     const userName = session.user.name ?? "Authorized User";
     const userImage = session.user.image ?? null;
 
@@ -40,13 +45,13 @@ export default async function SettingsPage() {
                         className="mb-1 text-xs uppercase tracking-[0.35em]"
                         style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-display)" }}
                     >
-                        Account
+                        {t("eyebrow")}
                     </p>
                     <h1
                         className="text-2xl font-semibold uppercase tracking-[0.08em] sm:text-3xl"
                         style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                     >
-                        User Settings
+                        {t("title")}
                     </h1>
                     <div
                         className="absolute -bottom-px left-8 right-8 h-px"
@@ -66,7 +71,7 @@ export default async function SettingsPage() {
                         className="mb-4 text-[10px] uppercase tracking-[0.25em]"
                         style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                     >
-                        Profile
+                        {t("profileLabel")}
                     </p>
                     <div className="flex items-center gap-4">
                         {userImage ? (
@@ -101,7 +106,7 @@ export default async function SettingsPage() {
                                 className="mt-0.5 text-xs"
                                 style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
                             >
-                                Authenticated via Discord
+                                {t("profileVia")}
                             </p>
                         </div>
                     </div>
@@ -117,13 +122,13 @@ export default async function SettingsPage() {
                             className="text-[10px] uppercase tracking-[0.25em]"
                             style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                         >
-                            Organizations
+                            {t("orgsLabel")}
                         </p>
                         <p
                             className="mt-0.5 text-xs"
                             style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
                         >
-                            {orgs.length} organization{orgs.length !== 1 ? "s" : ""}
+                            {t("orgCount", { count: orgs.length })}
                         </p>
                     </div>
 
@@ -132,7 +137,7 @@ export default async function SettingsPage() {
                             className="p-5 text-sm"
                             style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
                         >
-                            You are not a member of any organization.
+                            {t("noOrgs")}
                         </p>
                     ) : (
                         <ul>
@@ -171,7 +176,7 @@ export default async function SettingsPage() {
                                                     fontFamily: "var(--font-mono)",
                                                 }}
                                             >
-                                                {role} · {org.members.length} member{org.members.length !== 1 ? "s" : ""}
+                                                {role} · {t("memberCount", { count: org.members.length })}
                                             </p>
                                         </div>
 
@@ -201,7 +206,7 @@ export default async function SettingsPage() {
                             className="text-[10px] uppercase tracking-[0.25em]"
                             style={{ color: "rgba(220,80,80,0.55)", fontFamily: "var(--font-mono)" }}
                         >
-                            Danger Zone
+                            {t("dangerZone")}
                         </p>
                     </div>
 
@@ -211,14 +216,13 @@ export default async function SettingsPage() {
                                 className="text-sm font-medium"
                                 style={{ color: "rgba(220,80,80,0.85)", fontFamily: "var(--font-mono)" }}
                             >
-                                Delete Account
+                                {t("deleteAccount")}
                             </p>
                             <p
                                 className="mt-0.5 text-xs leading-relaxed"
                                 style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
                             >
-                                Permanently deletes your account, all owned organizations,
-                                and removes you from all other organizations.
+                                {t("deleteDescription")}
                             </p>
                         </div>
 

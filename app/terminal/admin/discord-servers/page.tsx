@@ -1,11 +1,15 @@
 import Image from "next/image";
 import { getBotGuilds } from "@/lib/discord/get-bot-guilds";
 import LeaveServerButton from "@/components/admin/leave-server-button";
+import { getTranslations } from "next-intl/server";
 
 export const metadata = { title: "Admin · Discord Servers" };
 
 export default async function AdminDiscordServersPage() {
-    const guilds = await getBotGuilds();
+    const [guilds, t] = await Promise.all([
+        getBotGuilds(),
+        getTranslations("adminDiscord"),
+    ]);
 
     return (
         <main className="px-4 py-6 sm:px-6">
@@ -28,19 +32,19 @@ export default async function AdminDiscordServersPage() {
                         className="mb-1 text-xs uppercase tracking-[0.35em]"
                         style={{ color: "rgba(240,165,0,0.5)", fontFamily: "var(--font-display)" }}
                     >
-                        Super Admin · Discord Bot
+                        {t("label")}
                     </p>
                     <h1
                         className="text-2xl font-semibold uppercase tracking-[0.08em] sm:text-3xl"
                         style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}
                     >
-                        Discord Servers
+                        {t("title")}
                     </h1>
                     <p
                         className="mt-1 text-sm"
                         style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                     >
-                        Bot is active on {guilds.length} server{guilds.length !== 1 ? "s" : ""}.
+                        {t("active", { count: guilds.length })}
                     </p>
                     <div
                         className="absolute -bottom-px left-8 right-8 h-px"
@@ -60,7 +64,7 @@ export default async function AdminDiscordServersPage() {
                             className="p-6 text-sm"
                             style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                         >
-                            Bot is not active on any Discord servers, or the bot token is unavailable.
+                            {t("inactive")}
                         </p>
                     ) : (
                         <div className="overflow-x-auto">
@@ -75,7 +79,7 @@ export default async function AdminDiscordServersPage() {
                                             color: "rgba(79,195,220,0.5)",
                                         }}
                                     >
-                                        {["Server", "Server ID", "Owner", "Members", ""].map((h) => (
+                                        {[t("colServer"), t("colServerId"), t("colOwner"), t("colMembers"), ""].map((h) => (
                                             <th
                                                 key={h}
                                                 className={`px-4 py-3 text-[10px] uppercase tracking-[0.22em] ${h === "" ? "text-right" : "text-left"}`}
@@ -129,7 +133,7 @@ export default async function AdminDiscordServersPage() {
                                             <td className="px-4 py-3">
                                                 {guild.ownerName ?? (
                                                     <span style={{ color: "rgba(200,220,232,0.3)" }}>
-                                                        unknown
+                                                        {t("unknownOwner")}
                                                     </span>
                                                 )}
                                                 {guild.ownerId && (

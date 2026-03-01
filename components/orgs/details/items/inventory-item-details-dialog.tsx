@@ -2,6 +2,7 @@
 
 import {useActionState, useEffect, useRef} from "react";
 import {useRouter} from "next/navigation";
+import {useTranslations} from "next-intl";
 import {updateOrganizationInventoryItemAction} from "@/lib/actions/update-organization-inventory-item-action";
 import RemoveOrganizationInventoryItemButton
     from "@/components/orgs/details/items/remove-organization-inventory-item-button";
@@ -44,6 +45,8 @@ export default function InventoryItemDetailsDialog({
                                                    }: Props) {
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const router = useRouter();
+    const t = useTranslations("inventory");
+    const tc = useTranslations("common");
 
     const [state, formAction, isPending] = useActionState(
         updateOrganizationInventoryItemAction,
@@ -95,7 +98,7 @@ export default function InventoryItemDetailsDialog({
                             className="mb-1 text-[10px] uppercase tracking-[0.3em]"
                             style={{color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)"}}
                         >
-                            INVENTORY.DETAILS
+                            {t("detailsLabel")}
                         </p>
                         <h2
                             className="text-lg font-semibold uppercase tracking-[0.08em]"
@@ -107,7 +110,7 @@ export default function InventoryItemDetailsDialog({
                             className="mt-1 text-sm"
                             style={{color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)"}}
                         >
-                            Review inventory details and transaction history.
+                            {t("detailsDesc")}
                         </p>
                     </div>
 
@@ -122,7 +125,7 @@ export default function InventoryItemDetailsDialog({
                             background: "rgba(79,195,220,0.04)",
                         }}
                     >
-                        CLOSE
+                        {tc("close").toUpperCase()}
                     </button>
                 </div>
 
@@ -144,12 +147,12 @@ export default function InventoryItemDetailsDialog({
                                     className="text-[10px] uppercase tracking-[0.22em]"
                                     style={{color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)"}}
                                 >
-                                    Item Information
+                                    {t("itemInfo")}
                                 </p>
 
                                 <div className="mt-3 space-y-3">
-                                    <InfoRow label="Name" value={item.name}/>
-                                    <InfoRow label="Category" value={item.category ?? "Uncategorized"}/>
+                                    <InfoRow label={t("name")} value={item.name}/>
+                                    <InfoRow label={t("category")} value={item.category ?? t("uncategorized")}/>
                                 </div>
 
                                 {item.description && (
@@ -181,7 +184,7 @@ export default function InventoryItemDetailsDialog({
                                     className="text-[10px] uppercase tracking-[0.22em]"
                                     style={{color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)"}}
                                 >
-                                    Transactions
+                                    {t("eyebrow")}
                                 </p>
 
                                 <div className="mt-3 space-y-2">
@@ -190,12 +193,12 @@ export default function InventoryItemDetailsDialog({
                                             className="text-[11px]"
                                             style={{color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)"}}
                                         >
-                                            No transactions for this item yet.
+                                            {t("noTransactions")}
                                         </p>
                                     ) : (
                                         transactions.map((tx) => {
                                             const directionLabel =
-                                                tx.direction === "member_to_org" ? "Sell → Org" : "Buy ← Org";
+                                                tx.direction === "member_to_org" ? t("sellToOrg") : t("buyFromOrg");
                                             const date = new Date(tx.createdAt).toLocaleDateString("en-US", {
                                                 month: "short",
                                                 day: "numeric",
@@ -252,14 +255,14 @@ export default function InventoryItemDetailsDialog({
                                 className="text-[10px] uppercase tracking-[0.22em]"
                                 style={{color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)"}}
                             >
-                                Inventory Values
+                                {t("inventoryValues")}
                             </p>
 
                             <div className="mt-4 space-y-4">
                                 <Field
                                     id="buyPrice"
                                     name="buyPrice"
-                                    label="Buy Price"
+                                    label={t("buyPrice")}
                                     defaultValue={item.buyPrice}
                                     disabled={!canEdit || isPending}
                                     error={state.fieldErrors?.buyPrice}
@@ -268,7 +271,7 @@ export default function InventoryItemDetailsDialog({
                                 <Field
                                     id="sellPrice"
                                     name="sellPrice"
-                                    label="Sell Price"
+                                    label={t("sellPrice")}
                                     defaultValue={item.sellPrice}
                                     disabled={!canEdit || isPending}
                                     error={state.fieldErrors?.sellPrice}
@@ -277,7 +280,7 @@ export default function InventoryItemDetailsDialog({
                                 <Field
                                     id="quantity"
                                     name="quantity"
-                                    label="Stock"
+                                    label={t("stock")}
                                     defaultValue={item.quantity}
                                     disabled={!canEdit || isPending}
                                     error={state.fieldErrors?.quantity}
@@ -301,7 +304,7 @@ export default function InventoryItemDetailsDialog({
                             {canEdit && (
                                 <div className="mt-5 flex justify-end gap-2">
                                     <button type="submit" className="sc-btn" disabled={isPending}>
-                                        {isPending ? "Saving..." : "Save Changes"}
+                                        {isPending ? tc("saving") : tc("save")}
                                     </button>
                                 </div>
                             )}
@@ -318,14 +321,13 @@ export default function InventoryItemDetailsDialog({
                             className="text-[10px] uppercase tracking-[0.22em]"
                             style={{color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)"}}
                         >
-                            Danger Area
+                            {t("dangerArea")}
                         </p>
                         <p
                             className="mt-1 text-sm"
                             style={{color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)"}}
                         >
-                            By deleting this item, all associated data will be permanently removed. This action cannot
-                            be undone.
+                            {t("dangerWarning")}
                         </p>
                         <div className="mt-4 space-y-4 flex w-full justify-center">
                             <RemoveOrganizationInventoryItemButton

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Settings, LogOut, ChevronDown, Bell } from "lucide-react";
 import { signOutAction } from "@/lib/actions";
+import { useTranslations } from "next-intl";
 
 type Props = {
     userName: string;
@@ -13,6 +14,7 @@ type Props = {
 
 export default function UserDropdown({ userName, userImage }: Props) {
     const [open, setOpen] = useState(false);
+    const t = useTranslations("userMenu");
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -117,7 +119,7 @@ export default function UserDropdown({ userName, userImage }: Props) {
                             className="text-[10px] uppercase tracking-[0.25em]"
                             style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                         >
-                            Signed in as
+                            {t("signedInAs")}
                         </p>
                         <p
                             className="mt-0.5 truncate text-sm font-medium"
@@ -147,7 +149,7 @@ export default function UserDropdown({ userName, userImage }: Props) {
                             }}
                         >
                             <Bell size={14} style={{ color: "rgba(79,195,220,0.55)" }} />
-                            <span className="uppercase tracking-widest">Notifications</span>
+                            <span className="uppercase tracking-widest">{t("notifications")}</span>
                         </Link>
 
                         <Link
@@ -168,7 +170,7 @@ export default function UserDropdown({ userName, userImage }: Props) {
                             }}
                         >
                             <Settings size={14} style={{ color: "rgba(79,195,220,0.55)" }} />
-                            <span className="uppercase tracking-widest">Settings</span>
+                            <span className="uppercase tracking-widest">{t("settings")}</span>
                         </Link>
 
                         <form action={signOutAction}>
@@ -189,7 +191,7 @@ export default function UserDropdown({ userName, userImage }: Props) {
                                 }}
                             >
                                 <LogOut size={14} style={{ color: "rgba(200,80,80,0.55)" }} />
-                                <span className="uppercase tracking-widest">Logout</span>
+                                <span className="uppercase tracking-widest">{t("logout")}</span>
                             </button>
                         </form>
                     </div>

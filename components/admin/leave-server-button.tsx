@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { adminLeaveDiscordServerAction } from "@/lib/actions/admin-leave-discord-server-action";
 
 type Props = {
@@ -12,6 +13,8 @@ type Props = {
 export default function LeaveServerButton({ guildId, guildName }: Props) {
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const router = useRouter();
+    const t = useTranslations("adminComponents");
+    const tc = useTranslations("common");
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
 
@@ -51,7 +54,7 @@ export default function LeaveServerButton({ guildId, guildName }: Props) {
                     color: "rgba(220,80,80,0.85)",
                 }}
             >
-                Leave
+                {t("leaveServer")}
             </button>
 
             <dialog
@@ -78,13 +81,13 @@ export default function LeaveServerButton({ guildId, guildName }: Props) {
                                 className="mb-1 text-[10px] uppercase tracking-[0.3em]"
                                 style={{ color: "rgba(220,80,80,0.5)", fontFamily: "var(--font-mono)" }}
                             >
-                                SUPER ADMIN · BOT
+                                {t("leaveLabel")}
                             </p>
                             <h2
                                 className="text-lg font-semibold uppercase tracking-[0.08em]"
                                 style={{ color: "rgba(220,80,80,0.9)", fontFamily: "var(--font-display)" }}
                             >
-                                Leave Server
+                                {t("leaveTitle")}
                             </h2>
                             <p
                                 className="mt-1 text-sm"
@@ -105,7 +108,7 @@ export default function LeaveServerButton({ guildId, guildName }: Props) {
                                 background: "rgba(79,195,220,0.04)",
                             }}
                         >
-                            CLOSE
+                            {tc("close").toUpperCase()}
                         </button>
                     </div>
 
@@ -118,7 +121,7 @@ export default function LeaveServerButton({ guildId, guildName }: Props) {
                             fontFamily: "var(--font-mono)",
                         }}
                     >
-                        The bot will leave this server and any linked organization will lose its Discord integration.
+                        {t("leaveWarning")}
                     </div>
 
                     {error && (
@@ -132,7 +135,7 @@ export default function LeaveServerButton({ guildId, guildName }: Props) {
 
                     <div className="flex justify-end gap-2">
                         <button type="button" onClick={close} className="sc-btn sc-btn-outline">
-                            Cancel
+                            {tc("cancel")}
                         </button>
                         <button
                             type="button"
@@ -145,7 +148,7 @@ export default function LeaveServerButton({ guildId, guildName }: Props) {
                                 color: "rgba(220,80,80,0.9)",
                             }}
                         >
-                            {isPending ? "Leaving…" : "Confirm Leave"}
+                            {isPending ? t("leaving") : t("confirmLeave")}
                         </button>
                     </div>
                 </div>

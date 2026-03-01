@@ -2,6 +2,7 @@
 
 import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import { ShoppingBag } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
     createOrganizationInventoryItemAction,
     type CreateOrganizationInventoryItemActionState,
@@ -17,6 +18,7 @@ const initialState: CreateOrganizationInventoryItemActionState = {
 };
 
 export default function CreateInventoryItemForm({ organizationSlug }: Props) {
+    const t = useTranslations("inventory");
     const formRef = useRef<HTMLFormElement>(null);
     const [state, formAction, isPending] = useActionState(createOrganizationInventoryItemAction, initialState);
     const [selection, setSelection] = useState<SelectedItemWithVariants | null>(null);
@@ -107,7 +109,7 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
                         className="text-[11px] leading-tight"
                         style={{ color: excludeShopItems ? "rgba(200,220,232,0.75)" : "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                     >
-                        Show only items that are not sold in in-game shops.
+                        {t("filterOfficial")}
                     </span>
                 </div>
             </label>
@@ -115,7 +117,7 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
             {/* Item search */}
             <div className="space-y-1.5">
                 <label className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}>
-                    Item Name
+                    {t("itemName")}
                 </label>
                 <ScItemAutocomplete
                     onSelectAction={setSelection}
@@ -131,13 +133,13 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
                 <>
                     <div className="space-y-1.5">
                         <label className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}>
-                            Category <span style={{ color: "rgba(200,220,232,0.25)" }}>(optional)</span>
+                            {t("category")} <span style={{ color: "rgba(200,220,232,0.25)" }}>(optional)</span>
                         </label>
-                        <input type="text" name="category" defaultValue={selection.item.category ?? ""} key={selection.item.scUuid ?? "cat"} placeholder="e.g. WeaponGun, Armor..." className="sc-input w-full" disabled={isPending} />
+                        <input type="text" name="category" defaultValue={selection.item.category ?? ""} key={selection.item.scUuid ?? "cat"} placeholder={t("categoryHint")} className="sc-input w-full" disabled={isPending} />
                     </div>
                     <div className="space-y-1.5">
                         <label className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}>
-                            Description <span style={{ color: "rgba(200,220,232,0.25)" }}>(optional)</span>
+                            {t("itemDescription")} <span style={{ color: "rgba(200,220,232,0.25)" }}>(optional)</span>
                         </label>
                         <textarea name="description" defaultValue={selection.item.description ?? ""} key={selection.item.scUuid ?? "desc"} rows={3} className="sc-input w-full resize-none" disabled={isPending} />
                     </div>
@@ -148,7 +150,7 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
                 {(["buyPrice", "sellPrice", "quantity"] as const).map((field) => (
                     <div key={field} className="space-y-1.5">
                         <label className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}>
-                            {field === "buyPrice" ? "Buy Price" : field === "sellPrice" ? "Sell Price" : "Quantity"}
+                            {field === "buyPrice" ? t("buyPrice") : field === "sellPrice" ? t("sellPrice") : t("quantity")}
                         </label>
                         <input type="number" name={field} min={0} step={field === "quantity" ? 1 : "any"} defaultValue={field === "quantity" ? 1 : 0} className="sc-input w-full" disabled={isPending} />
                         {state.fieldErrors?.[field] && (
@@ -172,10 +174,10 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
                 style={{ borderColor: "rgba(79,195,220,0.25)", color: "rgba(79,195,220,0.85)", fontFamily: "var(--font-mono)", background: "rgba(79,195,220,0.06)" }}
             >
                 {isPending
-                    ? "Adding..."
+                    ? t("adding")
                     : variantCount > 0
-                        ? `Add Item + ${variantCount} Variant${variantCount !== 1 ? "s" : ""}`
-                        : "Add to Inventory"}
+                        ? t("addItemVariants", { count: variantCount })
+                        : t("addToInventory")}
             </button>
         </form>
     );

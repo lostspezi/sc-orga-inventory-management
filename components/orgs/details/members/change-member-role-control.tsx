@@ -2,6 +2,7 @@
 
 import { startTransition, useActionState, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { changeOrgMemberRoleAction } from "@/lib/actions/change-org-member-role-action";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 
@@ -28,6 +29,8 @@ export default function ChangeMemberRoleControl({
                                                     disabled = false,
                                                 }: Props) {
     const router = useRouter();
+    const t = useTranslations("members");
+    const tc = useTranslations("common");
 
     const [selectedRole, setSelectedRole] = useState<"admin" | "member">(
         currentRole === "admin" ? "admin" : "member"
@@ -145,7 +148,7 @@ export default function ChangeMemberRoleControl({
                         background: "rgba(79,195,220,0.05)",
                     }}
                 >
-                    Change Role
+                    {t("changeRole")}
                 </button>
             </div>
 
@@ -155,10 +158,10 @@ export default function ChangeMemberRoleControl({
                 onConfirm={handleConfirm}
                 tone="default"
                 isLoading={isPending}
-                title="Change Member Role"
-                description={`Change ${targetLabel ?? "this member"} from ${currentRole} to ${selectedRole}?`}
-                confirmLabel="Apply Role"
-                cancelLabel="Cancel"
+                title={t("changeRoleTitle")}
+                description={t("changeRoleDesc", { name: targetLabel ?? "this member", from: currentRole, to: selectedRole })}
+                confirmLabel={t("applyRole")}
+                cancelLabel={tc("cancel")}
             />
 
             {state.message && (

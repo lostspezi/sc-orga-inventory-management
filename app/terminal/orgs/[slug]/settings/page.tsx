@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import OrgSettingsForm from "@/components/orgs/details/settings/org-settings-form";
 import DiscordServerCard from "@/components/orgs/details/settings/discord-server-card";
@@ -26,6 +27,8 @@ export default async function OrgSettingsPage({ params }: Props) {
     const currentMember = org.members.find((m) => m.userId === session.user!.id);
     const isAdminOrOwner = currentMember && ["owner", "admin"].includes(currentMember.role);
 
+    const t = await getTranslations("orgSettings");
+
     if (!currentMember || !isAdminOrOwner) {
         return (
             <div
@@ -39,13 +42,13 @@ export default async function OrgSettingsPage({ params }: Props) {
                     className="text-lg font-semibold uppercase tracking-[0.08em]"
                     style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}
                 >
-                    Forbidden
+                    {t("forbidden")}
                 </h2>
                 <p
                     className="mt-2 text-sm"
                     style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    Only organization admins & owners can access settings.
+                    {t("forbiddenMessage")}
                 </p>
             </div>
         );
@@ -58,19 +61,19 @@ export default async function OrgSettingsPage({ params }: Props) {
                     className="text-[10px] uppercase tracking-[0.25em]"
                     style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    Settings
+                    {t("eyebrow")}
                 </p>
                 <h2
                     className="mt-1 text-lg font-semibold uppercase tracking-[0.08em]"
                     style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                 >
-                    Organization Settings
+                    {t("title")}
                 </h2>
                 <p
                     className="mt-1 text-sm"
                     style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    Configure integrations and notifications for your organization.
+                    {t("description")}
                 </p>
             </div>
 
@@ -91,13 +94,13 @@ export default async function OrgSettingsPage({ params }: Props) {
                         className="text-[10px] uppercase tracking-[0.25em]"
                         style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                     >
-                        Discord Integration
+                        {t("discordIntegration")}
                     </p>
                     <h3
                         className="mt-1 text-base font-semibold uppercase tracking-[0.08em]"
                         style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                     >
-                        Transaction Notifications
+                        {t("transactionNotifications")}
                     </h3>
                 </div>
 

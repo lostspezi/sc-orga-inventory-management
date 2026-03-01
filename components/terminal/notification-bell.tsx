@@ -4,17 +4,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
+import { useTranslations, useFormatter } from "next-intl";
 import type { NotificationView } from "@/lib/types/notification";
-
-function timeAgo(iso: string): string {
-    const diff = Date.now() - new Date(iso).getTime();
-    const m = Math.floor(diff / 60000);
-    if (m < 1) return "just now";
-    if (m < 60) return `${m}m ago`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h ago`;
-    return `${Math.floor(h / 24)}d ago`;
-}
 
 export default function NotificationBell() {
     const [notifications, setNotifications] = useState<NotificationView[]>([]);
@@ -22,6 +13,8 @@ export default function NotificationBell() {
     const [open, setOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
+    const t = useTranslations("notifications");
+    const format = useFormatter();
 
     // SSE subscription
     useEffect(() => {
@@ -158,7 +151,7 @@ export default function NotificationBell() {
                             className="text-[10px] uppercase tracking-[0.25em]"
                             style={{ color: "rgba(79,195,220,0.6)", fontFamily: "var(--font-mono)" }}
                         >
-                            {unreadCount > 0 ? `${unreadCount} unread` : "Notifications"}
+                            {unreadCount > 0 ? t("unread", { count: unreadCount }) : t("title")}
                         </p>
                         {unreadCount > 0 && (
                             <button
@@ -173,7 +166,7 @@ export default function NotificationBell() {
                                     (e.currentTarget as HTMLElement).style.color = "rgba(79,195,220,0.5)";
                                 }}
                             >
-                                Mark all read
+                                {t("markAllRead")}
                             </button>
                         )}
                     </div>
@@ -185,7 +178,7 @@ export default function NotificationBell() {
                                 className="px-4 py-8 text-center text-xs"
                                 style={{ color: "rgba(200,220,232,0.3)", fontFamily: "var(--font-mono)" }}
                             >
-                                No notifications yet.
+                                {t("empty")}
                             </p>
                         ) : (
                             <ul>
@@ -248,7 +241,7 @@ export default function NotificationBell() {
                                                             fontFamily: "var(--font-mono)",
                                                         }}
                                                     >
-                                                        {timeAgo(n.createdAt)}
+                                                        {format.relativeTime(new Date(n.createdAt))}
                                                     </p>
                                                 </div>
                                             </div>
@@ -281,7 +274,7 @@ export default function NotificationBell() {
                                     "rgba(79,195,220,0.5)";
                             }}
                         >
-                            View all notifications
+                            {t("viewAll")}
                         </Link>
                     </div>
                 </div>

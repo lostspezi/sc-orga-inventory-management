@@ -2,13 +2,17 @@ import Link from "next/link";
 import UserDropdown from "@/components/terminal/user-dropdown";
 import TerminalNav from "@/components/terminal/terminal-nav";
 import NotificationBell from "@/components/terminal/notification-bell";
+import LanguageSwitcher from "@/components/ui/language-switcher";
+import { getTranslations } from "next-intl/server";
 
 type Props = {
     userName: string;
     userImage: string | null;
 };
 
-export default function TerminalHeader({ userName, userImage }: Props) {
+export default async function TerminalHeader({ userName, userImage }: Props) {
+    const t = await getTranslations("header");
+
     return (
         <header
             className="sticky top-0 z-40 border-b px-4 py-3 sm:px-6"
@@ -25,22 +29,23 @@ export default function TerminalHeader({ userName, userImage }: Props) {
                         className="text-[10px] uppercase tracking-[0.25em]"
                         style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                     >
-                        UEE Terminal
+                        {t("tagline")}
                     </p>
                     <Link
                         href="/terminal"
                         className="text-sm font-semibold uppercase tracking-[0.08em]"
                         style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                     >
-                        Command Hub
+                        {t("title")}
                     </Link>
                 </div>
 
                 {/* Nav */}
                 <TerminalNav />
 
-                {/* Notifications + User */}
+                {/* Right side */}
                 <div className="flex items-center gap-2">
+                    <LanguageSwitcher />
                     <NotificationBell />
                     <UserDropdown userName={userName} userImage={userImage} />
                 </div>

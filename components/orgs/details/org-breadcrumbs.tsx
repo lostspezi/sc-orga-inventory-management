@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ChevronRight } from "lucide-react";
 
 type Props = {
@@ -9,19 +10,24 @@ type Props = {
     orgName?: string;
 };
 
-const LABELS: Record<string, string> = {
-    terminal: "Terminal",
-    orgs: "Organizations",
-    members: "Members",
-    logs: "Logs",
-};
-
-function formatSegment(segment: string) {
-    return LABELS[segment] ?? segment.replace(/-/g, " ");
-}
-
 export default function OrgBreadcrumbs({ slug, orgName }: Props) {
     const pathname = usePathname();
+    const t = useTranslations("orgShell");
+
+    const LABELS: Record<string, string> = {
+        terminal: t("terminalCrumb"),
+        orgs: t("organizationsCrumb"),
+        members: t("membersCrumb"),
+        inventory: t("inventoryCrumb"),
+        transactions: t("transactionsCrumb"),
+        logs: t("logsCrumb"),
+        settings: t("settingsCrumb"),
+        faq: t("faqCrumb"),
+    };
+
+    function formatSegment(segment: string) {
+        return LABELS[segment] ?? segment.replace(/-/g, " ");
+    }
 
     const segments = pathname.split("/").filter(Boolean);
 
