@@ -20,8 +20,29 @@ const rajdhani = Rajdhani({
 });
 
 export const metadata: Metadata = {
-    title: "SC Orga — Inventory Management",
-    description: "Star Citizen Organization Inventory Management System",
+    title: {
+        template: "%s | SC Orga",
+        default: "SC Orga — Inventory Management",
+    },
+    description:
+        "Inventory management platform for Star Citizen organizations. Track stock, manage transactions, and coordinate your crew.",
+    keywords: ["Star Citizen", "organization", "inventory", "management", "UEC", "trading"],
+    openGraph: {
+        title: "SC Orga — Inventory Management",
+        description:
+            "Inventory management platform for Star Citizen organizations. Track stock, manage transactions, and coordinate your crew.",
+        type: "website",
+        siteName: "SC Orga",
+    },
+    twitter: {
+        card: "summary",
+        title: "SC Orga — Inventory Management",
+        description:
+            "Inventory management platform for Star Citizen organizations.",
+    },
+    icons: {
+        icon: "/icon.svg",
+    },
 };
 
 export default function RootLayout({
