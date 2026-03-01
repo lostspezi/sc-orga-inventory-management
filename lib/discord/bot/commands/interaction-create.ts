@@ -5,6 +5,7 @@ import {
     handleTradeSlashCommand,
 } from "@/lib/discord/bot/slash-handlers/handle-trade-slash-command";
 import { handleTransactionButton } from "@/lib/discord/bot/slash-handlers/handle-transaction-button";
+import { handleInventorySlashCommand } from "@/lib/discord/bot/slash-handlers/handle-inventory-slash-command";
 import { TX_BUTTON_PREFIX } from "@/lib/discord/send-transaction-embed";
 
 export function registerInteractionCreateEvent(client: Client) {
@@ -32,6 +33,8 @@ export function registerInteractionCreateEvent(client: Client) {
                 await handleInviteSlashCommand(interaction);
             } else if (interaction.commandName === "sell" || interaction.commandName === "buy") {
                 await handleTradeSlashCommand(interaction);
+            } else if (interaction.commandName === "inventory") {
+                await handleInventorySlashCommand(interaction);
             }
         } catch (error) {
             console.error("[discord-bot] interactionCreate handler failed", {
