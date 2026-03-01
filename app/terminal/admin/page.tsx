@@ -1,31 +1,61 @@
-import { auth } from "@/auth";
-import { notFound } from "next/navigation";
 import { getAllOrganizationsForAdmin } from "@/lib/repositories/organization-repository";
-import { isSuperAdmin } from "@/lib/is-super-admin";
-import TransferOwnerDialog from "@/components/admin/transfer-owner-dialog";
+import { getBotGuildCount } from "@/lib/discord/get-bot-guild-count";
+import Link from "next/link";
 
-export const metadata = { title: "Admin Panel" };
+export const metadata = { title: "Admin Overview" };
 
-function formatDate(date: Date) {
-    return date.toISOString().slice(0, 10);
+type KpiCardProps = {
+    label: string;
+    value: React.ReactNode;
+    sub?: string;
+};
+
+function KpiCard({ label, value, sub }: KpiCardProps) {
+    return (
+        <div
+            className="hud-panel p-5"
+            style={{ background: "rgba(8,16,24,0.5)" }}
+        >
+            <p
+                className="text-[10px] uppercase tracking-[0.25em]"
+                style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
+            >
+                {label}
+            </p>
+            <p
+                className="mt-1 text-3xl font-semibold tabular-nums"
+                style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
+            >
+                {value}
+            </p>
+            {sub && (
+                <p
+                    className="mt-1 text-xs"
+                    style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
+                >
+                    {sub}
+                </p>
+            )}
+        </div>
+    );
 }
 
-export default async function AdminPage() {
-    const session = await auth();
+export default async function AdminOverviewPage() {
+    const [rows, botGuildCount] = await Promise.all([
+        getAllOrganizationsForAdmin(),
+        getBotGuildCount(),
+    ]);
 
-    if (!session?.user?.id || !(await isSuperAdmin(session.user.id))) {
-        notFound();
-    }
-
-    const rows = await getAllOrganizationsForAdmin();
+    const totalMemberships = rows.reduce((sum, r) => sum + r.memberCount, 0);
+    const orgsWithDiscord = rows.filter((r) => r.org.discordGuildId).length;
 
     return (
         <main className="px-4 py-6 sm:px-6">
             <div
-                className="mx-auto w-full max-w-7xl space-y-4"
+                className="mx-auto w-full max-w-7xl space-y-6"
                 style={{ animation: "slide-in-up 0.45s ease forwards" }}
             >
-                {/* Header */}
+                {/* Page header */}
                 <section
                     className="hud-panel corner-tr corner-bl relative p-5 sm:p-6"
                     style={{ background: "rgba(8,16,24,0.55)" }}
@@ -37,37 +67,24 @@ export default async function AdminPage() {
                                 "linear-gradient(90deg, transparent, rgba(240,165,0,0.6), transparent)",
                         }}
                     />
-
                     <p
                         className="mb-1 text-xs uppercase tracking-[0.35em]"
-                        style={{
-                            color: "rgba(240,165,0,0.5)",
-                            fontFamily: "var(--font-display)",
-                        }}
+                        style={{ color: "rgba(240,165,0,0.5)", fontFamily: "var(--font-display)" }}
                     >
                         Super Admin
                     </p>
-
                     <h1
                         className="text-2xl font-semibold uppercase tracking-[0.08em] sm:text-3xl"
-                        style={{
-                            color: "rgba(240,165,0,0.9)",
-                            fontFamily: "var(--font-display)",
-                        }}
+                        style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}
                     >
-                        Admin Panel
+                        Overview
                     </h1>
-
                     <p
-                        className="mt-2 text-sm"
-                        style={{
-                            color: "rgba(200,220,232,0.45)",
-                            fontFamily: "var(--font-mono)",
-                        }}
+                        className="mt-1 text-sm"
+                        style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                     >
-                        All organizations across the platform. Total: {rows.length}
+                        Platform-wide statistics and quick access.
                     </p>
-
                     <div
                         className="absolute -bottom-px left-8 right-8 h-px"
                         style={{
@@ -77,98 +94,108 @@ export default async function AdminPage() {
                     />
                 </section>
 
-                {/* Table */}
-                <section
-                    className="hud-panel overflow-hidden"
-                    style={{ background: "rgba(8,16,24,0.45)" }}
-                >
-                    {rows.length === 0 ? (
-                        <p
-                            className="p-6 text-sm"
-                            style={{
-                                color: "rgba(200,220,232,0.4)",
-                                fontFamily: "var(--font-mono)",
-                            }}
-                        >
-                            No organizations found.
-                        </p>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm" style={{ fontFamily: "var(--font-mono)" }}>
-                                <thead>
-                                    <tr
-                                        style={{
-                                            borderBottom: "1px solid rgba(79,195,220,0.12)",
-                                            color: "rgba(79,195,220,0.5)",
-                                        }}
-                                    >
-                                        <th className="px-4 py-3 text-left text-[10px] uppercase tracking-[0.22em]">
-                                            Org Name
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-[10px] uppercase tracking-[0.22em]">
-                                            Slug
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-[10px] uppercase tracking-[0.22em]">
-                                            Owner
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-[10px] uppercase tracking-[0.22em]">
-                                            Members
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-[10px] uppercase tracking-[0.22em]">
-                                            Created
-                                        </th>
-                                        <th className="px-4 py-3 text-right text-[10px] uppercase tracking-[0.22em]">
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {rows.map(({ org, ownerUsername, memberCount, memberViews }) => {
-                                        return (
-                                            <tr
-                                                key={org._id.toString()}
-                                                style={{
-                                                    borderBottom: "1px solid rgba(79,195,220,0.07)",
-                                                    color: "rgba(200,220,232,0.75)",
-                                                }}
-                                            >
-                                                <td className="px-4 py-3 font-medium">
-                                                    {org.name}
-                                                </td>
-                                                <td
-                                                    className="px-4 py-3"
-                                                    style={{ color: "rgba(79,195,220,0.6)" }}
-                                                >
-                                                    {org.slug}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    {ownerUsername ?? (
-                                                        <span style={{ color: "rgba(200,220,232,0.3)" }}>
-                                                            unknown
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="px-4 py-3">{memberCount}</td>
-                                                <td
-                                                    className="px-4 py-3"
-                                                    style={{ color: "rgba(200,220,232,0.45)" }}
-                                                >
-                                                    {formatDate(org.createdAt)}
-                                                </td>
-                                                <td className="px-4 py-3 text-right">
-                                                    <TransferOwnerDialog
-                                                        orgSlug={org.slug}
-                                                        orgName={org.name}
-                                                        members={memberViews}
-                                                    />
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                {/* KPI grid */}
+                <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <KpiCard
+                        label="Organizations"
+                        value={rows.length}
+                        sub="registered in database"
+                    />
+                    <KpiCard
+                        label="Total Memberships"
+                        value={totalMemberships}
+                        sub="across all organizations"
+                    />
+                    <KpiCard
+                        label="Discord Integrated"
+                        value={orgsWithDiscord}
+                        sub="orgs with bot connected"
+                    />
+                    <KpiCard
+                        label="Bot Active On"
+                        value={
+                            botGuildCount !== null ? (
+                                botGuildCount
+                            ) : (
+                                <span
+                                    className="text-lg"
+                                    style={{ color: "rgba(240,165,0,0.5)" }}
+                                >
+                                    —
+                                </span>
+                            )
+                        }
+                        sub={botGuildCount !== null ? "Discord servers" : "bot unavailable"}
+                    />
+                </section>
+
+                {/* Quick links */}
+                <section className="grid gap-4 sm:grid-cols-2">
+                    <Link
+                        href="/terminal/admin/organizations"
+                        className="hud-panel group flex items-center justify-between p-5 transition-colors"
+                        style={{ background: "rgba(8,16,24,0.45)" }}
+                    >
+                        <div>
+                            <p
+                                className="text-[10px] uppercase tracking-[0.25em]"
+                                style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
+                            >
+                                Manage
+                            </p>
+                            <p
+                                className="mt-0.5 text-base font-semibold uppercase tracking-[0.08em]"
+                                style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
+                            >
+                                Organizations
+                            </p>
+                            <p
+                                className="mt-1 text-xs"
+                                style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
+                            >
+                                View all orgs, transfer ownership
+                            </p>
                         </div>
-                    )}
+                        <span
+                            className="text-xl"
+                            style={{ color: "rgba(79,195,220,0.3)" }}
+                        >
+                            →
+                        </span>
+                    </Link>
+
+                    <Link
+                        href="/terminal/admin/discord-servers"
+                        className="hud-panel group flex items-center justify-between p-5 transition-colors"
+                        style={{ background: "rgba(8,16,24,0.45)" }}
+                    >
+                        <div>
+                            <p
+                                className="text-[10px] uppercase tracking-[0.25em]"
+                                style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
+                            >
+                                Manage
+                            </p>
+                            <p
+                                className="mt-0.5 text-base font-semibold uppercase tracking-[0.08em]"
+                                style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
+                            >
+                                Discord Servers
+                            </p>
+                            <p
+                                className="mt-1 text-xs"
+                                style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
+                            >
+                                View bot servers, disconnect from servers
+                            </p>
+                        </div>
+                        <span
+                            className="text-xl"
+                            style={{ color: "rgba(79,195,220,0.3)" }}
+                        >
+                            →
+                        </span>
+                    </Link>
                 </section>
             </div>
         </main>
