@@ -408,6 +408,100 @@
       "published": "{count, plural, one {# publication publiée} other {# publications publiées}}"
     }
   },
+  "home": {
+    "systemsOnline": "Systèmes en ligne",
+    "accessTerminal": "Accéder au Terminal",
+    "goToTerminal": "Aller au Terminal",
+    "hero": {
+      "eyebrow": "Empire Uni de la Terre — Commerce d'Org",
+      "title1": "Centre de",
+      "title2": "Commandement",
+      "subtitle": "Pour les Organisations Star Citizen",
+      "desc": "Gestion d'inventaire en temps réel, demandes d'achat/vente Discord avec embeds interactifs, workflows d'approbation complets et tableaux de bord en direct — le tout dans un HUD conçu pour les orgs sérieuses.",
+      "pill1": "Dashboard en temps réel",
+      "pill2": "Bot Discord inclus",
+      "pill3": "Workflows Achat / Vente",
+      "pill4": "Suivi de stock automatique",
+      "pill5": "Accès basé sur les rôles",
+      "pill6": "Journal d'audit complet"
+    },
+    "howItWorks": {
+      "label": "Comment ça marche",
+      "step1Title": "Créer une demande",
+      "step1Desc": "Un membre initie un achat ou une vente via le terminal web ou les commandes slash Discord — avec autocomplétion de l'inventaire.",
+      "step2Title": "Examiner & Approuver",
+      "step2Desc": "Un admin approuve ou rejette — directement dans le terminal ou en cliquant sur un bouton dans l'embed Discord.",
+      "step3Title": "Échange en jeu",
+      "step3Desc": "Les deux parties effectuent l'échange dans Star Citizen, puis chacune le confirme dans le terminal ou via Discord.",
+      "step4Title": "Clôture automatique",
+      "step4Desc": "Une fois les deux côtés confirmés, la transaction se ferme et le stock d'inventaire s'ajuste automatiquement. Les graphiques se mettent à jour en temps réel."
+    },
+    "features": {
+      "label": "Fonctionnalités",
+      "dashboardTitle": "Dashboard en direct",
+      "dashboardDesc": "Cartes KPI en temps réel, graphiques de revenus et volumes sur 30 jours, articles les plus performants et fil d'activité en direct — mis à jour dès qu'une transaction change d'état.",
+      "dashboardTag1": "Push SSE",
+      "dashboardTag2": "Graphiques SVG",
+      "dashboardTag3": "Actualisation auto",
+      "inventoryTitle": "Gestion d'inventaire",
+      "inventoryDesc": "Catalogue complet des marchandises de l'org avec synchronisation automatique du stock. Le stock s'ajuste automatiquement lorsque les échanges sont complétés. Recherche directe dans la base de données Star Citizen.",
+      "inventoryTag1": "Sync. stock auto",
+      "inventoryTag2": "Recherche SC",
+      "workflowsTitle": "Workflows Achat & Vente",
+      "workflowsDesc": "Cycle de vie complet en plusieurs étapes : demande → approbation → confirmation en jeu → clôture. L'une ou l'autre partie peut initier, les deux doivent confirmer avant le mouvement de stock.",
+      "workflowsTag1": "5 statuts",
+      "workflowsTag2": "Double confirmation",
+      "workflowsTag3": "Annulation à tout moment",
+      "discordTitle": "Bot Discord",
+      "discordDesc": "Les membres utilisent /sell et /buy avec autocomplétion de l'inventaire. Chaque transaction publie un embed riche avec des boutons d'action en direct — approuver, confirmer, annuler — sans quitter Discord.",
+      "discordTag1": "Commandes slash",
+      "discordTag2": "Autocomplétion",
+      "discordTag3": "Embeds interactifs",
+      "membersTitle": "Gestion des membres",
+      "membersDesc": "Système de rôles à trois niveaux (propriétaire / admin / membre). Invitez de nouveaux membres via DM Discord. Gérez les rôles et supprimez des membres depuis le terminal web.",
+      "membersTag1": "3 rôles",
+      "membersTag2": "Invitations Discord",
+      "auditTitle": "Journal d'audit",
+      "auditDesc": "Chaque action — changements de transaction, modifications d'inventaire, changements de rôle, mises à jour de paramètres — est enregistrée avec horodatage et acteur. Historique complet pour les propriétaires d'org.",
+      "auditTag1": "Journal immuable",
+      "auditTag2": "Propriétaire uniquement",
+      "notificationsTitle": "Notifications en temps réel",
+      "notificationsDesc": "Alertes in-app instantanées pour chaque mise à jour de transaction, invitation et événement d'org. Icône cloche en direct dans l'en-tête du terminal avec badge non lu, boîte de réception et marquage d'un clic.",
+      "notificationsTag1": "Badge cloche",
+      "notificationsTag2": "Boîte de réception",
+      "notificationsTag3": "SSE en direct"
+    },
+    "discordSection": {
+      "label": "Intégration Discord",
+      "tag": "Trading natif Discord",
+      "title": "Ne quittez jamais Discord",
+      "desc": "Le bot s'intègre pleinement dans le workflow de votre org. Les membres créent des demandes d'échange, les admins les approuvent, et les deux parties confirment l'échange en jeu — le tout via des embeds Discord interactifs mis à jour en temps réel.",
+      "sellDesc": "Vendre des marchandises à l'org — sélectionne les articles de votre inventaire avec autocomplétion",
+      "buyDesc": "Demander un achat dans le stock de l'org — même expérience d'autocomplétion",
+      "footnote": "↳ Un serveur Discord par org · Canal de notification configurable dans les Paramètres"
+    },
+    "dashboardSection": {
+      "label": "Dashboard en direct",
+      "tag": "Toujours au courant",
+      "title": "Aperçu de l'org en temps réel",
+      "desc": "Le dashboard se connecte en direct au serveur. Dès qu'une transaction change d'état — où que ce soit, par qui que ce soit — vous recevez une notification toast et le dashboard se rafraîchit silencieusement. Aucun rechargement manuel.",
+      "li1": "Cartes KPI : demandes actives, échanges complétés, revenus, nombre d'articles",
+      "li2": "Graphique de revenus sur 30 jours et histogramme de volumes achat/vente",
+      "li3": "Top 5 articles par revenus avec barres de pourcentage",
+      "li4": "Les 10 derniers échanges complétés d'un coup d'œil",
+      "li5": "Fil d'activité en direct avec mises à jour de statut en temps réel"
+    },
+    "cta": {
+      "eyebrow": "Prêt au lancement",
+      "title": "Mettez votre org en ligne",
+      "desc": "Connectez-vous avec Discord, créez une organisation, connectez le bot à votre serveur et commencez à gérer vos échanges en quelques minutes.",
+      "button": "Accéder au Terminal"
+    },
+    "footer": {
+      "disclaimer": "L'accès non autorisé est une violation du code UEE §18.7 — v0.1.0",
+      "legalButton": "Mentions légales"
+    }
+  },
   "faq": {
     "eyebrow": "Documentation",
     "title": "Aide & FAQ",
