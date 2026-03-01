@@ -131,7 +131,7 @@ export async function createTransactionAction(
     if (member.role === "member") {
         // Member initiated → notify all admins/owners
         const adminIds = org.members
-            .filter((m) => (m.role === "admin" || m.role === "owner") && m.userId !== session.user.id)
+            .filter((m) => (m.role === "admin" || m.role === "owner") && m.userId !== session?.user?.id)
             .map((m) => m.userId);
         await notifyMany(
             adminIds,
