@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="5" fill="#050d14"/>
+  <rect x="1.5" y="1.5" width="29" height="29" rx="3.5" fill="none" stroke="#4FC3DC" stroke-width="1" stroke-opacity="0.45"/>
+  <!-- corner ticks -->
+  <path d="M5 5 H9 M5 5 V9" stroke="#4FC3DC" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <path d="M27 5 H23 M27 5 V9" stroke="#4FC3DC" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <path d="M5 27 H9 M5 27 V23" stroke="#4FC3DC" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <path d="M27 27 H23 M27 27 V23" stroke="#4FC3DC" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <!-- SC text -->
+  <text x="16" y="21.5" font-family="monospace,sans-serif" font-size="13" font-weight="700" fill="#4FC3DC" text-anchor="middle">SC</text>
+</svg>
