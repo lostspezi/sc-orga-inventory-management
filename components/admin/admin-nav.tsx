@@ -7,6 +7,7 @@ const tabs = [
     { label: "Overview", href: "/terminal/admin" },
     { label: "Organizations", href: "/terminal/admin/organizations" },
     { label: "Discord Servers", href: "/terminal/admin/discord-servers" },
+    { label: "News", href: "/terminal/admin/news" },
 ];
 
 export default function AdminNav() {

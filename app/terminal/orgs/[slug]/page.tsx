@@ -9,12 +9,14 @@ import {
     getRecentCompletedTransactions,
 } from "@/lib/repositories/organization-transaction-repository";
 import { getOrganizationInventoryItemViewsByOrganizationId } from "@/lib/repositories/organization-inventory-item-repository";
+import { getLatestAppNews } from "@/lib/repositories/app-news-repository";
 import DashboardShell from "@/components/orgs/details/dashboard/dashboard-shell";
 import DashboardKpiCards from "@/components/orgs/details/dashboard/dashboard-kpi-cards";
 import RevenueChart from "@/components/orgs/details/dashboard/revenue-chart";
 import TransactionVolumeChart from "@/components/orgs/details/dashboard/transaction-volume-chart";
 import TopItemsChart from "@/components/orgs/details/dashboard/top-items-chart";
 import RecentCompletedList from "@/components/orgs/details/dashboard/recent-completed-list";
+import NewsFeed from "@/components/orgs/details/dashboard/news-feed";
 
 type Props = {
     params: Promise<{ slug: string }>;
@@ -61,12 +63,13 @@ export default async function OrgDashboardPage({ params }: Props) {
         );
     }
 
-    const [stats, dailyStats, topItems, recentCompleted, inventoryItems] = await Promise.all([
+    const [stats, dailyStats, topItems, recentCompleted, inventoryItems, newsItems] = await Promise.all([
         getDashboardStats(org._id),
         getDailyTransactionStats(org._id, 30),
         getTopItemsByRevenue(org._id, 5),
         getRecentCompletedTransactions(org._id, 10),
         getOrganizationInventoryItemViewsByOrganizationId(org._id),
+        getLatestAppNews(3),
     ]);
 
     return (
@@ -122,6 +125,14 @@ export default async function OrgDashboardPage({ params }: Props) {
                         </div>
                     </div>
                 )}
+
+                {/* News feed */}
+                <NewsFeed posts={newsItems.map((p) => ({
+                    _id: p._id.toString(),
+                    title: p.title,
+                    body: p.body,
+                    publishedAt: p.publishedAt.toISOString(),
+                }))} />
 
                 {/* KPI Cards */}
                 <DashboardKpiCards
