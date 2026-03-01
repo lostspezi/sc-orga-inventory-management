@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { createDiscordOrgInviteAction } from "@/lib/actions/create-discord-org-invite-action";
 import DiscordInviteSubmitButton from "@/components/orgs/details/members/discord-invite-submit-button";
 import DiscordMemberAutocomplete from "@/components/orgs/details/members/discord-member-autocomplete";
@@ -26,6 +27,7 @@ const initialState: CreateDiscordOrgInviteState = {
 
 export default function DiscordInviteForm({ organizationSlug }: Props) {
     const formRef = useRef<HTMLFormElement | null>(null);
+    const t = useTranslations("members");
     const [state, formAction] = useActionState(createDiscordOrgInviteAction, initialState);
 
     useEffect(() => {
@@ -49,19 +51,19 @@ export default function DiscordInviteForm({ organizationSlug }: Props) {
                     className="text-[10px] uppercase tracking-[0.25em]"
                     style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    Invite Delivery
+                    {t("inviteDelivery")}
                 </p>
                 <h3
                     className="mt-1 text-base font-semibold uppercase tracking-[0.08em]"
                     style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                 >
-                    Discord Direct Message
+                    {t("discordDm")}
                 </h3>
                 <p
                     className="mt-1 text-xs sm:text-sm"
                     style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    Select a member from the connected Discord server and send a private invite link.
+                    {t("discordDmDesc")}
                 </p>
             </div>
 
@@ -82,7 +84,7 @@ export default function DiscordInviteForm({ organizationSlug }: Props) {
                         className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                         style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                     >
-                        Invite Role
+                        {t("inviteRole")}
                     </label>
                     <select
                         id="targetRole"
@@ -91,8 +93,8 @@ export default function DiscordInviteForm({ organizationSlug }: Props) {
                         defaultValue="member"
                         required
                     >
-                        <option value="member">Member</option>
-                        <option value="admin">Admin</option>
+                        <option value="member">{t("roleMember")}</option>
+                        <option value="admin">{t("roleAdmin")}</option>
                     </select>
                     {state.fieldErrors?.targetRole && (
                         <p className="mt-1 text-xs" style={{ color: "rgba(240,165,0,0.85)" }}>

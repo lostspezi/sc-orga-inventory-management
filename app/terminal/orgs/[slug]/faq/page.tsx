@@ -11,6 +11,7 @@ import {
     Terminal,
     ShieldCheck,
 } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 // ─── Primitives ───────────────────────────────────────────────────────────────
 
@@ -152,7 +153,8 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function FaqPage() {
+export default async function FaqPage() {
+    const t = await getTranslations("faq");
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -161,25 +163,25 @@ export default function FaqPage() {
                     className="text-[10px] uppercase tracking-[0.25em]"
                     style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    Documentation
+                    {t("eyebrow")}
                 </p>
                 <h2
                     className="mt-1 text-lg font-semibold uppercase tracking-[0.08em]"
                     style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                 >
-                    Help &amp; FAQ
+                    {t("title")}
                 </h2>
                 <p
                     className="mt-1 text-sm"
                     style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                 >
-                    Everything you need to know about the inventory management terminal.
+                    {t("description")}
                 </p>
             </div>
 
             {/* ── Dashboard ── */}
-            <Section icon={LayoutDashboard} title="Dashboard" subtitle="Real-time org overview">
-                <Q q="What does the dashboard show?">
+            <Section icon={LayoutDashboard} title={t("dashboard.title")} subtitle={t("dashboard.subtitle")}>
+                <Q q={t("dashboard.q1")}>
                     <P>The dashboard is your command center. It displays four KPI cards at a glance:</P>
                     <ul className="ml-4 list-disc space-y-1">
                         <li><Highlight>Active Requests</Highlight> — transactions currently in <StatusBadge status="requested" /> or <StatusBadge status="approved" /> state.</li>
@@ -189,7 +191,7 @@ export default function FaqPage() {
                     </ul>
                     <P>Below the KPIs you have two charts (revenue curve and transaction volume bars), a top-items leaderboard, and the last 10 completed trades.</P>
                 </Q>
-                <Q q="How does the real-time feed work?">
+                <Q q={t("dashboard.q2")}>
                     <P>The dashboard opens a persistent connection to the server (SSE — Server-Sent Events). Every 3 seconds the server checks for transaction updates. When a status change is detected you&apos;ll see:</P>
                     <ul className="ml-4 list-disc space-y-1">
                         <li>A <Highlight>toast notification</Highlight> in the bottom-right corner (auto-dismisses after 6 s, max 5 at once).</li>
@@ -201,15 +203,15 @@ export default function FaqPage() {
             </Section>
 
             {/* ── Inventory ── */}
-            <Section icon={PackageOpen} title="Inventory" subtitle="Managing your org's item catalogue">
-                <Q q="What is an inventory item?">
+            <Section icon={PackageOpen} title={t("inventorySection.title")} subtitle={t("inventorySection.subtitle")}>
+                <Q q={t("inventorySection.q1")}>
                     <P>An inventory item represents a Star Citizen item or commodity that your organization buys or sells. Each entry tracks the item name (looked up from the SC item database), the current stock quantity, and a price per unit in aUEC.</P>
                 </Q>
-                <Q q="How do I add items to inventory?">
+                <Q q={t("inventorySection.q2")}>
                     <P>Open the <Highlight>Inventory</Highlight> page and click <Code>+ Add Item</Code>. Start typing the item name — the autocomplete searches the Star Citizen item database and shows matching results. Once selected, enter quantity and price, then submit.</P>
                     <P>Only <Highlight>admins</Highlight> and <Highlight>owners</Highlight> can add or remove inventory items.</P>
                 </Q>
-                <Q q="How does stock quantity change?">
+                <Q q={t("inventorySection.q3")}>
                     <P>Stock is automatically adjusted when a transaction is <StatusBadge status="completed" />:</P>
                     <ul className="ml-4 list-disc space-y-1">
                         <li><Highlight>Sell (member → org)</Highlight> — a member sells items to the org, so org stock increases.</li>
@@ -219,14 +221,14 @@ export default function FaqPage() {
             </Section>
 
             {/* ── Transactions ── */}
-            <Section icon={ArrowLeftRight} title="Transactions" subtitle="The buy/sell request flow">
-                <Q q="What are the two transaction directions?">
+            <Section icon={ArrowLeftRight} title={t("transactionsSection.title")} subtitle={t("transactionsSection.subtitle")}>
+                <Q q={t("transactionsSection.q1")}>
                     <ul className="ml-4 list-disc space-y-1">
                         <li><Highlight>Sell (member → org)</Highlight> — the member has goods and wants to sell them to the organization. The org pays the member.</li>
                         <li><Highlight>Buy (org → member)</Highlight> — the member wants to buy goods from the organization&apos;s stock. The member pays the org.</li>
                     </ul>
                 </Q>
-                <Q q="What are all the transaction statuses?">
+                <Q q={t("transactionsSection.q2")}>
                     <div className="space-y-2">
                         <div className="flex items-start gap-2"><StatusBadge status="requested" /><span className="ml-1">— Initial state. One side has submitted the request and is waiting for the other to approve it.</span></div>
                         <div className="flex items-start gap-2"><StatusBadge status="approved" /><span className="ml-1">— The counterparty (admin/owner for member-initiated, or member for admin-initiated) accepted the trade. Both parties now need to confirm the in-game transfer.</span></div>
@@ -235,7 +237,7 @@ export default function FaqPage() {
                         <div className="flex items-start gap-2"><StatusBadge status="cancelled" /><span className="ml-1">— Either party cancelled before completion.</span></div>
                     </div>
                 </Q>
-                <Q q="Who can approve, confirm, and cancel?">
+                <Q q={t("transactionsSection.q3")}>
                     <P>The approval rules depend on who initiated the request:</P>
                     <ul className="ml-4 list-disc space-y-1">
                         <li>If a <Highlight>member</Highlight> created the request, an <Highlight>admin/owner</Highlight> must approve it.</li>
@@ -244,40 +246,40 @@ export default function FaqPage() {
                         <li>Either party can <Code>Cancel</Code> at any point before completion.</li>
                     </ul>
                 </Q>
-                <Q q="Can I create transactions from Discord?">
+                <Q q={t("transactionsSection.q4")}>
                     <P>Yes — if the Discord bot is connected. Use the <Code>/sell</Code> or <Code>/buy</Code> slash commands. See the <Highlight>Discord Bot</Highlight> section below for full details.</P>
                 </Q>
             </Section>
 
             {/* ── Members ── */}
-            <Section icon={Users} title="Members" subtitle="Roles and invitations (admin/owner only)">
-                <Q q="What roles exist?">
+            <Section icon={Users} title={t("membersSection.title")} subtitle={t("membersSection.subtitle")}>
+                <Q q={t("membersSection.q1")}>
                     <ul className="ml-4 list-disc space-y-1">
                         <li><Highlight>Owner</Highlight> — full access including audit logs and member management. Only one owner per org.</li>
                         <li><Highlight>Admin</Highlight> — can manage inventory, approve/reject transactions, invite members, and access settings.</li>
                         <li><Highlight>Member</Highlight> — can create transaction requests and confirm their own trades.</li>
                     </ul>
                 </Q>
-                <Q q="How do I invite someone?">
+                <Q q={t("membersSection.q2")}>
                     <P>Go to <Highlight>Members</Highlight> and use the Discord invite form. The Discord bot must be connected first (see <Highlight>Settings</Highlight>). Type a Discord username and the bot will send the target user a DM with a private invite link. The link is single-use and expires after 24 hours.</P>
                 </Q>
             </Section>
 
             {/* ── Discord Bot ── */}
-            <Section icon={Bot} title="Discord Bot" subtitle="Setup, slash commands, and interactive embeds">
-                <Q q="How do I add the Discord bot to my server?">
+            <Section icon={Bot} title={t("discordBot.title")} subtitle={t("discordBot.subtitle")}>
+                <Q q={t("discordBot.q1")}>
                     <div className="space-y-2">
                         <Step n={1}>Go to <Highlight>Settings</Highlight> (admin/owner only).</Step>
                         <Step n={2}>In the <Highlight>Discord Server</Highlight> card at the top, click <Code>Add Bot to Server</Code>. You&apos;ll be redirected to Discord&apos;s OAuth flow.</Step>
                         <Step n={3}>Select the server you want to link to this organization and click <Code>Authorize</Code>.</Step>
                         <Step n={4}>You&apos;ll be redirected back to the Settings page. The card will now show <Highlight>● Connected</Highlight> along with the guild name.</Step>
                     </div>
-                    <p className="mt-2" style={{ color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)", fontSize: 13 }}>Only one Discord server can be linked per organization at a time.</p>
+                    <p className="mt-2" style={{ color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)", fontSize: 13 }}>{t("discordBot.q1note")}</p>
                 </Q>
-                <Q q="How do I disconnect the Discord server?">
+                <Q q={t("discordBot.q2")}>
                     <P>In <Highlight>Settings</Highlight>, open the Discord Server card and click <Code>Disconnect</Code>. This removes the link. Slash commands and invite features will stop working until a new server is connected.</P>
                 </Q>
-                <Q q="What slash commands does the bot provide?">
+                <Q q={t("discordBot.q3")}>
                     <div className="space-y-3">
                         <div
                             className="rounded border p-3"
@@ -306,10 +308,10 @@ export default function FaqPage() {
                     </div>
                     <P>After submitting, you&apos;ll receive an ephemeral (private) confirmation. The transaction is created in <StatusBadge status="requested" /> state and an embed is posted to the notification channel if one is configured.</P>
                 </Q>
-                <Q q="What is the autocomplete for the item field?">
+                <Q q={t("discordBot.q4")}>
                     <P>When you start typing in the <Code>item</Code> field of <Code>/sell</Code> or <Code>/buy</Code>, Discord shows up to 25 matching items from your org&apos;s current inventory. The search is a case-insensitive substring match on the item name. Select one from the dropdown — you cannot type a free-form name.</P>
                 </Q>
-                <Q q="What is the transaction notification embed?">
+                <Q q={t("discordBot.q5")}>
                     <P>When a transaction is created (via web or Discord), the bot posts an embed to the configured notification channel (see Settings). The embed shows:</P>
                     <ul className="ml-4 list-disc space-y-0.5">
                         <li>Item name, direction, quantity, price per unit, total, member username, optional note</li>
@@ -317,7 +319,7 @@ export default function FaqPage() {
                         <li>Action buttons depending on status</li>
                     </ul>
                 </Q>
-                <Q q="What buttons appear on the Discord embed?">
+                <Q q={t("discordBot.q6")}>
                     <div className="space-y-2">
                         <div className="flex items-start gap-2">
                             <CheckCircle size={14} style={{ color: "rgba(80,210,120,0.7)", flexShrink: 0, marginTop: 1 }} />
@@ -338,14 +340,14 @@ export default function FaqPage() {
                     </div>
                     <P>The embed is automatically updated in-place whenever the status changes, whether the action was taken on Discord or in the web UI. Terminal status changes are always reflected on Discord within seconds.</P>
                 </Q>
-                <Q q="Do Discord actions respect the same permission rules as the web UI?">
+                <Q q={t("discordBot.q7")}>
                     <P>Yes. The bot verifies your Discord account is linked to an org member account and that you have the correct role before allowing any action. The same business rules apply — you cannot approve your own request, confirm a trade for the other party, etc.</P>
                 </Q>
             </Section>
 
             {/* ── Settings ── */}
-            <Section icon={Settings2} title="Settings" subtitle="Admin/owner configuration (admin/owner only)">
-                <Q q="How do I set a Discord notification channel?">
+            <Section icon={Settings2} title={t("settingsSection.title")} subtitle={t("settingsSection.subtitle")}>
+                <Q q={t("settingsSection.q1")}>
                     <div className="space-y-2">
                         <Step n={1}>Make sure a Discord server is connected first (see above).</Step>
                         <Step n={2}>In <Highlight>Settings</Highlight>, scroll to the <Highlight>Transaction Notifications</Highlight> card.</Step>
@@ -354,14 +356,14 @@ export default function FaqPage() {
                     </div>
                     <P>To disable notifications, clear the selection and save. The <Code>$</Code> icon identifies text channels.</P>
                 </Q>
-                <Q q="What happens if no notification channel is set?">
+                <Q q={t("settingsSection.q2")}>
                     <P>Transactions created via the web UI will not post any Discord embed. Transactions created via <Code>/sell</Code> or <Code>/buy</Code> will still be saved to the database and the user will get an ephemeral confirmation, but no channel embed will be posted.</P>
                 </Q>
             </Section>
 
             {/* ── Audit Logs ── */}
-            <Section icon={ShieldCheck} title="Audit Logs" subtitle="Owner only — full activity history">
-                <Q q="What is logged in the audit trail?">
+            <Section icon={ShieldCheck} title={t("auditLogs.title")} subtitle={t("auditLogs.subtitle")}>
+                <Q q={t("auditLogs.q1")}>
                     <P>Every significant action is recorded with a timestamp, the acting user, and a description:</P>
                     <ul className="ml-4 list-disc space-y-0.5">
                         <li>Transaction created, approved, rejected, confirmed, cancelled</li>
@@ -371,13 +373,13 @@ export default function FaqPage() {
                         <li>Org settings changed</li>
                     </ul>
                 </Q>
-                <Q q="Who can see the audit logs?">
+                <Q q={t("auditLogs.q2")}>
                     <P>Only <Highlight>owners</Highlight>. The Logs page is hidden from admins and members in the navigation.</P>
                 </Q>
             </Section>
 
             {/* ── Quick Reference ── */}
-            <Section icon={Terminal} title="Quick Reference" subtitle="Slash commands at a glance">
+            <Section icon={Terminal} title={t("quickRef.title")} subtitle={t("quickRef.subtitle")}>
                 <div
                     className="overflow-x-auto rounded-lg border"
                     style={{ borderColor: "rgba(79,195,220,0.12)", background: "rgba(4,12,20,0.6)" }}
@@ -385,7 +387,7 @@ export default function FaqPage() {
                     <table className="w-full text-[12px]" style={{ fontFamily: "var(--font-mono)" }}>
                         <thead>
                             <tr style={{ borderBottom: "1px solid rgba(79,195,220,0.1)" }}>
-                                {["Command", "Who can use", "What it does"].map((h) => (
+                                {[t("quickRef.colCommand"), t("quickRef.colWho"), t("quickRef.colWhat")].map((h) => (
                                     <th
                                         key={h}
                                         className="px-4 py-2.5 text-left text-[10px] uppercase tracking-[0.2em]"
@@ -398,8 +400,8 @@ export default function FaqPage() {
                         </thead>
                         <tbody>
                             {[
-                                ["/sell", "Any linked member", "Create a sell request (member → org) via Discord"],
-                                ["/buy",  "Any linked member", "Create a buy request (org → member) via Discord"],
+                                ["/sell", t("quickRef.sellWho"), t("quickRef.sellWhat")],
+                                ["/buy",  t("quickRef.buyWho"),  t("quickRef.buyWhat")],
                             ].map(([cmd, who, what]) => (
                                 <tr
                                     key={cmd}
@@ -427,13 +429,13 @@ export default function FaqPage() {
                                 className="mb-1 text-[10px] uppercase tracking-[0.15em]"
                                 style={{ color: "rgba(240,165,0,0.7)", fontFamily: "var(--font-mono)" }}
                             >
-                                Note on Discord account linking
+                                {t("quickRef.noteTitle")}
                             </p>
                             <p
                                 className="text-[12px]"
                                 style={{ color: "rgba(200,220,232,0.5)", fontFamily: "var(--font-mono)" }}
                             >
-                                To use slash commands or interact with embeds, your Discord account must be the one you used to log in to this terminal. The bot matches Discord user IDs to terminal accounts via the OAuth login.
+                                {t("quickRef.noteText")}
                             </p>
                         </div>
                     </div>

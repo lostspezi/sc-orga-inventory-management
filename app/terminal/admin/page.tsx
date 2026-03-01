@@ -1,6 +1,7 @@
 import { getAllOrganizationsForAdmin } from "@/lib/repositories/organization-repository";
 import { getBotGuildCount } from "@/lib/discord/get-bot-guild-count";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 export const metadata = { title: "Admin Overview" };
 
@@ -41,9 +42,10 @@ function KpiCard({ label, value, sub }: KpiCardProps) {
 }
 
 export default async function AdminOverviewPage() {
-    const [rows, botGuildCount] = await Promise.all([
+    const [rows, botGuildCount, t] = await Promise.all([
         getAllOrganizationsForAdmin(),
         getBotGuildCount(),
+        getTranslations("adminOverview"),
     ]);
 
     const totalMemberships = rows.reduce((sum, r) => sum + r.memberCount, 0);
@@ -71,19 +73,19 @@ export default async function AdminOverviewPage() {
                         className="mb-1 text-xs uppercase tracking-[0.35em]"
                         style={{ color: "rgba(240,165,0,0.5)", fontFamily: "var(--font-display)" }}
                     >
-                        Super Admin
+                        {t("eyebrow")}
                     </p>
                     <h1
                         className="text-2xl font-semibold uppercase tracking-[0.08em] sm:text-3xl"
                         style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}
                     >
-                        Overview
+                        {t("title")}
                     </h1>
                     <p
                         className="mt-1 text-sm"
                         style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                     >
-                        Platform-wide statistics and quick access.
+                        {t("description")}
                     </p>
                     <div
                         className="absolute -bottom-px left-8 right-8 h-px"
@@ -97,22 +99,22 @@ export default async function AdminOverviewPage() {
                 {/* KPI grid */}
                 <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <KpiCard
-                        label="Organizations"
+                        label={t("orgsLabel")}
                         value={rows.length}
-                        sub="registered in database"
+                        sub={t("orgsDesc")}
                     />
                     <KpiCard
-                        label="Total Memberships"
+                        label={t("memberships")}
                         value={totalMemberships}
-                        sub="across all organizations"
+                        sub={t("membershipsDesc")}
                     />
                     <KpiCard
-                        label="Discord Integrated"
+                        label={t("discordIntegrated")}
                         value={orgsWithDiscord}
-                        sub="orgs with bot connected"
+                        sub={t("discordIntegratedDesc")}
                     />
                     <KpiCard
-                        label="Bot Active On"
+                        label={t("botActive")}
                         value={
                             botGuildCount !== null ? (
                                 botGuildCount
@@ -125,7 +127,7 @@ export default async function AdminOverviewPage() {
                                 </span>
                             )
                         }
-                        sub={botGuildCount !== null ? "Discord servers" : "bot unavailable"}
+                        sub={botGuildCount !== null ? t("discordServers") : t("botUnavailable")}
                     />
                 </section>
 
@@ -141,19 +143,19 @@ export default async function AdminOverviewPage() {
                                 className="text-[10px] uppercase tracking-[0.25em]"
                                 style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                             >
-                                Manage
+                                {t("manage")}
                             </p>
                             <p
                                 className="mt-0.5 text-base font-semibold uppercase tracking-[0.08em]"
                                 style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                             >
-                                Organizations
+                                {t("manageOrgs")}
                             </p>
                             <p
                                 className="mt-1 text-xs"
                                 style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
                             >
-                                View all orgs, transfer ownership
+                                {t("manageOrgsDesc")}
                             </p>
                         </div>
                         <span
@@ -174,19 +176,19 @@ export default async function AdminOverviewPage() {
                                 className="text-[10px] uppercase tracking-[0.25em]"
                                 style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                             >
-                                Manage
+                                {t("manage")}
                             </p>
                             <p
                                 className="mt-0.5 text-base font-semibold uppercase tracking-[0.08em]"
                                 style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                             >
-                                Discord Servers
+                                {t("manageDiscord")}
                             </p>
                             <p
                                 className="mt-1 text-xs"
                                 style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
                             >
-                                View bot servers, disconnect from servers
+                                {t("manageDiscordDesc")}
                             </p>
                         </div>
                         <span

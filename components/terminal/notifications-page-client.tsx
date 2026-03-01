@@ -2,19 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations, useFormatter } from "next-intl";
 import type { NotificationView } from "@/lib/types/notification";
-
-function timeAgo(iso: string): string {
-    const diff = Date.now() - new Date(iso).getTime();
-    const m = Math.floor(diff / 60000);
-    if (m < 1) return "just now";
-    if (m < 60) return `${m}m ago`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h ago`;
-    const d = Math.floor(h / 24);
-    if (d < 30) return `${d}d ago`;
-    return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
 
 export default function NotificationsPageClient({
     notifications: initial,
@@ -23,6 +12,8 @@ export default function NotificationsPageClient({
 }) {
     const [notifications, setNotifications] = useState(initial);
     const router = useRouter();
+    const t = useTranslations("notifications");
+    const format = useFormatter();
 
     const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -64,8 +55,9 @@ export default function NotificationsPageClient({
                     className="text-[10px] uppercase tracking-[0.25em]"
                     style={{ color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)" }}
                 >
-                    {notifications.length} total
-                    {unreadCount > 0 && ` · ${unreadCount} unread`}
+                    {unreadCount > 0
+                        ? t("totalWithUnread", { total: notifications.length, unread: unreadCount })
+                        : t("total", { count: notifications.length })}
                 </p>
                 {unreadCount > 0 && (
                     <button
@@ -80,7 +72,7 @@ export default function NotificationsPageClient({
                             (e.currentTarget as HTMLElement).style.color = "rgba(79,195,220,0.5)";
                         }}
                     >
-                        Mark all read
+                        {t("markAllRead")}
                     </button>
                 )}
             </div>
@@ -90,7 +82,7 @@ export default function NotificationsPageClient({
                     className="px-5 py-10 text-center text-sm"
                     style={{ color: "rgba(200,220,232,0.3)", fontFamily: "var(--font-mono)" }}
                 >
-                    No notifications yet.
+                    {t("empty")}
                 </p>
             ) : (
                 <ul className="divide-y" style={{ borderColor: "rgba(79,195,220,0.07)" }}>
@@ -143,7 +135,7 @@ export default function NotificationsPageClient({
                                                     fontFamily: "var(--font-mono)",
                                                 }}
                                             >
-                                                {timeAgo(n.createdAt)}
+                                                {format.relativeTime(new Date(n.createdAt))}
                                             </span>
                                         </div>
                                         <p

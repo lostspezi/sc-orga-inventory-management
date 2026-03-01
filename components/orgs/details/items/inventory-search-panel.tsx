@@ -2,6 +2,7 @@
 
 import {useMemo, useState} from "react";
 import {Search} from "lucide-react";
+import { useTranslations } from "next-intl";
 import InventoryItemDetailsDialog from "@/components/orgs/details/items/inventory-item-details-dialog";
 import CreateTransactionDialog from "@/components/orgs/details/transactions/create-transaction-dialog";
 import type {OrganizationTransactionView} from "@/lib/types/transaction";
@@ -39,6 +40,7 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
     const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [txIntent, setTxIntent] = useState<TransactionIntent | null>(null);
+    const t = useTranslations("inventory");
 
     const filteredItems = useMemo(() => {
         const q = normalize(query);
@@ -78,13 +80,13 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                         className="text-[10px] uppercase tracking-[0.25em]"
                         style={{color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)"}}
                     >
-                        Search
+                        {t("searchLabel")}
                     </p>
                     <h3
                         className="mt-1 text-base font-semibold uppercase tracking-[0.08em]"
                         style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
                     >
-                        Search Inventory
+                        {t("searchInventory")}
                     </h3>
                 </div>
 
@@ -98,7 +100,7 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search by item name, category, description..."
+                        placeholder={t("searchPlaceholder")}
                         className="sc-input w-full pl-9!"
                         autoComplete="off"
                     />
@@ -117,13 +119,13 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                         className="text-[10px] uppercase tracking-[0.25em]"
                         style={{color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)"}}
                     >
-                        Inventory Entries
+                        {t("inventoryEntries")}
                     </p>
                     <h3
                         className="mt-1 text-base font-semibold uppercase tracking-[0.08em]"
                         style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
                     >
-                        {filteredItems.length} Registered
+                        {t("registeredCount", { count: filteredItems.length })}
                     </h3>
                 </div>
 
@@ -139,13 +141,13 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                             className="text-sm uppercase tracking-[0.12em]"
                             style={{color: "rgba(240,165,0,0.8)", fontFamily: "var(--font-display)"}}
                         >
-                            No Matching Items
+                            {t("noMatchingItems")}
                         </p>
                         <p
                             className="mt-2 text-xs"
                             style={{color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)"}}
                         >
-                            No inventory items matched your search.
+                            {t("noMatchingItemsDesc")}
                         </p>
                     </div>
                 ) : (
@@ -174,7 +176,7 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                                         className="text-[11px]"
                                         style={{color: "rgba(200,220,232,0.38)", fontFamily: "var(--font-mono)"}}
                                     >
-                                        {item.category ?? "Uncategorized"}
+                                        {item.category ?? t("uncategorized")}
                                     </p>
                                 </div>
 
@@ -188,9 +190,14 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                                 )}
 
                                 <div className="mt-4 space-y-2">
-                                    <InfoRow label="Buy Price" value={String(item.buyPrice)}/>
-                                    <InfoRow label="Sell Price" value={String(item.sellPrice)}/>
-                                    <QuantityRow label="Quantity" value={item.quantity}/>
+                                    <InfoRow label={t("buyPrice")} value={String(item.buyPrice)}/>
+                                    <InfoRow label={t("sellPrice")} value={String(item.sellPrice)}/>
+                                    <QuantityRow
+                                        label={t("quantity")}
+                                        value={item.quantity}
+                                        outOfStock={t("outOfStock")}
+                                        pieces={t("pieces", { count: item.quantity })}
+                                    />
                                 </div>
 
                                 <div className="mt-4 flex gap-2" onClick={(e) => e.stopPropagation()}>
@@ -206,7 +213,7 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                                             cursor: "pointer",
                                         }}
                                     >
-                                        Buy
+                                        {t("buy")}
                                     </button>
                                     <button
                                         type="button"
@@ -220,7 +227,7 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                                             cursor: "pointer",
                                         }}
                                     >
-                                        Sell
+                                        {t("sell")}
                                     </button>
                                 </div>
                             </div>
@@ -273,7 +280,7 @@ function InfoRow({label, value}: { label: string; value: string }) {
     );
 }
 
-function QuantityRow({label, value}: { label: string; value: number }) {
+function QuantityRow({label, value, outOfStock, pieces}: { label: string; value: number; outOfStock: string; pieces: string }) {
     return (
         <div className="flex items-center justify-between gap-2">
             <span
@@ -286,7 +293,7 @@ function QuantityRow({label, value}: { label: string; value: number }) {
                 className="text-[11px]"
                 style={{color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)"}}
             >
-                {value > 0 ? value > 1 ? `${value} pieces` : `${value} piece` : "Out of Stock"}
+                {value > 0 ? pieces : outOfStock}
             </span>
         </div>
     );

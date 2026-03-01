@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ORG_NAV_ITEMS, type OrganizationRole } from "@/components/orgs/details/org-details-nav";
 
 type Props = {
@@ -11,6 +12,17 @@ type Props = {
 
 export default function OrgDetailsSidebar({ slug, currentRole }: Props) {
     const pathname = usePathname();
+    const t = useTranslations("orgShell");
+
+    const navLabels: Record<string, string> = {
+        dashboard: t("navDashboard"),
+        inventory: t("navInventory"),
+        transactions: t("navTransactions"),
+        members: t("navMembers"),
+        logs: t("navLogs"),
+        settings: t("navSettings"),
+        faq: t("navFaq"),
+    };
 
     const visibleItems = ORG_NAV_ITEMS.filter(
         (item) => !item.allowedRoles || item.allowedRoles.includes(currentRole)
@@ -30,7 +42,7 @@ export default function OrgDetailsSidebar({ slug, currentRole }: Props) {
                 className="mb-3 text-[10px] uppercase tracking-[0.25em]"
                 style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
             >
-                Navigation
+                {t("navigationLabel")}
             </p>
 
             <nav className="space-y-2">
@@ -58,7 +70,7 @@ export default function OrgDetailsSidebar({ slug, currentRole }: Props) {
                             }}
                         >
                             <Icon size={16} />
-                            <span className="uppercase tracking-[0.12em]">{item.label}</span>
+                            <span className="uppercase tracking-[0.12em]">{navLabels[item.key] ?? item.label}</span>
                         </Link>
                     );
                 })}

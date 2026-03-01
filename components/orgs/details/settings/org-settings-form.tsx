@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { updateOrgSettingsAction, type UpdateOrgSettingsActionState } from "@/lib/actions/update-org-settings-action";
 import DiscordChannelSelect from "@/components/orgs/details/settings/discord-channel-select";
 
@@ -16,6 +17,7 @@ const initialState: UpdateOrgSettingsActionState = {
 };
 
 export default function OrgSettingsForm({ organizationSlug, currentChannelId, hasDiscord }: Props) {
+    const t = useTranslations("orgSettings");
     const [state, formAction, isPending] = useActionState(updateOrgSettingsAction, initialState);
 
     return (
@@ -33,13 +35,13 @@ export default function OrgSettingsForm({ organizationSlug, currentChannelId, ha
                         className="text-[10px] uppercase tracking-[0.15em]"
                         style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                     >
-                        Discord Notification Channel
+                        {t("channelLabel")}
                     </p>
                     <p
                         className="mt-1 text-sm"
                         style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
                     >
-                        Connect a Discord server to this organization first (Members page) to configure a notification channel.
+                        {t("channelHelp")}
                     </p>
                     {/* Still include hidden input so form submission is valid */}
                     <input type="hidden" name="discordTransactionChannelId" value="" />
@@ -71,7 +73,7 @@ export default function OrgSettingsForm({ organizationSlug, currentChannelId, ha
                         fontFamily: "var(--font-mono)",
                     }}
                 >
-                    {isPending ? "Saving..." : "Save Settings"}
+                    {isPending ? t("saving") : t("saveSettings")}
                 </button>
             )}
         </form>

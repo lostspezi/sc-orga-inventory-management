@@ -2,6 +2,7 @@
 
 import {startTransition, useActionState, useEffect, useRef, useState} from "react";
 import {useRouter} from "next/navigation";
+import { useTranslations } from "next-intl";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import {removeOrganizationInventoryItemAction} from "@/lib/actions/remove-organization-inventory-item-action";
 
@@ -22,6 +23,8 @@ export default function RemoveOrganizationInventoryItemButton({
                                                                   itemLabel,
                                                               }: Props) {
     const router = useRouter();
+    const t = useTranslations("inventory");
+    const tc = useTranslations("common");
     const [open, setOpen] = useState(false);
     const handledSuccessRef = useRef(false);
 
@@ -71,7 +74,7 @@ export default function RemoveOrganizationInventoryItemButton({
                     background: "rgba(240,165,0,0.05)",
                 }}
             >
-                Remove Item from Inventory & Organization
+                {t("removeItem")}
             </button>
 
             <ConfirmDialog
@@ -80,10 +83,10 @@ export default function RemoveOrganizationInventoryItemButton({
                 onConfirm={handleConfirm}
                 tone="danger"
                 isLoading={isPending}
-                title="Remove Inventory Item"
-                description={`Are you sure you want to remove ${itemLabel ?? "this item"} from the organization inventory?`}
-                confirmLabel="Remove Item"
-                cancelLabel="Cancel"
+                title={t("removeItemTitle")}
+                description={t("removeItemConfirm", { name: itemLabel ?? "this item" })}
+                confirmLabel={t("removeItemButton")}
+                cancelLabel={tc("cancel")}
             />
         </>
     );

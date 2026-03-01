@@ -1,4 +1,5 @@
 import { ExternalLink } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import OrgDetailsSidebar from "@/components/orgs/details/org-details-sidebar";
 import OrgDetailsMobileNav from "@/components/orgs/details/org-details-mobile-nav";
 import {OrganizationRole} from "@/components/orgs/details/org-details-nav";
@@ -13,7 +14,9 @@ type Props = {
     currentRole: OrganizationRole;
 };
 
-export default function OrgDetailsShell({ slug, orgName, orgRsiUrl, children, currentRole }: Props) {
+export default async function OrgDetailsShell({ slug, orgName, orgRsiUrl, children, currentRole }: Props) {
+    const t = await getTranslations("orgShell");
+
     return (
         <main className="min-h-screen px-4 py-6 sm:px-6">
             <div className="mx-auto w-full max-w-7xl space-y-4">
@@ -33,7 +36,7 @@ export default function OrgDetailsShell({ slug, orgName, orgRsiUrl, children, cu
                                 className="mb-1 text-xs uppercase tracking-[0.35em]"
                                 style={{ color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-display)" }}
                             >
-                                Organization Terminal
+                                {t("orgTerminal")}
                             </p>
                             <h1
                                 className="text-xl font-semibold uppercase tracking-[0.08em] sm:text-2xl"
@@ -53,7 +56,7 @@ export default function OrgDetailsShell({ slug, orgName, orgRsiUrl, children, cu
                                     className="sc-btn inline-flex items-center gap-2"
                                 >
                                     <ExternalLink size={16} />
-                                    RSI Page
+                                    {t("rsiPage")}
                                 </a>
                             )}
                         </div>

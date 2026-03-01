@@ -1,10 +1,11 @@
-import {auth} from "@/auth";
-import {redirect} from "next/navigation";
-import {getOrganizationViewsByUserId} from "@/lib/repositories/organization-repository";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { getOrganizationViewsByUserId } from "@/lib/repositories/organization-repository";
 import OrgCard from "@/components/orgs/org-card";
 import CreateOrgDialog from "@/components/orgs/create-org-dialog";
 import Link from "next/link";
 import { isSuperAdmin } from "@/lib/is-super-admin";
+import { getTranslations } from "next-intl/server";
 
 export default async function TerminalPage() {
     const session = await auth();
@@ -13,8 +14,11 @@ export default async function TerminalPage() {
         redirect("/login");
     }
 
-    const orgs = await getOrganizationViewsByUserId(session.user.id);
-    const superAdmin = await isSuperAdmin(session.user.id);
+    const [orgs, superAdmin, t] = await Promise.all([
+        getOrganizationViewsByUserId(session.user.id),
+        isSuperAdmin(session.user.id),
+        getTranslations("terminal"),
+    ]);
 
     return (
         <main className="px-4 py-6 sm:px-6">
@@ -30,7 +34,7 @@ export default async function TerminalPage() {
                                 className="sc-btn sc-btn-outline"
                                 style={{fontSize: "0.75rem", padding: "0.3rem 0.75rem"}}
                             >
-                                Admin Panel
+                                {t("adminPanel")}
                             </Link>
                         )}
                         {orgs.length > 0 && <CreateOrgDialog/>}
@@ -49,21 +53,21 @@ export default async function TerminalPage() {
                         className="mb-1 text-xs uppercase tracking-[0.35em]"
                         style={{color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-display)"}}
                     >
-                        United Empire of Earth
+                        {t("eyebrow")}
                     </p>
 
                     <h1
                         className="text-2xl font-semibold uppercase tracking-[0.08em] sm:text-3xl"
                         style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
                     >
-                        Organizations
+                        {t("title")}
                     </h1>
 
                     <p
                         className="mt-2 text-sm"
                         style={{color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)"}}
                     >
-                        Select an organization to access its terminal modules and member management.
+                        {t("description")}
                     </p>
 
                     <div
@@ -84,13 +88,13 @@ export default async function TerminalPage() {
                             className="text-sm uppercase tracking-[0.12em]"
                             style={{color: "rgba(240,165,0,0.8)", fontFamily: "var(--font-display)"}}
                         >
-                            No Organizations Found
+                            {t("noOrgs")}
                         </p>
                         <p
                             className="mt-2 mb-2 text-xs"
                             style={{color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)"}}
                         >
-                            Create your first organization to get started or get invited to join an existing one.
+                            {t("noOrgsDescription")}
                         </p>
                         <CreateOrgDialog/>
                     </section>

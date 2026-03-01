@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { AppNewsView } from "@/lib/types/app-news";
 import {
     createAppNewsAction,
@@ -22,6 +23,9 @@ function DialogShell({
     onClose: () => void;
     children: React.ReactNode;
 }) {
+    const t = useTranslations("news.admin");
+    const tc = useTranslations("common");
+
     return (
         <dialog
             ref={dialogRef}
@@ -47,7 +51,7 @@ function DialogShell({
                             className="mb-1 text-[10px] uppercase tracking-[0.3em]"
                             style={{ color: "rgba(240,165,0,0.5)", fontFamily: "var(--font-mono)" }}
                         >
-                            Super Admin · News
+                            {t("label")}
                         </p>
                         <h2
                             className="text-lg font-semibold uppercase tracking-[0.08em]"
@@ -68,7 +72,7 @@ function DialogShell({
                             background: "rgba(79,195,220,0.04)",
                         }}
                     >
-                        CLOSE
+                        {tc("close").toUpperCase()}
                     </button>
                 </div>
 
@@ -97,6 +101,9 @@ function NewsForm({
     onCancel: () => void;
     submitLabel: string;
 }) {
+    const t = useTranslations("news.admin");
+    const tc = useTranslations("common");
+
     return (
         <form
             onSubmit={(e) => {
@@ -111,7 +118,7 @@ function NewsForm({
                     className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                     style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                 >
-                    Title
+                    {t("titleLabel")}
                 </label>
                 <input
                     id="news-title"
@@ -120,7 +127,7 @@ function NewsForm({
                     required
                     defaultValue={defaultTitle}
                     className="sc-input w-full"
-                    placeholder="Post title…"
+                    placeholder={t("titlePlaceholder")}
                 />
             </div>
 
@@ -130,7 +137,7 @@ function NewsForm({
                     className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                     style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                 >
-                    Body
+                    {t("bodyLabel")}
                 </label>
                 <textarea
                     id="news-body"
@@ -139,7 +146,7 @@ function NewsForm({
                     defaultValue={defaultBody}
                     rows={6}
                     className="sc-input w-full resize-y"
-                    placeholder="Post content…"
+                    placeholder={t("bodyPlaceholder")}
                 />
             </div>
 
@@ -158,7 +165,7 @@ function NewsForm({
                     onClick={onCancel}
                     className="sc-btn sc-btn-outline"
                 >
-                    Cancel
+                    {tc("cancel")}
                 </button>
                 <button
                     type="submit"
@@ -170,7 +177,7 @@ function NewsForm({
                         color: "rgba(240,165,0,0.9)",
                     }}
                 >
-                    {isPending ? "Saving…" : submitLabel}
+                    {isPending ? tc("saving") : submitLabel}
                 </button>
             </div>
         </form>
@@ -182,6 +189,7 @@ function NewsForm({
 export function CreateNewsDialog() {
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const router = useRouter();
+    const t = useTranslations("news.admin");
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
 
@@ -211,16 +219,16 @@ export function CreateNewsDialog() {
     return (
         <>
             <button type="button" onClick={open} className="sc-btn">
-                New Post
+                {t("newPost")}
             </button>
 
-            <DialogShell dialogRef={dialogRef} title="New Post" onClose={close}>
+            <DialogShell dialogRef={dialogRef} title={t("createTitle")} onClose={close}>
                 <NewsForm
                     isPending={isPending}
                     error={error}
                     onSubmit={handleSubmit}
                     onCancel={close}
-                    submitLabel="Create Post"
+                    submitLabel={t("createPost")}
                 />
             </DialogShell>
         </>
@@ -232,6 +240,8 @@ export function CreateNewsDialog() {
 export function EditNewsDialog({ post }: { post: AppNewsView }) {
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const router = useRouter();
+    const t = useTranslations("news.admin");
+    const tc = useTranslations("common");
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
 
@@ -266,10 +276,10 @@ export function EditNewsDialog({ post }: { post: AppNewsView }) {
                 className="sc-btn sc-btn-outline"
                 style={{ fontSize: "0.75rem", padding: "0.25rem 0.65rem" }}
             >
-                Edit
+                {tc("edit")}
             </button>
 
-            <DialogShell dialogRef={dialogRef} title="Edit Post" onClose={close}>
+            <DialogShell dialogRef={dialogRef} title={t("editTitle")} onClose={close}>
                 <NewsForm
                     defaultTitle={post.title}
                     defaultBody={post.body}
@@ -277,7 +287,7 @@ export function EditNewsDialog({ post }: { post: AppNewsView }) {
                     error={error}
                     onSubmit={handleSubmit}
                     onCancel={close}
-                    submitLabel="Save Changes"
+                    submitLabel={t("saveChanges")}
                 />
             </DialogShell>
         </>
@@ -289,6 +299,8 @@ export function EditNewsDialog({ post }: { post: AppNewsView }) {
 export function DeleteNewsButton({ post }: { post: AppNewsView }) {
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const router = useRouter();
+    const t = useTranslations("news.admin");
+    const tc = useTranslations("common");
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
 
@@ -328,7 +340,7 @@ export function DeleteNewsButton({ post }: { post: AppNewsView }) {
                     color: "rgba(220,100,100,0.85)",
                 }}
             >
-                Delete
+                {tc("delete")}
             </button>
 
             <dialog
@@ -346,19 +358,19 @@ export function DeleteNewsButton({ post }: { post: AppNewsView }) {
                             className="mb-1 text-[10px] uppercase tracking-[0.3em]"
                             style={{ color: "rgba(220,60,60,0.6)", fontFamily: "var(--font-mono)" }}
                         >
-                            Confirm Delete
+                            {t("confirmDelete")}
                         </p>
                         <h2
                             className="text-base font-semibold uppercase tracking-[0.08em]"
                             style={{ color: "rgba(220,100,100,0.9)", fontFamily: "var(--font-display)" }}
                         >
-                            Delete Post
+                            {t("deleteTitle")}
                         </h2>
                         <p
                             className="mt-2 text-sm"
                             style={{ color: "rgba(200,220,232,0.5)", fontFamily: "var(--font-mono)" }}
                         >
-                            &quot;{post.title}&quot; will be permanently removed.
+                            {t("deleteWarning", { title: post.title })}
                         </p>
                     </div>
 
@@ -373,7 +385,7 @@ export function DeleteNewsButton({ post }: { post: AppNewsView }) {
 
                     <div className="flex justify-end gap-2">
                         <button type="button" onClick={close} className="sc-btn sc-btn-outline">
-                            Cancel
+                            {tc("cancel")}
                         </button>
                         <button
                             type="button"
@@ -386,7 +398,7 @@ export function DeleteNewsButton({ post }: { post: AppNewsView }) {
                                 color: "rgba(220,100,100,0.9)",
                             }}
                         >
-                            {isPending ? "Deleting…" : "Delete"}
+                            {isPending ? tc("deleting") : tc("delete")}
                         </button>
                     </div>
                 </div>

@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import type { DailyStats } from "@/lib/repositories/organization-transaction-repository";
 
 const W = 600;
@@ -15,7 +16,9 @@ function formatDate(iso: string): string {
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 }
 
-export default function TransactionVolumeChart({ data }: { data: DailyStats[] }) {
+export default async function TransactionVolumeChart({ data }: { data: DailyStats[] }) {
+    const t = await getTranslations("charts");
+
     if (data.length === 0) return null;
 
     const maxCount = Math.max(...data.map((d) => d.sellCount + d.buyCount), 1);
@@ -52,7 +55,7 @@ export default function TransactionVolumeChart({ data }: { data: DailyStats[] })
                     className="text-[10px] uppercase tracking-[0.25em]"
                     style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                 >
-                    Transaction Volume · 30 Days
+                    {t("volume")}
                 </p>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1.5">
@@ -61,7 +64,7 @@ export default function TransactionVolumeChart({ data }: { data: DailyStats[] })
                             className="text-[10px]"
                             style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
                         >
-                            Sell
+                            {t("sell")}
                         </span>
                     </div>
                     <div className="flex items-center gap-1.5">
@@ -70,7 +73,7 @@ export default function TransactionVolumeChart({ data }: { data: DailyStats[] })
                             className="text-[10px]"
                             style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
                         >
-                            Buy
+                            {t("buy")}
                         </span>
                     </div>
                 </div>

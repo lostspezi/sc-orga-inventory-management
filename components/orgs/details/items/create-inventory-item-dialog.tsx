@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
     createOrganizationInventoryItemAction,
     type CreateOrganizationInventoryItemActionState,
@@ -35,6 +36,8 @@ export default function CreateInventoryItemDialog({
                                                       existingItem,
                                                       onCloseAction,
                                                   }: Props) {
+    const t = useTranslations("inventory");
+    const tc = useTranslations("common");
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const handledSuccessRef = useRef(false);
     const router = useRouter();
@@ -103,21 +106,19 @@ export default function CreateInventoryItemDialog({
                             className="mb-1 text-[10px] uppercase tracking-[0.3em]"
                             style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                         >
-                            INVENTORY.CONFIG
+                            {t("configLabel")}
                         </p>
                         <h2
                             className="text-lg font-semibold uppercase tracking-[0.08em]"
                             style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                         >
-                            {isExisting ? "Configure Existing Item" : "Create New Item"}
+                            {isExisting ? t("configureExisting") : t("createNew")}
                         </h2>
                         <p
                             className="mt-1 text-sm"
                             style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                         >
-                            {isExisting
-                                ? "This item already exists globally. Only inventory values are needed."
-                                : "This item does not exist yet. Add item details and inventory values."}
+                            {isExisting ? t("existingDesc") : t("newDesc")}
                         </p>
                     </div>
 
@@ -133,7 +134,7 @@ export default function CreateInventoryItemDialog({
                             background: "rgba(79,195,220,0.04)",
                         }}
                     >
-                        CLOSE
+                        {tc("close").toUpperCase()}
                     </button>
                 </div>
 
@@ -147,7 +148,7 @@ export default function CreateInventoryItemDialog({
                             className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                             style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                         >
-                            Item Name
+                            {t("itemName")}
                         </label>
                         <input
                             type="text"
@@ -165,13 +166,13 @@ export default function CreateInventoryItemDialog({
                                     className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                                     style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                                 >
-                                    Category
+                                    {t("category")}
                                 </label>
                                 <input
                                     id="category"
                                     name="category"
                                     type="text"
-                                    placeholder="e.g. Medical"
+                                    placeholder={t("categoryPlaceholder")}
                                     className="sc-input w-full"
                                 />
                             </div>
@@ -182,13 +183,13 @@ export default function CreateInventoryItemDialog({
                                     className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                                     style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                                 >
-                                    Description
+                                    {t("itemDescription")}
                                 </label>
                                 <textarea
                                     id="description"
                                     name="description"
                                     rows={3}
-                                    placeholder="Optional item description"
+                                    placeholder={t("itemDescriptionPlaceholder")}
                                     className="sc-input w-full resize-none"
                                 />
                             </div>
@@ -202,7 +203,7 @@ export default function CreateInventoryItemDialog({
                                 className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                                 style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                             >
-                                Buy Price
+                                {t("buyPrice")}
                             </label>
                             <input
                                 id="buyPrice"
@@ -227,7 +228,7 @@ export default function CreateInventoryItemDialog({
                                 className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                                 style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                             >
-                                Sell Price
+                                {t("sellPrice")}
                             </label>
                             <input
                                 id="sellPrice"
@@ -252,7 +253,7 @@ export default function CreateInventoryItemDialog({
                                 className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                                 style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                             >
-                                Quantity
+                                {t("quantity")}
                             </label>
                             <input
                                 id="quantity"
@@ -288,10 +289,10 @@ export default function CreateInventoryItemDialog({
 
                     <div className="flex justify-end gap-2 pt-2">
                         <button type="button" onClick={handleClose} className="sc-btn sc-btn-outline" disabled={isPending}>
-                            Cancel
+                            {tc("cancel")}
                         </button>
                         <button type="submit" className="sc-btn" disabled={isPending}>
-                            {isPending ? "Saving..." : "Save Item"}
+                            {isPending ? t("saving") : t("saveItem")}
                         </button>
                     </div>
                 </form>

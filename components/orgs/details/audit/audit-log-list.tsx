@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { Clock3, FileText, User, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type AuditLogItem = {
     _id: string;
@@ -117,6 +118,8 @@ function AuditLogDetailsDialogContent({
     log: AuditLogItem;
     onClose: () => void;
 }) {
+    const t = useTranslations("logs");
+    const tc = useTranslations("common");
     const actor = log.actorUsername ?? log.actorUserId;
     const createdAt = new Date(log.createdAt).toLocaleString("en-GB", {
         dateStyle: "medium",
@@ -146,19 +149,19 @@ function AuditLogDetailsDialogContent({
                         className="mb-1 text-[10px] uppercase tracking-[0.3em]"
                         style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                     >
-                        LOG.DETAILS
+                        {t("detailsLabel")}
                     </p>
                     <h3
                         className="text-lg font-semibold uppercase tracking-[0.08em]"
                         style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                     >
-                        Audit Entry
+                        {t("detailsTitle")}
                     </h3>
                     <p
                         className="mt-1 text-sm"
                         style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                     >
-                        Full details for the selected log entry.
+                        {t("detailsDesc")}
                     </p>
                 </div>
 
@@ -175,7 +178,7 @@ function AuditLogDetailsDialogContent({
                 >
                     <span className="inline-flex items-center gap-1">
                         <X size={12} />
-                        CLOSE
+                        {tc("close").toUpperCase()}
                     </span>
                 </button>
             </div>
@@ -218,12 +221,12 @@ function AuditLogDetailsDialogContent({
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <DetailRow icon={<User size={14} />} label="Actor" value={actor} />
-                    <DetailRow icon={<Clock3 size={14} />} label="Time" value={createdAt} />
-                    <DetailRow label="Action" value={log.action} />
-                    <DetailRow label="Entity Type" value={log.entityType} />
-                    {log.entityId && <DetailRow label="Entity ID" value={log.entityId} />}
-                    <DetailRow label="Actor User ID" value={log.actorUserId} />
+                    <DetailRow icon={<User size={14} />} label={t("actor")} value={actor} />
+                    <DetailRow icon={<Clock3 size={14} />} label={t("time")} value={createdAt} />
+                    <DetailRow label={t("action")} value={log.action} />
+                    <DetailRow label={t("entityType")} value={log.entityType} />
+                    {log.entityId && <DetailRow label={t("entityId")} value={log.entityId} />}
+                    <DetailRow label={t("actorUserId")} value={log.actorUserId} />
                 </div>
 
                 {formattedMetadata && (
@@ -238,7 +241,7 @@ function AuditLogDetailsDialogContent({
                             className="mb-2 text-[10px] uppercase tracking-[0.22em]"
                             style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                         >
-                            Metadata
+                            {t("metadata")}
                         </p>
 
                         <pre

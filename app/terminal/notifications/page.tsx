@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getNotificationsForUser } from "@/lib/repositories/notification-repository";
 import NotificationsPageClient from "@/components/terminal/notifications-page-client";
 import BackButton from "@/components/ui/back-button";
@@ -13,6 +14,8 @@ export default async function NotificationsPage() {
     if (!session?.user?.id) {
         redirect("/login");
     }
+
+    const t = await getTranslations("notifications");
 
     const docs = await getNotificationsForUser(session.user.id, 100);
 
@@ -38,13 +41,13 @@ export default async function NotificationsPage() {
                             className="text-[10px] uppercase tracking-[0.25em]"
                             style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                         >
-                            Account
+                            {t("account")}
                         </p>
                         <h1
                             className="mt-1 text-2xl font-semibold uppercase tracking-[0.08em]"
                             style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                         >
-                            Notifications
+                            {t("title")}
                         </h1>
                     </div>
                     <BackButton />

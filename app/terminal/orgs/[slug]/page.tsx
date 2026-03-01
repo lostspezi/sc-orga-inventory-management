@@ -10,6 +10,7 @@ import {
 } from "@/lib/repositories/organization-transaction-repository";
 import { getOrganizationInventoryItemViewsByOrganizationId } from "@/lib/repositories/organization-inventory-item-repository";
 import { getLatestAppNews } from "@/lib/repositories/app-news-repository";
+import { getTranslations } from "next-intl/server";
 import DashboardShell from "@/components/orgs/details/dashboard/dashboard-shell";
 import DashboardKpiCards from "@/components/orgs/details/dashboard/dashboard-kpi-cards";
 import RevenueChart from "@/components/orgs/details/dashboard/revenue-chart";
@@ -38,6 +39,8 @@ export default async function OrgDashboardPage({ params }: Props) {
 
     const member = org.members.find((m) => m.userId === session.user!.id);
 
+    const t = await getTranslations("dashboard");
+
     if (!member) {
         return (
             <div
@@ -51,13 +54,13 @@ export default async function OrgDashboardPage({ params }: Props) {
                     className="text-lg font-semibold uppercase tracking-[0.08em]"
                     style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}
                 >
-                    Forbidden
+                    {t("forbidden")}
                 </h2>
                 <p
                     className="mt-2 text-sm"
                     style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    You are not a member of this organization.
+                    {t("forbiddenMessage")}
                 </p>
             </div>
         );
@@ -81,13 +84,13 @@ export default async function OrgDashboardPage({ params }: Props) {
                         className="text-[10px] uppercase tracking-[0.25em]"
                         style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                     >
-                        Dashboard
+                        {t("eyebrow")}
                     </p>
                     <h2
                         className="mt-1 text-lg font-semibold uppercase tracking-[0.08em]"
                         style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                     >
-                        Organization Overview
+                        {t("title")}
                     </h2>
                 </div>
 
@@ -111,15 +114,19 @@ export default async function OrgDashboardPage({ params }: Props) {
                                 className="text-[11px] font-semibold uppercase tracking-[0.15em]"
                                 style={{ color: "rgba(88,101,242,0.85)", fontFamily: "var(--font-mono)" }}
                             >
-                                Discord bot not connected
+                                {t("discordNotConnected")}
                             </p>
                             <p
                                 className="mt-0.5 text-[11px]"
                                 style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                             >
                                 {member.role === "owner" || member.role === "admin"
-                                    ? <>Connect a Discord server in <Link href={`/terminal/orgs/${slug}/settings`} className="underline" style={{ color: "rgba(88,101,242,0.8)" }}>Settings</Link> to enable slash commands, transaction embeds, and member invites.</>
-                                    : "Ask an admin to connect a Discord server to enable slash commands and member invites."
+                                    ? t.rich("discordHintAdmin", {
+                                        settings: (chunks) => (
+                                            <Link href={`/terminal/orgs/${slug}/settings`} className="underline" style={{ color: "rgba(88,101,242,0.8)" }}>{chunks}</Link>
+                                        ),
+                                    })
+                                    : t("discordHintMember")
                                 }
                             </p>
                         </div>

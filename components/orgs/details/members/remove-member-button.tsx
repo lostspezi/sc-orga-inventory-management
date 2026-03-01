@@ -2,6 +2,7 @@
 
 import { startTransition, useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { removeOrgMemberAction } from "@/lib/actions/remove-org-member-action";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 
@@ -24,6 +25,8 @@ export default function RemoveMemberButton({
                                                disabled = false,
                                            }: Props) {
     const router = useRouter();
+    const t = useTranslations("members");
+    const tc = useTranslations("common");
     const [open, setOpen] = useState(false);
     const [state, formAction, isPending] = useActionState(removeOrgMemberAction, initialState);
 
@@ -68,7 +71,7 @@ export default function RemoveMemberButton({
                     background: "rgba(240,165,0,0.05)",
                 }}
             >
-                Remove
+                {t("removeMember")}
             </button>
 
             <ConfirmDialog
@@ -76,10 +79,10 @@ export default function RemoveMemberButton({
                 onClose={() => setOpen(false)}
                 onConfirm={handleConfirm}
                 tone="danger"
-                title="Remove Member"
-                description={`Are you sure you want to remove ${targetLabel ?? "this member"} from the organization?`}
-                confirmLabel="Remove Member"
-                cancelLabel="Cancel"
+                title={t("removeMemberTitle")}
+                description={t("removeMemberConfirm", { name: targetLabel ?? "this member" })}
+                confirmLabel={t("removeMemberButton")}
+                cancelLabel={tc("cancel")}
                 isLoading={isPending}
             />
 

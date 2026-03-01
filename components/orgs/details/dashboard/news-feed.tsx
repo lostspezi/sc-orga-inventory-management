@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { AppNewsView } from "@/lib/types/app-news";
 
 type Props = {
@@ -18,6 +19,7 @@ function formatDate(date: string) {
 export default function NewsFeed({ posts }: Props) {
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const [activePost, setActivePost] = useState<AppNewsView | null>(null);
+    const t = useTranslations("news.feed");
 
     if (posts.length === 0) return null;
 
@@ -37,7 +39,7 @@ export default function NewsFeed({ posts }: Props) {
                     className="mb-2 text-[10px] uppercase tracking-[0.25em]"
                     style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    Updates
+                    {t("updates")}
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {posts.map((post) => (
@@ -123,7 +125,7 @@ export default function NewsFeed({ posts }: Props) {
                                     background: "rgba(79,195,220,0.04)",
                                 }}
                             >
-                                CLOSE
+                                {t("close").toUpperCase()}
                             </button>
                         </div>
 

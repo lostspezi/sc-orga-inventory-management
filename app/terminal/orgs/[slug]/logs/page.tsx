@@ -1,4 +1,5 @@
 import {notFound, redirect} from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import { getOrganizationAuditLogsByOrganizationId } from "@/lib/repositories/organization-audit-log-repository";
 import LogsSearchForm from "@/components/orgs/details/audit/logs-search-form";
@@ -27,6 +28,8 @@ export default async function OrgLogsPage({ params, searchParams }: Props) {
 
     const currentMember = org.members.find((m) => m.userId === session?.user?.id);
 
+    const t = await getTranslations("logs");
+
     if (!currentMember || currentMember.role !== "owner") {
         return (
             <div
@@ -40,13 +43,13 @@ export default async function OrgLogsPage({ params, searchParams }: Props) {
                     className="text-lg font-semibold uppercase tracking-[0.08em]"
                     style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}
                 >
-                    Forbidden
+                    {t("forbidden")}
                 </h2>
                 <p
                     className="mt-2 text-sm"
                     style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    Only organization owners can access audit logs.
+                    {t("forbiddenMessage")}
                 </p>
             </div>
         );
@@ -76,19 +79,19 @@ export default async function OrgLogsPage({ params, searchParams }: Props) {
                     className="text-[10px] uppercase tracking-[0.25em]"
                     style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    Logs
+                    {t("eyebrow")}
                 </p>
                 <h2
                     className="mt-1 text-lg font-semibold uppercase tracking-[0.08em]"
                     style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                 >
-                    Audit Log
+                    {t("title")}
                 </h2>
                 <p
                     className="mt-1 text-sm"
                     style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    Review who did what and when inside this organization.
+                    {t("description")}
                 </p>
             </div>
 
@@ -106,15 +109,13 @@ export default async function OrgLogsPage({ params, searchParams }: Props) {
                         className="text-sm uppercase tracking-[0.12em]"
                         style={{ color: "rgba(240,165,0,0.8)", fontFamily: "var(--font-display)" }}
                     >
-                        No Matching Logs
+                        {t("noMatchingLogs")}
                     </p>
                     <p
                         className="mt-2 text-xs"
                         style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                     >
-                        {q
-                            ? "No audit log entries matched your search."
-                            : "No audit log entries have been recorded yet."}
+                        {q ? t("noMatchingLogsDesc") : t("noLogs")}
                     </p>
                 </div>
             ) : (

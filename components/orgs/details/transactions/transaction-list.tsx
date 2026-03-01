@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowLeftRight, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { OrganizationTransactionView } from "@/lib/types/transaction";
 import TransactionStatusBadge from "@/components/orgs/details/transactions/transaction-status-badge";
 import CreateTransactionDialog from "@/components/orgs/details/transactions/create-transaction-dialog";
@@ -30,6 +31,7 @@ export default function TransactionList({
     organizationSlug,
 }: Props) {
     const [createOpen, setCreateOpen] = useState(false);
+    const t = useTranslations("transactions");
 
     const isAdminOrOwner = currentUserRole === "owner" || currentUserRole === "admin";
 
@@ -41,21 +43,19 @@ export default function TransactionList({
                         className="text-[10px] uppercase tracking-[0.25em]"
                         style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                     >
-                        Transactions
+                        {t("eyebrow")}
                     </p>
                     <h2
                         className="mt-1 text-lg font-semibold uppercase tracking-[0.08em]"
                         style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                     >
-                        Trade Requests
+                        {t("title")}
                     </h2>
                     <p
                         className="mt-1 text-sm"
                         style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                     >
-                        {isAdminOrOwner
-                            ? "All buy/sell requests for this organization."
-                            : "Your buy/sell requests with this organization."}
+                        {isAdminOrOwner ? t("descAdmin") : t("descMember")}
                     </p>
                 </div>
 
@@ -65,7 +65,7 @@ export default function TransactionList({
                         className="sc-btn flex shrink-0 items-center gap-2"
                     >
                         <Plus size={14} />
-                        New Request
+                        {t("newRequest")}
                     </button>
                 )}
             </div>
@@ -87,13 +87,13 @@ export default function TransactionList({
                         className="text-sm uppercase tracking-[0.12em]"
                         style={{ color: "rgba(79,195,220,0.6)", fontFamily: "var(--font-display)" }}
                     >
-                        No Transactions
+                        {t("noTransactions")}
                     </p>
                     <p
                         className="mt-2 text-xs"
                         style={{ color: "rgba(200,220,232,0.4)", fontFamily: "var(--font-mono)" }}
                     >
-                        No trade requests have been made yet.
+                        {t("noTransactionsDesc")}
                     </p>
                 </div>
             ) : (
@@ -128,6 +128,8 @@ function TransactionRow({
     currentUserId: string;
     isAdminOrOwner: boolean;
 }) {
+    const t = useTranslations("transactions");
+
     const isMemberParty = tx.memberId === currentUserId;
     const isCounterParty =
         (tx.initiatedBy === "member" && isAdminOrOwner) ||
@@ -144,7 +146,7 @@ function TransactionRow({
         (isAdminOrOwner || isMemberParty);
 
     const directionLabel =
-        tx.direction === "member_to_org" ? "Sell to Org" : "Buy from Org";
+        tx.direction === "member_to_org" ? t("sellToOrg") : t("buyFromOrg");
 
     const directionColor =
         tx.direction === "member_to_org"
@@ -237,7 +239,7 @@ function TransactionRow({
                                         cursor: "pointer",
                                     }}
                                 >
-                                    Approve
+                                    {t("approve")}
                                 </button>
                             </form>
                             <form action={respondToTransactionAction}>
@@ -254,7 +256,7 @@ function TransactionRow({
                                         cursor: "pointer",
                                     }}
                                 >
-                                    Reject
+                                    {t("reject")}
                                 </button>
                             </form>
                         </>
@@ -274,7 +276,7 @@ function TransactionRow({
                                     cursor: "pointer",
                                 }}
                             >
-                                Confirm Trade
+                                {t("confirmTrade")}
                             </button>
                         </form>
                     )}
@@ -293,7 +295,7 @@ function TransactionRow({
                                     cursor: "pointer",
                                 }}
                             >
-                                Cancel
+                                {t("cancelTrade")}
                             </button>
                         </form>
                     )}

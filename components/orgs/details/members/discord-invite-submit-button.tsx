@@ -1,9 +1,11 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
+import { useTranslations } from "next-intl";
 
 export default function DiscordInviteSubmitButton() {
     const { pending } = useFormStatus();
+    const t = useTranslations("members");
 
     return (
         <button
@@ -11,7 +13,7 @@ export default function DiscordInviteSubmitButton() {
             disabled={pending}
             className="sc-btn disabled:opacity-60"
         >
-            {pending ? "Sending..." : "Send Discord Invite"}
+            {pending ? t("sending") : t("sendInvite")}
         </button>
     );
 }

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Orbitron, Rajdhani } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
-import {startDiscordBot} from "@/lib/discord/bot/start-discord-bot";
+import { startDiscordBot } from "@/lib/discord/bot/start-discord-bot";
 
 startDiscordBot().catch((error) => {
     console.error("[discord-bot] Startup failed", error);
@@ -45,16 +47,21 @@ export const metadata: Metadata = {
     },
 };
 
-export default function RootLayout({
-                                       children,
-                                   }: Readonly<{
+export default async function RootLayout({
+    children,
+}: Readonly<{
     children: React.ReactNode;
 }>) {
+    const locale = await getLocale();
+    const messages = await getMessages();
+
     return (
-        <html lang="en">
-        <body className={`${orbitron.variable} ${rajdhani.variable} antialiased`}>
-        {children}
-        </body>
+        <html lang={locale}>
+            <body className={`${orbitron.variable} ${rajdhani.variable} antialiased`}>
+                <NextIntlClientProvider messages={messages}>
+                    {children}
+                </NextIntlClientProvider>
+            </body>
         </html>
     );
 }

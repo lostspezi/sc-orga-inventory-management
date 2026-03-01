@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const links = [
-    { label: "Home", href: "/" },
-    { label: "Hub", href: "/terminal" },
-];
+import { useTranslations } from "next-intl";
 
 export default function TerminalNav() {
     const pathname = usePathname();
+    const t = useTranslations("nav");
+
+    const links = [
+        { label: t("home"), href: "/" },
+        { label: t("hub"), href: "/terminal" },
+    ];
 
     return (
         <nav className="flex items-center gap-1">

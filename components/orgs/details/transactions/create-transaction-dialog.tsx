@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { createTransactionAction } from "@/lib/actions/create-transaction-action";
 
 type InventoryItemOption = {
@@ -31,6 +32,8 @@ export default function CreateTransactionDialog({
     defaultInventoryItemId,
     defaultDirection,
 }: Props) {
+    const t = useTranslations("transactions");
+    const tc = useTranslations("common");
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const [state, formAction, isPending] = useActionState(createTransactionAction, initialState);
 
@@ -54,10 +57,10 @@ export default function CreateTransactionDialog({
 
     const directionLabel =
         defaultDirection === "org_to_member"
-            ? "Buy from Organization"
+            ? t("buyFromOrgFull")
             : defaultDirection === "member_to_org"
-            ? "Sell to Organization"
-            : "Request Transaction";
+            ? t("sellToOrgFull")
+            : t("requestLabel");
 
     return (
         <dialog
@@ -81,7 +84,7 @@ export default function CreateTransactionDialog({
                             className="mb-1 text-[10px] uppercase tracking-[0.3em]"
                             style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                         >
-                            TRANSACTION.NEW
+                            {t("newLabel")}
                         </p>
                         <h2
                             className="text-lg font-semibold uppercase tracking-[0.08em]"
@@ -101,7 +104,7 @@ export default function CreateTransactionDialog({
                             background: "rgba(79,195,220,0.04)",
                         }}
                     >
-                        CLOSE
+                        {tc("close").toUpperCase()}
                     </button>
                 </div>
 
@@ -114,7 +117,7 @@ export default function CreateTransactionDialog({
                             className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                             style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                         >
-                            Item
+                            {t("item")}
                         </label>
                         <select
                             id="inventoryItemId"
@@ -124,7 +127,7 @@ export default function CreateTransactionDialog({
                             defaultValue={defaultInventoryItemId ?? ""}
                             className="sc-input w-full disabled:opacity-70"
                         >
-                            <option value="">Select an item...</option>
+                            <option value="">{t("selectItem")}</option>
                             {inventoryItems.map((item) => (
                                 <option key={item.inventoryItemId} value={item.inventoryItemId}>
                                     {item.name}
@@ -144,7 +147,7 @@ export default function CreateTransactionDialog({
                             className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                             style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                         >
-                            Direction
+                            {t("direction")}
                         </label>
                         <select
                             id="direction"
@@ -154,9 +157,9 @@ export default function CreateTransactionDialog({
                             defaultValue={defaultDirection ?? ""}
                             className="sc-input w-full disabled:opacity-70"
                         >
-                            <option value="">Select direction...</option>
-                            <option value="org_to_member">Buy from Organization</option>
-                            <option value="member_to_org">Sell to Organization</option>
+                            <option value="">{t("selectDirection")}</option>
+                            <option value="org_to_member">{t("buyFromOrgFull")}</option>
+                            <option value="member_to_org">{t("sellToOrgFull")}</option>
                         </select>
                         {state.fieldErrors?.direction && (
                             <p className="mt-1 text-xs" style={{ color: "rgba(240,165,0,0.85)" }}>
@@ -172,7 +175,7 @@ export default function CreateTransactionDialog({
                                 className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                                 style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                             >
-                                Quantity
+                                {t("quantity")}
                             </label>
                             <input
                                 id="quantity"
@@ -198,7 +201,7 @@ export default function CreateTransactionDialog({
                                 className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                                 style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                             >
-                                Price / Unit (aUEC)
+                                {t("pricePerUnit")}
                             </label>
                             <input
                                 id="pricePerUnit"
@@ -225,7 +228,7 @@ export default function CreateTransactionDialog({
                             className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
                             style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                         >
-                            Note (optional)
+                            {t("note")}
                         </label>
                         <textarea
                             id="note"
@@ -233,7 +236,7 @@ export default function CreateTransactionDialog({
                             rows={2}
                             disabled={isPending}
                             className="sc-input w-full resize-none disabled:opacity-70"
-                            placeholder="Any details for the other party..."
+                            placeholder={t("notePlaceholder")}
                         />
                     </div>
 
@@ -262,10 +265,10 @@ export default function CreateTransactionDialog({
                                 background: "rgba(79,195,220,0.04)",
                             }}
                         >
-                            Cancel
+                            {tc("cancel")}
                         </button>
                         <button type="submit" className="sc-btn" disabled={isPending}>
-                            {isPending ? "Submitting..." : "Submit Request"}
+                            {isPending ? t("submitting") : t("submit")}
                         </button>
                     </div>
                 </form>

@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import {
     getTransactionsByOrganizationId,
@@ -27,6 +28,7 @@ export default async function OrgTransactionsPage({ params }: Props) {
     }
 
     const currentMember = org.members.find((m) => m.userId === session.user!.id);
+    const t = await getTranslations("transactions");
 
     if (!currentMember) {
         return (
@@ -41,13 +43,13 @@ export default async function OrgTransactionsPage({ params }: Props) {
                     className="text-lg font-semibold uppercase tracking-[0.08em]"
                     style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}
                 >
-                    Forbidden
+                    {t("forbidden")}
                 </h2>
                 <p
                     className="mt-2 text-sm"
                     style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    You are not a member of this organization.
+                    {t("forbiddenMessage")}
                 </p>
             </div>
         );

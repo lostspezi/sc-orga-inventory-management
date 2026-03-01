@@ -3,12 +3,14 @@
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 type Props = {
     initialQuery?: string;
 };
 
 export default function LogsSearchForm({ initialQuery = "" }: Props) {
+    const t = useTranslations("logs");
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -57,7 +59,7 @@ export default function LogsSearchForm({ initialQuery = "" }: Props) {
                 className="mb-2 block text-[10px] uppercase tracking-[0.22em]"
                 style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
             >
-                Search Logs
+                {t("searchLabel")}
             </label>
 
             <div className="relative">
@@ -72,7 +74,7 @@ export default function LogsSearchForm({ initialQuery = "" }: Props) {
                     type="text"
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
-                    placeholder="Search by action, user, message..."
+                    placeholder={t("searchPlaceholder")}
                     className="sc-input w-full"
                     style={{ paddingLeft: "2.75rem" }}
                 />

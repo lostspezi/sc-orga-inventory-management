@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Bot, ExternalLink } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { getDiscordBotInstallUrl } from "@/lib/discord/get-bot-install-url";
 import { disconnectDiscordAction } from "@/lib/actions/disconnect-discord-action";
 import { getDiscordBotClient } from "@/lib/discord/bot/client";
@@ -19,6 +20,7 @@ async function tryGetGuildName(guildId: string): Promise<string | null> {
 }
 
 export default async function DiscordServerCard({ organizationSlug, discordGuildId }: Props) {
+    const t = await getTranslations("orgSettings");
     const isConnected = !!discordGuildId;
     const guildName = isConnected ? await tryGetGuildName(discordGuildId!) : null;
     const installUrl = !isConnected ? getDiscordBotInstallUrl(organizationSlug) : null;
@@ -49,7 +51,7 @@ export default async function DiscordServerCard({ organizationSlug, discordGuild
                             className="text-[10px] uppercase tracking-[0.25em]"
                             style={{ color: isConnected ? "rgba(87,242,135,0.6)" : "rgba(240,165,0,0.75)", fontFamily: "var(--font-mono)" }}
                         >
-                            Discord Server
+                            {t("discordServerLabel")}
                         </p>
                         <span
                             className="rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-[0.1em]"
@@ -59,7 +61,7 @@ export default async function DiscordServerCard({ organizationSlug, discordGuild
                                 fontFamily: "var(--font-mono)",
                             }}
                         >
-                            {isConnected ? "● Connected" : "○ Not connected"}
+                            {isConnected ? t("connected") : t("notConnected")}
                         </span>
                     </div>
 
@@ -70,7 +72,7 @@ export default async function DiscordServerCard({ organizationSlug, discordGuild
                             fontFamily: "var(--font-display)",
                         }}
                     >
-                        {isConnected ? (guildName ?? "Connected Server") : "Connect a Discord Server"}
+                        {isConnected ? (guildName ?? t("connectedFallback")) : t("connectTitle")}
                     </h3>
 
                     {isConnected ? (
@@ -85,8 +87,7 @@ export default async function DiscordServerCard({ organizationSlug, discordGuild
                             className="mt-2 text-xs sm:text-sm"
                             style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
                         >
-                            Add the bot to the server used by this organization. After authorization,
-                            the selected server will be linked automatically.
+                            {t("connectDesc")}
                         </p>
                     )}
                 </div>
@@ -105,7 +106,7 @@ export default async function DiscordServerCard({ organizationSlug, discordGuild
                                 fontFamily: "var(--font-mono)",
                             }}
                         >
-                            Disconnect
+                            {t("disconnect")}
                         </button>
                     </form>
                 ) : (
@@ -115,7 +116,7 @@ export default async function DiscordServerCard({ organizationSlug, discordGuild
                         className="sc-btn inline-flex items-center justify-center gap-2"
                     >
                         <Bot size={16} />
-                        Add Bot to Server
+                        {t("addBot")}
                         <ExternalLink size={14} />
                     </Link>
                 )}
