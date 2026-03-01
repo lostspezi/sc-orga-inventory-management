@@ -1,5 +1,6 @@
 import Link from "next/link";
 import UserDropdown from "@/components/terminal/user-dropdown";
+import TerminalNav from "@/components/terminal/terminal-nav";
 
 type Props = {
     userName: string;
@@ -33,6 +34,9 @@ export default function TerminalHeader({ userName, userImage }: Props) {
                         Command Hub
                     </Link>
                 </div>
+
+                {/* Nav */}
+                <TerminalNav />
 
                 {/* User */}
                 <UserDropdown userName={userName} userImage={userImage} />
