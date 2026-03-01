@@ -1,12 +1,30 @@
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import Image from "next/image";
+import { getOrganizationViewsByUserId } from "@/lib/repositories/organization-repository";
+import LeaveOrgButton from "@/components/settings/leave-org-button";
+import DeleteAccountButton from "@/components/settings/delete-account-button";
+
 export const metadata = { title: "User Settings" };
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+        redirect("/login");
+    }
+
+    const orgs = await getOrganizationViewsByUserId(session.user.id);
+    const userName = session.user.name ?? "Authorized User";
+    const userImage = session.user.image ?? null;
+
     return (
         <main className="px-4 py-6 sm:px-6">
             <div
-                className="mx-auto w-full max-w-7xl"
+                className="mx-auto w-full max-w-3xl space-y-6"
                 style={{ animation: "slide-in-up 0.45s ease forwards" }}
             >
+                {/* Page header */}
                 <section
                     className="hud-panel corner-tr corner-bl relative p-5 sm:p-6"
                     style={{ background: "rgba(8,16,24,0.55)" }}
@@ -18,7 +36,6 @@ export default function SettingsPage() {
                                 "linear-gradient(90deg, transparent, var(--accent-primary), transparent)",
                         }}
                     />
-
                     <p
                         className="mb-1 text-xs uppercase tracking-[0.35em]"
                         style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-display)" }}
@@ -31,13 +48,6 @@ export default function SettingsPage() {
                     >
                         User Settings
                     </h1>
-                    <p
-                        className="mt-2 text-sm"
-                        style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
-                    >
-                        User settings coming soon.
-                    </p>
-
                     <div
                         className="absolute -bottom-px left-8 right-8 h-px"
                         style={{
@@ -45,6 +55,177 @@ export default function SettingsPage() {
                                 "linear-gradient(90deg, transparent, rgba(79,195,220,0.22), transparent)",
                         }}
                     />
+                </section>
+
+                {/* Profile */}
+                <section
+                    className="hud-panel p-5 sm:p-6"
+                    style={{ background: "rgba(8,16,24,0.45)" }}
+                >
+                    <p
+                        className="mb-4 text-[10px] uppercase tracking-[0.25em]"
+                        style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
+                    >
+                        Profile
+                    </p>
+                    <div className="flex items-center gap-4">
+                        {userImage ? (
+                            <Image
+                                src={userImage}
+                                alt={userName}
+                                width={56}
+                                height={56}
+                                className="rounded-full"
+                                style={{ objectFit: "cover", border: "1px solid rgba(79,195,220,0.2)" }}
+                            />
+                        ) : (
+                            <div
+                                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-xl font-semibold"
+                                style={{
+                                    background: "rgba(79,195,220,0.1)",
+                                    color: "rgba(79,195,220,0.7)",
+                                    border: "1px solid rgba(79,195,220,0.2)",
+                                }}
+                            >
+                                {userName.charAt(0).toUpperCase()}
+                            </div>
+                        )}
+                        <div>
+                            <p
+                                className="text-base font-semibold"
+                                style={{ color: "rgba(200,220,232,0.9)", fontFamily: "var(--font-mono)" }}
+                            >
+                                {userName}
+                            </p>
+                            <p
+                                className="mt-0.5 text-xs"
+                                style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
+                            >
+                                Authenticated via Discord
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Organizations */}
+                <section
+                    className="hud-panel overflow-hidden"
+                    style={{ background: "rgba(8,16,24,0.45)" }}
+                >
+                    <div className="border-b p-5 sm:p-6" style={{ borderColor: "rgba(79,195,220,0.1)" }}>
+                        <p
+                            className="text-[10px] uppercase tracking-[0.25em]"
+                            style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
+                        >
+                            Organizations
+                        </p>
+                        <p
+                            className="mt-0.5 text-xs"
+                            style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
+                        >
+                            {orgs.length} organization{orgs.length !== 1 ? "s" : ""}
+                        </p>
+                    </div>
+
+                    {orgs.length === 0 ? (
+                        <p
+                            className="p-5 text-sm"
+                            style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
+                        >
+                            You are not a member of any organization.
+                        </p>
+                    ) : (
+                        <ul>
+                            {orgs.map((org) => {
+                                const self = org.members.find(
+                                    (m) => m.userId === session.user!.id
+                                );
+                                const role = self?.role ?? "member";
+
+                                return (
+                                    <li
+                                        key={org._id.toString()}
+                                        className="flex items-center justify-between gap-4 px-5 py-4"
+                                        style={{ borderBottom: "1px solid rgba(79,195,220,0.07)" }}
+                                    >
+                                        <div className="min-w-0">
+                                            <p
+                                                className="truncate font-medium"
+                                                style={{
+                                                    color: "rgba(200,220,232,0.85)",
+                                                    fontFamily: "var(--font-mono)",
+                                                    fontSize: "0.875rem",
+                                                }}
+                                            >
+                                                {org.name}
+                                            </p>
+                                            <p
+                                                className="mt-0.5 text-xs uppercase tracking-[0.15em]"
+                                                style={{
+                                                    color:
+                                                        role === "owner"
+                                                            ? "rgba(240,165,0,0.65)"
+                                                            : role === "admin"
+                                                                ? "rgba(79,195,220,0.55)"
+                                                                : "rgba(200,220,232,0.3)",
+                                                    fontFamily: "var(--font-mono)",
+                                                }}
+                                            >
+                                                {role} · {org.members.length} member{org.members.length !== 1 ? "s" : ""}
+                                            </p>
+                                        </div>
+
+                                        <LeaveOrgButton
+                                            orgSlug={org.slug}
+                                            orgName={org.name}
+                                            role={role}
+                                            memberCount={org.members.length}
+                                        />
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    )}
+                </section>
+
+                {/* Danger zone */}
+                <section
+                    className="hud-panel overflow-hidden"
+                    style={{
+                        background: "rgba(8,16,24,0.45)",
+                        borderColor: "rgba(220,50,50,0.18)",
+                    }}
+                >
+                    <div className="border-b p-5 sm:p-6" style={{ borderColor: "rgba(220,50,50,0.12)" }}>
+                        <p
+                            className="text-[10px] uppercase tracking-[0.25em]"
+                            style={{ color: "rgba(220,80,80,0.55)", fontFamily: "var(--font-mono)" }}
+                        >
+                            Danger Zone
+                        </p>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-4 p-5 sm:p-6">
+                        <div>
+                            <p
+                                className="text-sm font-medium"
+                                style={{ color: "rgba(220,80,80,0.85)", fontFamily: "var(--font-mono)" }}
+                            >
+                                Delete Account
+                            </p>
+                            <p
+                                className="mt-0.5 text-xs leading-relaxed"
+                                style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
+                            >
+                                Permanently deletes your account, all owned organizations,
+                                and removes you from all other organizations.
+                            </p>
+                        </div>
+
+                        <div className="shrink-0">
+                            <DeleteAccountButton userName={userName} />
+                        </div>
+                    </div>
                 </section>
             </div>
         </main>

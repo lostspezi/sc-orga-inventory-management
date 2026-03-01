@@ -340,6 +340,19 @@ export async function unsetOrganizationDiscordGuildId(slug: string): Promise<boo
     return result.modifiedCount > 0;
 }
 
+export async function deleteOrganizationAndAllData(orgId: ObjectId): Promise<void> {
+    const db = await getDb();
+
+    await Promise.all([
+        db.collection("organization_inventory_items").deleteMany({ organizationId: orgId }),
+        db.collection("organization_transactions").deleteMany({ organizationId: orgId }),
+        db.collection("organization_audit_logs").deleteMany({ organizationId: orgId }),
+        db.collection("organization_invites").deleteMany({ organizationId: orgId }),
+    ]);
+
+    await db.collection("organizations").deleteOne({ _id: orgId });
+}
+
 export async function getAllOrganizationsForAdmin(): Promise<
     {
         org: OrganizationDocument;
