@@ -7,7 +7,7 @@ type Props = {
     posts: AppNewsView[];
 };
 
-function formatDate(date: Date) {
+function formatDate(date: string) {
     return new Date(date).toLocaleDateString("en-US", {
         month: "short",
         day: "2-digit",
