@@ -19,7 +19,10 @@ export default async function TerminalLayout({ children }: Props) {
             <TerminalBackground />
 
             <div className="relative z-10 min-h-screen">
-                <TerminalHeader userName={session.user.name ?? "Authorized User"} />
+                <TerminalHeader
+                    userName={session.user.name ?? "Authorized User"}
+                    userImage={session.user.image ?? null}
+                />
 
                 <div className="px-4 py-4 sm:px-6">
                     {children}

@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { signOutAction } from "@/lib/actions";
+import UserDropdown from "@/components/terminal/user-dropdown";
 
 type Props = {
     userName: string;
+    userImage: string | null;
 };
 
-export default function TerminalHeader({ userName }: Props) {
+export default function TerminalHeader({ userName, userImage }: Props) {
     return (
         <header
             className="sticky top-0 z-40 border-b px-4 py-3 sm:px-6"
@@ -16,6 +17,7 @@ export default function TerminalHeader({ userName }: Props) {
             }}
         >
             <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+                {/* Brand */}
                 <div className="min-w-0">
                     <p
                         className="text-[10px] uppercase tracking-[0.25em]"
@@ -23,34 +25,17 @@ export default function TerminalHeader({ userName }: Props) {
                     >
                         UEE Terminal
                     </p>
-                    <div className="flex items-center gap-3">
-                        <Link
-                            href="/terminal"
-                            className="text-sm font-semibold uppercase tracking-[0.08em]"
-                            style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
-                        >
-                            Command Hub
-                        </Link>
-                        <span
-                            className="hidden text-xs sm:inline"
-                            style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
-                        >
-              {userName}
-            </span>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <Link href="/terminal" className="sc-btn sc-btn-outline">
-                        Terminal
+                    <Link
+                        href="/terminal"
+                        className="text-sm font-semibold uppercase tracking-[0.08em]"
+                        style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
+                    >
+                        Command Hub
                     </Link>
-
-                    <form action={signOutAction}>
-                        <button type="submit" className="sc-btn">
-                            Logout
-                        </button>
-                    </form>
                 </div>
+
+                {/* User */}
+                <UserDropdown userName={userName} userImage={userImage} />
             </div>
         </header>
     );
