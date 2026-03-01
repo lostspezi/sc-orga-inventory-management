@@ -340,6 +340,82 @@ export async function unsetOrganizationDiscordGuildId(slug: string): Promise<boo
     return result.modifiedCount > 0;
 }
 
+export async function getAllOrganizationsForAdmin(): Promise<
+    {
+        org: OrganizationDocument;
+        ownerUsername: string | undefined;
+        memberCount: number;
+        memberViews: OrganizationMemberView[];
+    }[]
+> {
+    const db = await getDb();
+
+    const orgs = await db
+        .collection<OrganizationDocument>(COLLECTION)
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray();
+
+    if (orgs.length === 0) return [];
+
+    // Collect all unique member userIds across all orgs
+    const allMemberIds = Array.from(
+        new Set(orgs.flatMap((o) => o.members.map((m) => m.userId)))
+    )
+        .filter((id) => ObjectId.isValid(id))
+        .map((id) => new ObjectId(id));
+
+    const users = allMemberIds.length
+        ? await db
+              .collection<UserDocument>("users")
+              .find({ _id: { $in: allMemberIds } })
+              .project({ _id: 1, name: 1 })
+              .toArray()
+        : [];
+
+    const usernameById = new Map(users.map((u) => [u._id.toString(), u.name ?? undefined]));
+
+    return orgs.map((org) => {
+        const ownerMember = org.members.find((m) => m.role === "owner");
+        const memberViews: OrganizationMemberView[] = org.members.map((m) => ({
+            userId: m.userId,
+            username: usernameById.get(m.userId) ?? m.userId,
+            role: m.role,
+            joinedAt: m.joinedAt,
+        }));
+        return {
+            org,
+            ownerUsername: ownerMember ? usernameById.get(ownerMember.userId) : undefined,
+            memberCount: org.members.length,
+            memberViews,
+        };
+    });
+}
+
+export async function transferOrganizationOwnership(
+    orgId: string,
+    newOwnerId: string
+): Promise<boolean> {
+    if (!ObjectId.isValid(orgId)) return false;
+
+    const db = await getDb();
+    const oid = new ObjectId(orgId);
+
+    // Demote current owner → admin
+    await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { _id: oid, "members.role": "owner" },
+        { $set: { "members.$.role": "admin", updatedAt: new Date() } }
+    );
+
+    // Promote new owner → owner
+    const result = await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { _id: oid, "members.userId": newOwnerId },
+        { $set: { "members.$.role": "owner", updatedAt: new Date() } }
+    );
+
+    return result.modifiedCount > 0;
+}
+
 export async function setOrganizationDiscordTransactionChannelId(
     slug: string,
     channelId: string

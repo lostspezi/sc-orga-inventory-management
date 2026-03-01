@@ -3,6 +3,8 @@ import {redirect} from "next/navigation";
 import {getOrganizationViewsByUserId} from "@/lib/repositories/organization-repository";
 import OrgCard from "@/components/orgs/org-card";
 import CreateOrgDialog from "@/components/orgs/create-org-dialog";
+import Link from "next/link";
+import { isSuperAdmin } from "@/lib/is-super-admin";
 
 export default async function TerminalPage() {
     const session = await auth();
@@ -12,6 +14,7 @@ export default async function TerminalPage() {
     }
 
     const orgs = await getOrganizationViewsByUserId(session.user.id);
+    const superAdmin = await isSuperAdmin(session.user.id);
 
     return (
         <main className="px-4 py-6 sm:px-6">
@@ -19,11 +22,20 @@ export default async function TerminalPage() {
                 className="mx-auto w-full max-w-7xl space-y-4"
                 style={{animation: "slide-in-up 0.45s ease forwards"}}
             >
-                {orgs.length > 0 &&
-                    <section className="flex justify-end">
-                        <CreateOrgDialog/>
+                {(superAdmin || orgs.length > 0) && (
+                    <section className="flex justify-end gap-2">
+                        {superAdmin && (
+                            <Link
+                                href="/terminal/admin"
+                                className="sc-btn sc-btn-outline"
+                                style={{fontSize: "0.75rem", padding: "0.3rem 0.75rem"}}
+                            >
+                                Admin Panel
+                            </Link>
+                        )}
+                        {orgs.length > 0 && <CreateOrgDialog/>}
                     </section>
-                }
+                )}
                 <section
                     className="hud-panel corner-tr corner-bl relative p-5 sm:p-6"
                     style={{background: "rgba(8,16,24,0.55)"}}
