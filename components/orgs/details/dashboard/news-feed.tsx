@@ -21,7 +21,7 @@ export default function NewsFeed({ posts }: Props) {
 
     if (posts.length === 0) return null;
 
-    const open = (post: AppNewsDocument) => {
+    const open = (post: AppNewsView) => {
         setActivePost(post);
         dialogRef.current?.showModal();
     };
