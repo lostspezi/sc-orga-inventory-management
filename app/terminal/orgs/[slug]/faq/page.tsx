@@ -12,6 +12,7 @@ import {
     ShieldCheck,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import type { ReactNode } from "react";
 
 // ─── Primitives ───────────────────────────────────────────────────────────────
 
@@ -151,10 +152,29 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
     );
 }
 
+function CommandBlock({ label, children }: { label: string; children: ReactNode }) {
+    return (
+        <div
+            className="rounded border p-3"
+            style={{ borderColor: "rgba(79,195,220,0.12)", background: "rgba(79,195,220,0.04)" }}
+        >
+            <p className="mb-1" style={{ color: "rgba(79,195,220,0.9)", fontFamily: "var(--font-mono)", fontSize: 12 }}>
+                {label}
+            </p>
+            {children}
+        </div>
+    );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function FaqPage() {
     const t = await getTranslations("faq");
+
+    const h = (chunks: ReactNode) => <Highlight>{chunks}</Highlight>;
+    const c = (chunks: ReactNode) => <Code>{chunks}</Code>;
+    const rich = { h, c };
+
     return (
         <div className="space-y-6 pb-10">
             {/* Header */}
@@ -182,40 +202,40 @@ export default async function FaqPage() {
             {/* ── Dashboard ── */}
             <Section icon={LayoutDashboard} title={t("dashboard.title")} subtitle={t("dashboard.subtitle")}>
                 <Q q={t("dashboard.q1")}>
-                    <P>The dashboard is your command center. It displays four KPI cards at a glance:</P>
+                    <P>{t("dashboard.q1Intro")}</P>
                     <ul className="ml-4 list-disc space-y-1">
-                        <li><Highlight>Active Requests</Highlight> — transactions currently in <StatusBadge status="requested" /> or <StatusBadge status="approved" /> state.</li>
-                        <li><Highlight>Completed this month</Highlight> — trades that reached <StatusBadge status="completed" /> since the 1st of the current month.</li>
-                        <li><Highlight>Revenue this month</Highlight> — total aUEC from completed trades this month.</li>
-                        <li><Highlight>Inventory items</Highlight> — how many item types are listed in the org store.</li>
+                        <li>{t.rich("dashboard.q1Li1", rich)}</li>
+                        <li>{t.rich("dashboard.q1Li2", rich)}</li>
+                        <li>{t.rich("dashboard.q1Li3", rich)}</li>
+                        <li>{t.rich("dashboard.q1Li4", rich)}</li>
                     </ul>
-                    <P>Below the KPIs you have two charts (revenue curve and transaction volume bars), a top-items leaderboard, and the last 10 completed trades.</P>
+                    <P>{t("dashboard.q1Outro")}</P>
                 </Q>
                 <Q q={t("dashboard.q2")}>
-                    <P>The dashboard opens a persistent connection to the server (SSE — Server-Sent Events). Every 3 seconds the server checks for transaction updates. When a status change is detected you&apos;ll see:</P>
+                    <P>{t("dashboard.q2Intro")}</P>
                     <ul className="ml-4 list-disc space-y-1">
-                        <li>A <Highlight>toast notification</Highlight> in the bottom-right corner (auto-dismisses after 6 s, max 5 at once).</li>
-                        <li>A new row in the <Highlight>Live Activity Feed</Highlight> at the bottom of the page (keeps last 30 events).</li>
-                        <li>All server-side data (KPI cards, charts, recent list) silently refreshes in the background.</li>
+                        <li>{t.rich("dashboard.q2Li1", rich)}</li>
+                        <li>{t.rich("dashboard.q2Li2", rich)}</li>
+                        <li>{t("dashboard.q2Li3")}</li>
                     </ul>
-                    <P>The feed indicator shows <Highlight>● Live</Highlight> once the connection is established.</P>
+                    <P>{t.rich("dashboard.q2Outro", rich)}</P>
                 </Q>
             </Section>
 
             {/* ── Inventory ── */}
             <Section icon={PackageOpen} title={t("inventorySection.title")} subtitle={t("inventorySection.subtitle")}>
                 <Q q={t("inventorySection.q1")}>
-                    <P>An inventory item represents a Star Citizen item or commodity that your organization buys or sells. Each entry tracks the item name (looked up from the SC item database), the current stock quantity, and a price per unit in aUEC.</P>
+                    <P>{t("inventorySection.q1Body")}</P>
                 </Q>
                 <Q q={t("inventorySection.q2")}>
-                    <P>Open the <Highlight>Inventory</Highlight> page and click <Code>+ Add Item</Code>. Start typing the item name — the autocomplete searches the Star Citizen item database and shows matching results. Once selected, enter quantity and price, then submit.</P>
-                    <P>Only <Highlight>admins</Highlight> and <Highlight>owners</Highlight> can add or remove inventory items.</P>
+                    <P>{t.rich("inventorySection.q2Intro", rich)}</P>
+                    <P>{t.rich("inventorySection.q2Admin", rich)}</P>
                 </Q>
                 <Q q={t("inventorySection.q3")}>
-                    <P>Stock is automatically adjusted when a transaction is <StatusBadge status="completed" />:</P>
+                    <P>{t("inventorySection.q3Intro")}</P>
                     <ul className="ml-4 list-disc space-y-1">
-                        <li><Highlight>Sell (member → org)</Highlight> — a member sells items to the org, so org stock increases.</li>
-                        <li><Highlight>Buy (org → member)</Highlight> — a member buys items from the org, so org stock decreases.</li>
+                        <li>{t.rich("inventorySection.q3Li1", rich)}</li>
+                        <li>{t.rich("inventorySection.q3Li2", rich)}</li>
                     </ul>
                 </Q>
             </Section>
@@ -224,30 +244,30 @@ export default async function FaqPage() {
             <Section icon={ArrowLeftRight} title={t("transactionsSection.title")} subtitle={t("transactionsSection.subtitle")}>
                 <Q q={t("transactionsSection.q1")}>
                     <ul className="ml-4 list-disc space-y-1">
-                        <li><Highlight>Sell (member → org)</Highlight> — the member has goods and wants to sell them to the organization. The org pays the member.</li>
-                        <li><Highlight>Buy (org → member)</Highlight> — the member wants to buy goods from the organization&apos;s stock. The member pays the org.</li>
+                        <li>{t.rich("transactionsSection.q1Li1", rich)}</li>
+                        <li>{t.rich("transactionsSection.q1Li2", rich)}</li>
                     </ul>
                 </Q>
                 <Q q={t("transactionsSection.q2")}>
                     <div className="space-y-2">
-                        <div className="flex items-start gap-2"><StatusBadge status="requested" /><span className="ml-1">— Initial state. One side has submitted the request and is waiting for the other to approve it.</span></div>
-                        <div className="flex items-start gap-2"><StatusBadge status="approved" /><span className="ml-1">— The counterparty (admin/owner for member-initiated, or member for admin-initiated) accepted the trade. Both parties now need to confirm the in-game transfer.</span></div>
-                        <div className="flex items-start gap-2"><StatusBadge status="completed" /><span className="ml-1">— Both sides have confirmed the in-game trade. Inventory stock is adjusted automatically.</span></div>
-                        <div className="flex items-start gap-2"><StatusBadge status="rejected" /><span className="ml-1">— The counterparty declined the request.</span></div>
-                        <div className="flex items-start gap-2"><StatusBadge status="cancelled" /><span className="ml-1">— Either party cancelled before completion.</span></div>
+                        <div className="flex items-start gap-2"><StatusBadge status="requested" /><span className="ml-1">{t("transactionsSection.q2Li1")}</span></div>
+                        <div className="flex items-start gap-2"><StatusBadge status="approved" /><span className="ml-1">{t("transactionsSection.q2Li2")}</span></div>
+                        <div className="flex items-start gap-2"><StatusBadge status="completed" /><span className="ml-1">{t("transactionsSection.q2Li3")}</span></div>
+                        <div className="flex items-start gap-2"><StatusBadge status="rejected" /><span className="ml-1">{t("transactionsSection.q2Li4")}</span></div>
+                        <div className="flex items-start gap-2"><StatusBadge status="cancelled" /><span className="ml-1">{t("transactionsSection.q2Li5")}</span></div>
                     </div>
                 </Q>
                 <Q q={t("transactionsSection.q3")}>
-                    <P>The approval rules depend on who initiated the request:</P>
+                    <P>{t("transactionsSection.q3Intro")}</P>
                     <ul className="ml-4 list-disc space-y-1">
-                        <li>If a <Highlight>member</Highlight> created the request, an <Highlight>admin/owner</Highlight> must approve it.</li>
-                        <li>If an <Highlight>admin/owner</Highlight> created the request, the <Highlight>member</Highlight> must approve it.</li>
-                        <li>Once <StatusBadge status="approved" />, both parties independently click <Code>Confirm Trade</Code> to record that the in-game exchange happened.</li>
-                        <li>Either party can <Code>Cancel</Code> at any point before completion.</li>
+                        <li>{t.rich("transactionsSection.q3Li1", rich)}</li>
+                        <li>{t.rich("transactionsSection.q3Li2", rich)}</li>
+                        <li>{t.rich("transactionsSection.q3Li3", rich)}</li>
+                        <li>{t.rich("transactionsSection.q3Li4", rich)}</li>
                     </ul>
                 </Q>
                 <Q q={t("transactionsSection.q4")}>
-                    <P>Yes — if the Discord bot is connected. Use the <Code>/sell</Code> or <Code>/buy</Code> slash commands. See the <Highlight>Discord Bot</Highlight> section below for full details.</P>
+                    <P>{t.rich("transactionsSection.q4Body", rich)}</P>
                 </Q>
             </Section>
 
@@ -255,13 +275,13 @@ export default async function FaqPage() {
             <Section icon={Users} title={t("membersSection.title")} subtitle={t("membersSection.subtitle")}>
                 <Q q={t("membersSection.q1")}>
                     <ul className="ml-4 list-disc space-y-1">
-                        <li><Highlight>Owner</Highlight> — full access including audit logs and member management. Only one owner per org.</li>
-                        <li><Highlight>Admin</Highlight> — can manage inventory, approve/reject transactions, invite members, and access settings.</li>
-                        <li><Highlight>Member</Highlight> — can create transaction requests and confirm their own trades.</li>
+                        <li>{t.rich("membersSection.q1Li1", rich)}</li>
+                        <li>{t.rich("membersSection.q1Li2", rich)}</li>
+                        <li>{t.rich("membersSection.q1Li3", rich)}</li>
                     </ul>
                 </Q>
                 <Q q={t("membersSection.q2")}>
-                    <P>Go to <Highlight>Members</Highlight> and use the Discord invite form. The Discord bot must be connected first (see <Highlight>Settings</Highlight>). Type a Discord username and the bot will send the target user a DM with a private invite link. The link is single-use and expires after 24 hours.</P>
+                    <P>{t.rich("membersSection.q2Body", rich)}</P>
                 </Q>
             </Section>
 
@@ -269,79 +289,73 @@ export default async function FaqPage() {
             <Section icon={Bot} title={t("discordBot.title")} subtitle={t("discordBot.subtitle")}>
                 <Q q={t("discordBot.q1")}>
                     <div className="space-y-2">
-                        <Step n={1}>Go to <Highlight>Settings</Highlight> (admin/owner only).</Step>
-                        <Step n={2}>In the <Highlight>Discord Server</Highlight> card at the top, click <Code>Add Bot to Server</Code>. You&apos;ll be redirected to Discord&apos;s OAuth flow.</Step>
-                        <Step n={3}>Select the server you want to link to this organization and click <Code>Authorize</Code>.</Step>
-                        <Step n={4}>You&apos;ll be redirected back to the Settings page. The card will now show <Highlight>● Connected</Highlight> along with the guild name.</Step>
+                        <Step n={1}>{t.rich("discordBot.q1Step1", rich)}</Step>
+                        <Step n={2}>{t.rich("discordBot.q1Step2", rich)}</Step>
+                        <Step n={3}>{t.rich("discordBot.q1Step3", rich)}</Step>
+                        <Step n={4}>{t.rich("discordBot.q1Step4", rich)}</Step>
                     </div>
-                    <p className="mt-2" style={{ color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)", fontSize: 13 }}>{t("discordBot.q1note")}</p>
+                    <p className="mt-2" style={{ color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)", fontSize: 13 }}>
+                        {t("discordBot.q1note")}
+                    </p>
                 </Q>
                 <Q q={t("discordBot.q2")}>
-                    <P>In <Highlight>Settings</Highlight>, open the Discord Server card and click <Code>Disconnect</Code>. This removes the link. Slash commands and invite features will stop working until a new server is connected.</P>
+                    <P>{t.rich("discordBot.q2Body", rich)}</P>
                 </Q>
                 <Q q={t("discordBot.q3")}>
+                    <P>{t("discordBot.q3Intro")}</P>
                     <div className="space-y-3">
-                        <div
-                            className="rounded border p-3"
-                            style={{ borderColor: "rgba(79,195,220,0.12)", background: "rgba(79,195,220,0.04)" }}
-                        >
-                            <p className="mb-1" style={{ color: "rgba(79,195,220,0.9)", fontFamily: "var(--font-mono)", fontSize: 12 }}>
-                                /sell
-                            </p>
-                            <p>Create a <Highlight>sell</Highlight> request (member → org) without opening the web UI. The bot will ask for:</p>
+                        <CommandBlock label={t("discordBot.q3SellLabel")}>
+                            <p>{t.rich("discordBot.q3SellBody", rich)}</p>
                             <ul className="ml-4 mt-1 list-disc space-y-0.5">
-                                <li><Code>item</Code> — starts typing to search your org&apos;s inventory (autocomplete, up to 25 results)</li>
-                                <li><Code>quantity</Code> — how many units (minimum 1)</li>
-                                <li><Code>price</Code> — price per unit in aUEC (minimum 0)</li>
-                                <li><Code>note</Code> — optional message for the admin</li>
+                                <li>{t.rich("discordBot.q3SellItem", rich)}</li>
+                                <li>{t.rich("discordBot.q3SellQty", rich)}</li>
+                                <li>{t.rich("discordBot.q3SellPrice", rich)}</li>
+                                <li>{t.rich("discordBot.q3SellNote", rich)}</li>
                             </ul>
-                        </div>
-                        <div
-                            className="rounded border p-3"
-                            style={{ borderColor: "rgba(79,195,220,0.12)", background: "rgba(79,195,220,0.04)" }}
-                        >
-                            <p className="mb-1" style={{ color: "rgba(79,195,220,0.9)", fontFamily: "var(--font-mono)", fontSize: 12 }}>
-                                /buy
-                            </p>
-                            <p>Same as <Code>/sell</Code> but creates a <Highlight>buy</Highlight> request (org → member). Same fields.</p>
-                        </div>
+                        </CommandBlock>
+                        <CommandBlock label={t("discordBot.q3BuyLabel")}>
+                            <p>{t.rich("discordBot.q3BuyBody", rich)}</p>
+                        </CommandBlock>
+                        <CommandBlock label={t("discordBot.q3InventoryLabel")}>
+                            <p>{t("discordBot.q3InventoryBody")}</p>
+                        </CommandBlock>
                     </div>
-                    <P>After submitting, you&apos;ll receive an ephemeral (private) confirmation. The transaction is created in <StatusBadge status="requested" /> state and an embed is posted to the notification channel if one is configured.</P>
+                    <P>{t.rich("discordBot.q3Outro", rich)}</P>
                 </Q>
                 <Q q={t("discordBot.q4")}>
-                    <P>When you start typing in the <Code>item</Code> field of <Code>/sell</Code> or <Code>/buy</Code>, Discord shows up to 25 matching items from your org&apos;s current inventory. The search is a case-insensitive substring match on the item name. Select one from the dropdown — you cannot type a free-form name.</P>
+                    <P>{t.rich("discordBot.q4Body", rich)}</P>
                 </Q>
                 <Q q={t("discordBot.q5")}>
-                    <P>When a transaction is created (via web or Discord), the bot posts an embed to the configured notification channel (see Settings). The embed shows:</P>
+                    <P>{t("discordBot.q5Intro")}</P>
                     <ul className="ml-4 list-disc space-y-0.5">
-                        <li>Item name, direction, quantity, price per unit, total, member username, optional note</li>
-                        <li>Current status with color coding</li>
-                        <li>Action buttons depending on status</li>
+                        <li>{t("discordBot.q5Li1")}</li>
+                        <li>{t("discordBot.q5Li2")}</li>
+                        <li>{t("discordBot.q5Li3")}</li>
                     </ul>
                 </Q>
                 <Q q={t("discordBot.q6")}>
                     <div className="space-y-2">
                         <div className="flex items-start gap-2">
                             <CheckCircle size={14} style={{ color: "rgba(80,210,120,0.7)", flexShrink: 0, marginTop: 1 }} />
-                            <span><Highlight>Approve</Highlight> — available when status is <StatusBadge status="requested" />. Moves the transaction to <StatusBadge status="approved" />.</span>
+                            <span><Highlight>Approve</Highlight> {t("discordBot.q6Li1")}</span>
                         </div>
                         <div className="flex items-start gap-2">
                             <XCircle size={14} style={{ color: "rgba(220,80,80,0.7)", flexShrink: 0, marginTop: 1 }} />
-                            <span><Highlight>Reject</Highlight> — available when status is <StatusBadge status="requested" />. Moves the transaction to <StatusBadge status="rejected" />.</span>
+                            <span><Highlight>Reject</Highlight> {t("discordBot.q6Li2")}</span>
                         </div>
                         <div className="flex items-start gap-2">
                             <CheckCircle size={14} style={{ color: "rgba(79,195,220,0.7)", flexShrink: 0, marginTop: 1 }} />
-                            <span><Highlight>Confirm Trade</Highlight> — available when status is <StatusBadge status="approved" />. Records that you completed the in-game exchange. Once both sides confirm, the transaction becomes <StatusBadge status="completed" />.</span>
+                            <span><Highlight>Confirm Trade</Highlight> {t("discordBot.q6Li3")}</span>
                         </div>
                         <div className="flex items-start gap-2">
                             <XCircle size={14} style={{ color: "rgba(140,140,160,0.6)", flexShrink: 0, marginTop: 1 }} />
-                            <span><Highlight>Cancel</Highlight> — available when status is <StatusBadge status="requested" /> or <StatusBadge status="approved" />. Moves the transaction to <StatusBadge status="cancelled" />.</span>
+                            <span><Highlight>Cancel</Highlight> {t("discordBot.q6Li4")}</span>
                         </div>
                     </div>
-                    <P>The embed is automatically updated in-place whenever the status changes, whether the action was taken on Discord or in the web UI. Terminal status changes are always reflected on Discord within seconds.</P>
+                    <P>{t("discordBot.q6Outro")}</P>
                 </Q>
                 <Q q={t("discordBot.q7")}>
-                    <P>Yes. The bot verifies your Discord account is linked to an org member account and that you have the correct role before allowing any action. The same business rules apply — you cannot approve your own request, confirm a trade for the other party, etc.</P>
+                    <P>{t("discordBot.q7Body")}</P>
                 </Q>
             </Section>
 
@@ -349,32 +363,32 @@ export default async function FaqPage() {
             <Section icon={Settings2} title={t("settingsSection.title")} subtitle={t("settingsSection.subtitle")}>
                 <Q q={t("settingsSection.q1")}>
                     <div className="space-y-2">
-                        <Step n={1}>Make sure a Discord server is connected first (see above).</Step>
-                        <Step n={2}>In <Highlight>Settings</Highlight>, scroll to the <Highlight>Transaction Notifications</Highlight> card.</Step>
-                        <Step n={3}>Click the channel dropdown. It shows all text channels from your linked Discord server.</Step>
-                        <Step n={4}>Select the channel where transaction embeds should be posted and click <Code>Save Settings</Code>.</Step>
+                        <Step n={1}>{t("settingsSection.q1Step1")}</Step>
+                        <Step n={2}>{t.rich("settingsSection.q1Step2", rich)}</Step>
+                        <Step n={3}>{t("settingsSection.q1Step3")}</Step>
+                        <Step n={4}>{t.rich("settingsSection.q1Step4", rich)}</Step>
                     </div>
-                    <P>To disable notifications, clear the selection and save. The <Code>$</Code> icon identifies text channels.</P>
+                    <P>{t.rich("settingsSection.q1Outro", rich)}</P>
                 </Q>
                 <Q q={t("settingsSection.q2")}>
-                    <P>Transactions created via the web UI will not post any Discord embed. Transactions created via <Code>/sell</Code> or <Code>/buy</Code> will still be saved to the database and the user will get an ephemeral confirmation, but no channel embed will be posted.</P>
+                    <P>{t.rich("settingsSection.q2Body", rich)}</P>
                 </Q>
             </Section>
 
             {/* ── Audit Logs ── */}
             <Section icon={ShieldCheck} title={t("auditLogs.title")} subtitle={t("auditLogs.subtitle")}>
                 <Q q={t("auditLogs.q1")}>
-                    <P>Every significant action is recorded with a timestamp, the acting user, and a description:</P>
+                    <P>{t("auditLogs.q1Intro")}</P>
                     <ul className="ml-4 list-disc space-y-0.5">
-                        <li>Transaction created, approved, rejected, confirmed, cancelled</li>
-                        <li>Inventory item added, updated, removed</li>
-                        <li>Member invited, role changed, removed</li>
-                        <li>Discord server connected/disconnected</li>
-                        <li>Org settings changed</li>
+                        <li>{t("auditLogs.q1Li1")}</li>
+                        <li>{t("auditLogs.q1Li2")}</li>
+                        <li>{t("auditLogs.q1Li3")}</li>
+                        <li>{t("auditLogs.q1Li4")}</li>
+                        <li>{t("auditLogs.q1Li5")}</li>
                     </ul>
                 </Q>
                 <Q q={t("auditLogs.q2")}>
-                    <P>Only <Highlight>owners</Highlight>. The Logs page is hidden from admins and members in the navigation.</P>
+                    <P>{t.rich("auditLogs.q2Body", rich)}</P>
                 </Q>
             </Section>
 
@@ -400,8 +414,9 @@ export default async function FaqPage() {
                         </thead>
                         <tbody>
                             {[
-                                ["/sell", t("quickRef.sellWho"), t("quickRef.sellWhat")],
-                                ["/buy",  t("quickRef.buyWho"),  t("quickRef.buyWhat")],
+                                ["/sell",      t("quickRef.sellWho"),      t("quickRef.sellWhat")],
+                                ["/buy",       t("quickRef.buyWho"),       t("quickRef.buyWhat")],
+                                ["/inventory", t("quickRef.inventoryWho"), t("quickRef.inventoryWhat")],
                             ].map(([cmd, who, what]) => (
                                 <tr
                                     key={cmd}
