@@ -60,6 +60,8 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
     const inventoryItemOptions = items.map((item) => ({
         inventoryItemId: item.inventoryItemId,
         name: item.name,
+        buyPrice: item.buyPrice,
+        sellPrice: item.sellPrice,
     }));
 
     const openTransaction = (item: InventoryItem, direction: "org_to_member" | "member_to_org") => {
@@ -274,7 +276,7 @@ function InfoRow({label, value}: { label: string; value: string }) {
                 className="text-[11px]"
                 style={{color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)"}}
             >
-                {value} aUEC
+                {value} DKP
             </span>
         </div>
     );

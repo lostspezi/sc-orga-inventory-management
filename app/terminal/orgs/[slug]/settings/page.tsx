@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import OrgSettingsForm from "@/components/orgs/details/settings/org-settings-form";
 import DiscordServerCard from "@/components/orgs/details/settings/discord-server-card";
+import RaidHelperCard from "@/components/orgs/details/settings/raid-helper-card";
 
 type Props = {
     params: Promise<{ slug: string }>;
@@ -80,6 +81,11 @@ export default async function OrgSettingsPage({ params }: Props) {
             <DiscordServerCard
                 organizationSlug={org.slug}
                 discordGuildId={org.discordGuildId}
+            />
+
+            <RaidHelperCard
+                organizationSlug={org.slug}
+                hasApiKey={!!org.raidHelperApiKey}
             />
 
             <div

@@ -1,12 +1,14 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { createTransactionAction } from "@/lib/actions/create-transaction-action";
 
 type InventoryItemOption = {
     inventoryItemId: string;
     name: string;
+    buyPrice: number;
+    sellPrice: number;
 };
 
 type Props = {
@@ -37,6 +39,35 @@ export default function CreateTransactionDialog({
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const [state, formAction, isPending] = useActionState(createTransactionAction, initialState);
 
+    const [selectedItemId, setSelectedItemId] = useState(defaultInventoryItemId ?? "");
+    const [selectedDirection, setSelectedDirection] = useState<"org_to_member" | "member_to_org" | "">(
+        defaultDirection ?? ""
+    );
+    const [quantity, setQuantity] = useState(1);
+
+    const [dkp, setDkp] = useState<number | null>(null);
+    const [hasDkpIntegration, setHasDkpIntegration] = useState(false);
+
+    useEffect(() => {
+        if (!open) return;
+        let cancelled = false;
+        fetch(`/api/orgs/${organizationSlug}/members/dkp`)
+            .then((r) => r.json())
+            .then((data: { dkp: number | null; hasDkpIntegration: boolean }) => {
+                if (!cancelled) {
+                    setDkp(data.dkp);
+                    setHasDkpIntegration(data.hasDkpIntegration);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setDkp(null);
+                    setHasDkpIntegration(false);
+                }
+            });
+        return () => { cancelled = true; };
+    }, [open, organizationSlug]);
+
     useEffect(() => {
         const dialog = dialogRef.current;
         if (!dialog) return;
@@ -61,6 +92,22 @@ export default function CreateTransactionDialog({
             : defaultDirection === "member_to_org"
             ? t("sellToOrgFull")
             : t("requestLabel");
+
+    const selectedItem = inventoryItems.find((i) => i.inventoryItemId === selectedItemId);
+    const pricePerUnit =
+        selectedItem && selectedDirection
+            ? selectedDirection === "member_to_org"
+                ? selectedItem.sellPrice
+                : selectedItem.buyPrice
+            : null;
+    const totalDkp = pricePerUnit !== null ? pricePerUnit * quantity : null;
+
+    const insufficientDkp =
+        hasDkpIntegration &&
+        selectedDirection === "org_to_member" &&
+        dkp !== null &&
+        totalDkp !== null &&
+        totalDkp > dkp;
 
     return (
         <dialog
@@ -108,6 +155,23 @@ export default function CreateTransactionDialog({
                     </button>
                 </div>
 
+                {hasDkpIntegration && (
+                    <div
+                        className="mb-4 rounded-md border px-3 py-2 text-[11px]"
+                        style={{
+                            borderColor: "rgba(79,195,220,0.18)",
+                            background: "rgba(79,195,220,0.04)",
+                            color: "rgba(79,195,220,0.7)",
+                            fontFamily: "var(--font-mono)",
+                        }}
+                    >
+                        {t("dkpBalance")}:{" "}
+                        {dkp !== null
+                            ? `${dkp.toLocaleString()} DKP`
+                            : t("dkpUnavailable")}
+                    </div>
+                )}
+
                 <form action={formAction} className="space-y-4">
                     <input type="hidden" name="organizationSlug" value={organizationSlug} />
 
@@ -125,6 +189,7 @@ export default function CreateTransactionDialog({
                             required
                             disabled={isPending}
                             defaultValue={defaultInventoryItemId ?? ""}
+                            onChange={(e) => setSelectedItemId(e.target.value)}
                             className="sc-input w-full disabled:opacity-70"
                         >
                             <option value="">{t("selectItem")}</option>
@@ -155,6 +220,7 @@ export default function CreateTransactionDialog({
                             required
                             disabled={isPending}
                             defaultValue={defaultDirection ?? ""}
+                            onChange={(e) => setSelectedDirection(e.target.value as "org_to_member" | "member_to_org" | "")}
                             className="sc-input w-full disabled:opacity-70"
                         >
                             <option value="">{t("selectDirection")}</option>
@@ -187,6 +253,7 @@ export default function CreateTransactionDialog({
                                 disabled={isPending}
                                 className="sc-input w-full disabled:opacity-70"
                                 placeholder="1"
+                                onChange={(e) => setQuantity(Number(e.target.value) || 1)}
                             />
                             {state.fieldErrors?.quantity && (
                                 <p className="mt-1 text-xs" style={{ color: "rgba(240,165,0,0.85)" }}>
@@ -196,31 +263,35 @@ export default function CreateTransactionDialog({
                         </div>
 
                         <div>
-                            <label
-                                htmlFor="pricePerUnit"
-                                className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
+                            <p
+                                className="mb-1.5 text-[10px] uppercase tracking-[0.22em]"
                                 style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                             >
-                                {t("pricePerUnit")}
-                            </label>
-                            <input
-                                id="pricePerUnit"
-                                name="pricePerUnit"
-                                type="number"
-                                min="0"
-                                step="1"
-                                required
-                                disabled={isPending}
-                                className="sc-input w-full disabled:opacity-70"
-                                placeholder="0"
-                            />
-                            {state.fieldErrors?.pricePerUnit && (
-                                <p className="mt-1 text-xs" style={{ color: "rgba(240,165,0,0.85)" }}>
-                                    {state.fieldErrors.pricePerUnit}
-                                </p>
-                            )}
+                                {t("pricePerUnitDkp")}
+                            </p>
+                            <div
+                                className="sc-input flex w-full items-center opacity-70"
+                                style={{ color: "rgba(200,220,232,0.6)" }}
+                            >
+                                {pricePerUnit !== null
+                                    ? `${pricePerUnit.toLocaleString()} DKP`
+                                    : "—"}
+                            </div>
                         </div>
                     </div>
+
+                    {totalDkp !== null && (
+                        <p
+                            className="text-[11px]"
+                            style={{
+                                color: insufficientDkp ? "rgba(220,80,80,0.85)" : "rgba(79,195,220,0.65)",
+                                fontFamily: "var(--font-mono)",
+                            }}
+                        >
+                            {t("totalDkp")}: {totalDkp.toLocaleString()} DKP
+                            {insufficientDkp && ` — ${t("dkpInsufficient")}`}
+                        </p>
+                    )}
 
                     <div>
                         <label
@@ -267,7 +338,7 @@ export default function CreateTransactionDialog({
                         >
                             {tc("cancel")}
                         </button>
-                        <button type="submit" className="sc-btn" disabled={isPending}>
+                        <button type="submit" className="sc-btn" disabled={isPending || insufficientDkp}>
                             {isPending ? t("submitting") : t("submit")}
                         </button>
                     </div>

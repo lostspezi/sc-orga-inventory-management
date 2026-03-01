@@ -86,7 +86,7 @@ export default async function RecentCompletedList({
                                     className="shrink-0 text-[11px]"
                                     style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
                                 >
-                                    {tx.quantity}× · {tx.totalPrice.toLocaleString()} aUEC
+                                    {tx.quantity}× · {tx.totalPrice.toLocaleString()} DKP
                                 </span>
                                 <span
                                     className="hidden shrink-0 text-[10px] sm:block"

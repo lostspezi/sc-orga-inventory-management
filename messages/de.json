@@ -145,7 +145,7 @@
     "completed": "Abgeschlossen",
     "completedThis": "diesen Monat",
     "revenue": "Umsatz",
-    "currency": "aUEC",
+    "currency": "DKP",
     "inventory": "Inventar",
     "listedItems": "Einträge"
   },
@@ -229,7 +229,8 @@
     "removeMemberButton": "Mitglied entfernen",
     "roleMember": "Mitglied",
     "roleAdmin": "Admin",
-    "loadError": "Discord-Mitglieder konnten nicht geladen werden."
+    "loadError": "Discord-Mitglieder konnten nicht geladen werden.",
+    "dkp": "DKP"
   },
   "inventory": {
     "eyebrow": "Inventar",
@@ -333,7 +334,16 @@
     "statusCompleted": "ABGESCHLOSSEN",
     "statusRejected": "ABGELEHNT",
     "statusCancelled": "STORNIERT",
-    "cancelTrade": "Abbrechen"
+    "cancelTrade": "Abbrechen",
+    "dkp": "DKP",
+    "dkpBalance": "DKP-Guthaben",
+    "dkpCost": "DKP-Kosten",
+    "dkpReward": "DKP-Belohnung",
+    "dkpLoading": "DKP wird geladen…",
+    "dkpUnavailable": "DKP-Wallet nicht verbunden",
+    "pricePerUnitDkp": "Preis / Einheit (DKP)",
+    "totalDkp": "Gesamt DKP",
+    "dkpInsufficient": "Nicht genug DKP"
   },
   "logs": {
     "eyebrow": "Protokoll",
@@ -381,7 +391,14 @@
     "connectDesc": "Füge den Bot dem Server dieser Organisation hinzu. Nach der Autorisierung wird der ausgewählte Server automatisch verknüpft.",
     "disconnect": "Trennen",
     "addBot": "Bot zum Server hinzufügen",
-    "channelSelected": "Ausgewählt: #{name}"
+    "channelSelected": "Ausgewählt: #{name}",
+    "raidHelper": "Raid Helper-Integration",
+    "raidHelperApiKeyLabel": "API-Schlüssel",
+    "raidHelperDesc": "Verbinde Raid Helper, um DKP-Wallets und automatische DKP-Synchronisierung beim Handelsabschluss zu aktivieren. Holen Sie sich Ihren Schlüssel über /apikey in Ihrem Discord-Server.",
+    "raidHelperSave": "API-Schlüssel speichern",
+    "raidHelperClear": "Schlüssel entfernen",
+    "raidHelperConnected": "● DKP-Sync aktiv",
+    "raidHelperDisconnected": "○ Nicht verbunden"
   },
   "news": {
     "feed": {

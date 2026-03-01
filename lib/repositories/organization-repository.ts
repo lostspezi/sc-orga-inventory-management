@@ -323,6 +323,7 @@ async function mapOrganizationToView(
         })),
         discordGuildId: org.discordGuildId,
         discordTransactionChannelId: org.discordTransactionChannelId,
+        raidHelperApiKey: org.raidHelperApiKey,
     };
 }
 
@@ -425,6 +426,23 @@ export async function transferOrganizationOwnership(
         { _id: oid, "members.userId": newOwnerId },
         { $set: { "members.$.role": "owner", updatedAt: new Date() } }
     );
+
+    return result.modifiedCount > 0;
+}
+
+export async function setOrganizationRaidHelperApiKey(
+    slug: string,
+    apiKey: string | null
+): Promise<boolean> {
+    const db = await getDb();
+
+    const update = apiKey
+        ? { $set: { raidHelperApiKey: apiKey, updatedAt: new Date() } }
+        : { $unset: { raidHelperApiKey: "" as const }, $set: { updatedAt: new Date() } };
+
+    const result = await db
+        .collection<OrganizationDocument>(COLLECTION)
+        .updateOne({ slug }, update);
 
     return result.modifiedCount > 0;
 }
