@@ -113,6 +113,7 @@ export async function handleInviteSlashCommand(
             `You have been invited to join "${org.name}" as ${requestedRole}.\n\nAccept invite: ${inviteLink}\n\nThis invite expires in 7 days.`
         );
     } catch (error) {
+        console.error("Error sending Discord DM:", error);
         await interaction.reply({
             content: "The invite was created, but the Discord DM could not be delivered.",
             flags: MessageFlagsBitField.Flags.Ephemeral,
