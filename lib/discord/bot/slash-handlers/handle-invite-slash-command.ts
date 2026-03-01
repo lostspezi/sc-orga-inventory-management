@@ -1,4 +1,4 @@
-import {ChatInputCommandInteraction, MessageFlagsBitField} from "discord.js";
+import {ChatInputCommandInteraction} from "discord.js";
 import { createHash, randomBytes } from "crypto";
 import { getOrganizationByDiscordGuildId } from "@/lib/repositories/organization-repository";
 import { getUserByDiscordAccountId } from "@/lib/repositories/auth-account-repository";
@@ -25,41 +25,32 @@ function hashInviteToken(rawToken: string) {
 export async function handleInviteSlashCommand(
     interaction: ChatInputCommandInteraction
 ) {
+    // Defer immediately — DB work below can exceed Discord's 3-second window.
+    await interaction.deferReply({ ephemeral: true });
+
     if (!interaction.guildId) {
-        await interaction.reply({
-            content: "This command can only be used inside a Discord server.",
-            flags: MessageFlagsBitField.Flags.Ephemeral,
-        });
+        await interaction.editReply("This command can only be used inside a Discord server.");
         return;
     }
 
     const org = await getOrganizationByDiscordGuildId(interaction.guildId);
 
     if (!org) {
-        await interaction.reply({
-            content: "No organization is linked to this Discord server.",
-            flags: MessageFlagsBitField.Flags.Ephemeral,
-        });
+        await interaction.editReply("No organization is linked to this Discord server.");
         return;
     }
 
     const actorUser = await getUserByDiscordAccountId(interaction.user.id);
 
     if (!actorUser) {
-        await interaction.reply({
-            content: "Your Discord account is not linked to an application user.",
-            flags: MessageFlagsBitField.Flags.Ephemeral,
-        });
+        await interaction.editReply("Your Discord account is not linked to an application user.");
         return;
     }
 
     const actorMember = org.members.find((m) => m.userId === actorUser.id);
 
     if (!actorMember || !["owner", "admin"].includes(actorMember.role)) {
-        await interaction.reply({
-            content: "Only organization owners or admins can use this command.",
-            flags: MessageFlagsBitField.Flags.Ephemeral,
-        });
+        await interaction.editReply("Only organization owners or admins can use this command.");
         return;
     }
 
@@ -67,10 +58,7 @@ export async function handleInviteSlashCommand(
     const requestedRole = (interaction.options.getString("role") ?? "member") as TargetRole;
 
     if (actorMember.role !== "owner" && requestedRole === "admin") {
-        await interaction.reply({
-            content: "Only the owner can invite someone as admin.",
-            flags: MessageFlagsBitField.Flags.Ephemeral,
-        });
+        await interaction.editReply("Only the owner can invite someone as admin.");
         return;
     }
 
@@ -80,10 +68,7 @@ export async function handleInviteSlashCommand(
         const alreadyMember = org.members.some((m) => m.userId === targetAppUser.id);
 
         if (alreadyMember) {
-            await interaction.reply({
-                content: "That user is already a member of this organization.",
-                flags: MessageFlagsBitField.Flags.Ephemeral,
-            });
+            await interaction.editReply("That user is already a member of this organization.");
             return;
         }
     }
@@ -114,10 +99,7 @@ export async function handleInviteSlashCommand(
         );
     } catch (error) {
         console.error("Error sending Discord DM:", error);
-        await interaction.reply({
-            content: "The invite was created, but the Discord DM could not be delivered.",
-            flags: MessageFlagsBitField.Flags.Ephemeral,
-        });
+        await interaction.editReply("The invite was created, but the Discord DM could not be delivered.");
         return;
     }
 
@@ -139,8 +121,5 @@ export async function handleInviteSlashCommand(
         },
     });
 
-    await interaction.reply({
-        content: `Invite sent to ${targetDiscordUser.username} as ${requestedRole}.`,
-        flags: MessageFlagsBitField.Flags.Ephemeral,
-    });
+    await interaction.editReply(`Invite sent to ${targetDiscordUser.username} as ${requestedRole}.`);
 }

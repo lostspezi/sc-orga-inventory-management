@@ -1,4 +1,5 @@
 import { ButtonInteraction, MessageFlagsBitField } from "discord.js";
+import { revalidatePath } from "next/cache";
 import { parseTxButtonId, buildTransactionMessagePayload, updateTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 import { getOrganizationByDiscordGuildId } from "@/lib/repositories/organization-repository";
 import { getUserByDiscordAccountId } from "@/lib/repositories/auth-account-repository";
@@ -10,10 +11,17 @@ import {
 } from "@/lib/repositories/organization-transaction-repository";
 import { adjustOrganizationInventoryItemQuantity } from "@/lib/repositories/organization-inventory-item-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
+import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
+import { updateMemberDkp } from "@/lib/raid-helper/update-member-dkp";
 
 export async function handleTransactionButton(interaction: ButtonInteraction): Promise<void> {
-    // Acknowledge immediately — must happen within 3 s
-    await interaction.deferUpdate();
+    // Acknowledge immediately — must happen within 3 s. If this fails the
+    // interaction has already expired; bail out rather than compounding errors.
+    try {
+        await interaction.deferUpdate();
+    } catch {
+        return;
+    }
 
     const parsed = parseTxButtonId(interaction.customId);
     if (!parsed) return;
@@ -75,6 +83,7 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             message: `Transaction for "${tx.itemName}" approved via Discord.`,
         });
 
+        revalidatePath(`/terminal/orgs/${org.slug}/transactions`);
         await refreshEmbed(interaction, txId);
         await interaction.followUp({ content: `Transaction approved: ${tx.itemName}.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         return;
@@ -104,6 +113,7 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             message: `Transaction for "${tx.itemName}" rejected via Discord.`,
         });
 
+        revalidatePath(`/terminal/orgs/${org.slug}/transactions`);
         await refreshEmbed(interaction, txId);
         await interaction.followUp({ content: `Transaction rejected: ${tx.itemName}.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         return;
@@ -133,6 +143,7 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             message: `Transaction for "${tx.itemName}" cancelled via Discord by ${isAdminOrOwner ? "admin" : "member"}.`,
         });
 
+        revalidatePath(`/terminal/orgs/${org.slug}/transactions`);
         await refreshEmbed(interaction, txId);
         await interaction.followUp({ content: `Transaction cancelled: ${tx.itemName}.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         return;
@@ -149,10 +160,11 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             return;
         }
 
-        const patch: { memberConfirmed?: boolean; adminConfirmed?: boolean } = {};
+        const patch: { memberConfirmed?: boolean; adminConfirmed?: boolean; adminConfirmedByUsername?: string } = {};
 
         if (isAdminOrOwner && !tx.adminConfirmed) {
             patch.adminConfirmed = true;
+            patch.adminConfirmedByUsername = appUser.name ?? interaction.user.username;
         } else if (isMemberParty && !tx.memberConfirmed) {
             patch.memberConfirmed = true;
         } else {
@@ -181,6 +193,36 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
                 metadata: { delta, direction: tx.direction, quantity: tx.quantity },
             });
 
+            // Sync DKP with Raid Helper (non-blocking)
+            if (org.raidHelperApiKey && org.discordGuildId) {
+                const memberDiscordId = await getDiscordUserId(tx.memberId);
+                if (memberDiscordId) {
+                    const dkpOperation = tx.direction === "member_to_org" ? "add" : "subtract";
+                    const verb = tx.direction === "member_to_org" ? "Sell" : "Buy";
+                    const adminName = patch.adminConfirmedByUsername ?? tx.adminConfirmedByUsername ?? "Admin";
+                    const now = new Date();
+                    const ts = now.toLocaleDateString("en-GB", {
+                        day: "2-digit", month: "short", year: "numeric", timeZone: "UTC",
+                    }) + " " + now.toLocaleTimeString("en-GB", {
+                        hour: "2-digit", minute: "2-digit", timeZone: "UTC",
+                    }) + " UTC";
+                    const dkpDescription = `[SC Orga] ${verb} ${tx.quantity}x ${tx.itemName} | TxID: ${txId} | Trader: ${tx.memberUsername} | Admin: ${adminName} | ${ts}`;
+                    const dkpOk = await updateMemberDkp(
+                        org.discordGuildId,
+                        memberDiscordId,
+                        org.raidHelperApiKey,
+                        dkpOperation,
+                        tx.totalPrice,
+                        dkpDescription
+                    );
+                    if (!dkpOk) {
+                        console.error(`[DKP] Failed to update DKP for member ${tx.memberId} after completing transaction ${txId} via Discord`);
+                    }
+                }
+            }
+
+            revalidatePath(`/terminal/orgs/${org.slug}/transactions`);
+            revalidatePath(`/terminal/orgs/${org.slug}/inventory`);
             await refreshEmbed(interaction, txId);
             await interaction.followUp({ content: `Transaction completed: ${tx.itemName}. Inventory updated.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         } else {
@@ -197,6 +239,7 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
                 message: `${isAdminOrOwner ? "Admin" : "Member"} confirmed in-game trade for "${tx.itemName}" via Discord. Waiting for other party.`,
             });
 
+            revalidatePath(`/terminal/orgs/${org.slug}/transactions`);
             await refreshEmbed(interaction, txId);
             await interaction.followUp({ content: `Confirmed. Waiting for the other party to confirm.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         }

@@ -131,7 +131,7 @@ export async function setTransactionDiscordMessage(
 
 export async function updateTransactionStatus(
     transactionId: string,
-    patch: Partial<Pick<OrganizationTransactionDocument, "status" | "memberConfirmed" | "adminConfirmed">>
+    patch: Partial<Pick<OrganizationTransactionDocument, "status" | "memberConfirmed" | "adminConfirmed" | "adminConfirmedByUsername">>
 ): Promise<boolean> {
     if (!ObjectId.isValid(transactionId)) return false;
 

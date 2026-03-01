@@ -22,6 +22,7 @@ export type OrganizationTransactionDocument = {
     status: "requested" | "approved" | "completed" | "rejected" | "cancelled";
     memberConfirmed: boolean;
     adminConfirmed: boolean;
+    adminConfirmedByUsername?: string;
 
     note?: string;
 
@@ -54,6 +55,7 @@ export type OrganizationTransactionView = {
     status: "requested" | "approved" | "completed" | "rejected" | "cancelled";
     memberConfirmed: boolean;
     adminConfirmed: boolean;
+    adminConfirmedByUsername?: string;
 
     note?: string;
 

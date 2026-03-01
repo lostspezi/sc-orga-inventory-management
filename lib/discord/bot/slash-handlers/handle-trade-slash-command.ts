@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, MessageFlagsBitField } from "discord.js";
+import { AutocompleteInteraction, ChatInputCommandInteraction } from "discord.js";
 import { getOrganizationByDiscordGuildId } from "@/lib/repositories/organization-repository";
 import { getUserByDiscordAccountId } from "@/lib/repositories/auth-account-repository";
 import {
@@ -42,60 +42,44 @@ export async function handleTradeAutocomplete(interaction: AutocompleteInteracti
 }
 
 export async function handleTradeSlashCommand(interaction: ChatInputCommandInteraction): Promise<void> {
+    // Defer immediately — DB work below can exceed Discord's 3-second window.
+    await interaction.deferReply({ ephemeral: true });
+
     if (!interaction.guildId) {
-        await interaction.reply({
-            content: "This command can only be used inside a Discord server.",
-            flags: MessageFlagsBitField.Flags.Ephemeral,
-        });
+        await interaction.editReply("This command can only be used inside a Discord server.");
         return;
     }
 
     const org = await getOrganizationByDiscordGuildId(interaction.guildId);
     if (!org) {
-        await interaction.reply({
-            content: "No organization is linked to this Discord server.",
-            flags: MessageFlagsBitField.Flags.Ephemeral,
-        });
+        await interaction.editReply("No organization is linked to this Discord server.");
         return;
     }
 
     const appUser = await getUserByDiscordAccountId(interaction.user.id);
     if (!appUser) {
-        await interaction.reply({
-            content: "Your Discord account is not linked to an application user.",
-            flags: MessageFlagsBitField.Flags.Ephemeral,
-        });
+        await interaction.editReply("Your Discord account is not linked to an application user.");
         return;
     }
 
     const member = org.members.find((m) => m.userId === appUser.id);
     if (!member) {
-        await interaction.reply({
-            content: "You are not a member of this organization.",
-            flags: MessageFlagsBitField.Flags.Ephemeral,
-        });
+        await interaction.editReply("You are not a member of this organization.");
         return;
     }
 
     const inventoryItemId = interaction.options.getString("item", true);
     const quantity = interaction.options.getInteger("quantity", true);
-    const pricePerUnit = interaction.options.getInteger("price", true);
     const note = interaction.options.getString("note") ?? undefined;
 
     if (!ObjectId.isValid(inventoryItemId)) {
-        await interaction.reply({
-            content: "Invalid item selected.",
-            flags: MessageFlagsBitField.Flags.Ephemeral,
-        });
+        await interaction.editReply("Invalid item selected.");
         return;
     }
 
     const invDoc = await getOrganizationInventoryItemDocumentById(inventoryItemId);
     if (!invDoc || !invDoc.organizationId.equals(org._id)) {
-        await interaction.reply({
-            content: "That item was not found in this organization's inventory.",
-            flags: MessageFlagsBitField.Flags.Ephemeral,
-        });
+        await interaction.editReply("That item was not found in this organization's inventory.");
         return;
     }
 
@@ -104,6 +88,7 @@ export async function handleTradeSlashCommand(interaction: ChatInputCommandInter
     const itemName = itemDoc?.name ?? "Unknown Item";
 
     const direction = interaction.commandName === "sell" ? "member_to_org" : "org_to_member";
+    const pricePerUnit = direction === "member_to_org" ? invDoc.sellPrice : invDoc.buyPrice;
     const totalPrice = quantity * pricePerUnit;
 
     const transaction = await createOrganizationTransaction({
@@ -152,8 +137,5 @@ export async function handleTradeSlashCommand(interaction: ChatInputCommandInter
     }
 
     const verb = interaction.commandName === "sell" ? "sell" : "buy";
-    await interaction.reply({
-        content: `Transaction request submitted: ${verb} ${quantity}x "${itemName}" at ${pricePerUnit} aUEC/unit (total: ${totalPrice} aUEC).`,
-        flags: MessageFlagsBitField.Flags.Ephemeral,
-    });
+    await interaction.editReply(`Transaction request submitted: ${verb} ${quantity}x "${itemName}" at ${pricePerUnit} DKP/unit (total: ${totalPrice} DKP).`);
 }
