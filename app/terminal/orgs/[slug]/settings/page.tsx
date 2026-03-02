@@ -2,9 +2,11 @@ import { auth } from "@/auth";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
+import { getActivePermanentInviteByOrgId } from "@/lib/repositories/organization-invite-repository";
 import OrgSettingsForm from "@/components/orgs/details/settings/org-settings-form";
 import DiscordServerCard from "@/components/orgs/details/settings/discord-server-card";
 import RaidHelperCard from "@/components/orgs/details/settings/raid-helper-card";
+import PermanentInviteCard from "@/components/orgs/details/settings/permanent-invite-card";
 
 type Props = {
     params: Promise<{ slug: string }>;
@@ -29,6 +31,14 @@ export default async function OrgSettingsPage({ params, searchParams }: Props) {
 
     const currentMember = org.members.find((m) => m.userId === session.user!.id);
     const isAdminOrOwner = currentMember && ["owner", "admin"].includes(currentMember.role);
+
+    const permanentInvite = isAdminOrOwner
+        ? await getActivePermanentInviteByOrgId(org._id)
+        : null;
+
+    const inviteUrl = permanentInvite?.permanentRawToken
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/invite/${permanentInvite.permanentRawToken}`
+        : null;
 
     const t = await getTranslations("orgSettings");
 
@@ -89,6 +99,11 @@ export default async function OrgSettingsPage({ params, searchParams }: Props) {
             <RaidHelperCard
                 organizationSlug={org.slug}
                 hasApiKey={!!org.raidHelperApiKey}
+            />
+
+            <PermanentInviteCard
+                organizationSlug={org.slug}
+                inviteUrl={inviteUrl}
             />
 
             <div

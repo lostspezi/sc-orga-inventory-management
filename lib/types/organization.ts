@@ -97,7 +97,10 @@ export type OrganizationAuditLogDocument = {
         | "transaction.rejected"
         | "transaction.confirmed"
         | "transaction.completed"
-        | "transaction.cancelled";
+        | "transaction.cancelled"
+        | "member.permanent_invite_created"
+        | "member.permanent_invite_revoked"
+        | "member.joined_via_permanent_link";
 
     entityType: "organization" | "member" | "item" | "inventory_item" | "transaction";
     entityId?: string;
@@ -118,12 +121,15 @@ export type OrganizationInviteDocument = {
 
     targetRole: "admin" | "member";
 
-    deliveryMethod: "email" | "discord_dm" | "in_app";
+    deliveryMethod: "email" | "discord_dm" | "in_app" | "permanent_link";
 
     inviteToken: string;
     email?: string;
     discordUserId?: string;
     targetUserId?: string;
+
+    isPermanent?: boolean;
+    permanentRawToken?: string;
 
     status: "pending" | "accepted" | "declined" | "expired" | "revoked";
 
@@ -141,11 +147,13 @@ export type OrganizationInviteView = {
     invitedByUserId: string;
     invitedByUsername?: string;
     targetRole: "admin" | "member";
-    deliveryMethod: "email" | "discord_dm" | "in_app";
+    deliveryMethod: "email" | "discord_dm" | "in_app" | "permanent_link";
     inviteToken: string;
     email?: string;
     discordUserId?: string;
     targetUserId?: string;
+    isPermanent?: boolean;
+    permanentRawToken?: string;
     status: "pending" | "accepted" | "declined" | "expired" | "revoked";
     expiresAt: string;
     createdAt: string;

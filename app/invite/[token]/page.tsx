@@ -7,8 +7,9 @@ import {
     getOrganizationInviteByRawToken,
     markOrganizationInviteAccepted,
 } from "@/lib/repositories/organization-invite-repository";
+import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
 import { getDiscordAccountByUserId } from "@/lib/repositories/auth-account-repository";
-import { notify } from "@/lib/notify";
+import { notify, notifyMany } from "@/lib/notify";
 import { ArrowLeft, LogIn, ShieldAlert, Clock3, Link2Off, CheckCircle2 } from "lucide-react";
 import React from "react";
 import InviteSuccessRedirect from "@/components/invite/invite-success-redirect";
@@ -107,7 +108,7 @@ export default async function InviteAcceptPage({ params }: Props) {
         );
     }
 
-    if (invite.discordUserId) {
+    if (!invite.isPermanent && invite.discordUserId) {
         const discordAccount = await getDiscordAccountByUserId(session.user.id);
 
         if (!discordAccount || discordAccount.providerAccountId !== invite.discordUserId) {
@@ -147,12 +148,39 @@ export default async function InviteAcceptPage({ params }: Props) {
             role: invite.targetRole,
             joinedAt: createJoinDate(),
         });
+
+        if (invite.isPermanent) {
+            await createOrganizationAuditLog({
+                organizationId: org._id,
+                organizationSlug: org.slug,
+                actorUserId: session.user.id,
+                actorUsername: session.user.name ?? "Unknown",
+                action: "member.joined_via_permanent_link",
+                entityType: "member",
+                entityId: session.user.id,
+                message: `${session.user.name ?? "A user"} joined via permanent invite link.`,
+            });
+
+            const adminUserIds = org.members
+                .filter((m) => m.role === "owner" || m.role === "admin")
+                .map((m) => m.userId);
+
+            await notifyMany(
+                adminUserIds,
+                "invite.accepted",
+                "New Member Joined",
+                `${session.user.name ?? "Someone"} joined ${org.name} via the permanent invite link.`,
+                `/terminal/orgs/${org.slug}/members`
+            );
+        }
     }
 
-    await markOrganizationInviteAccepted(invite._id);
+    if (!invite.isPermanent) {
+        await markOrganizationInviteAccepted(invite._id);
+    }
 
-    // Notify the inviter
-    if (invite.invitedByUserId && !alreadyMember) {
+    // Notify the inviter (skip for permanent links — no single inviter)
+    if (!invite.isPermanent && invite.invitedByUserId && !alreadyMember) {
         await notify(
             invite.invitedByUserId,
             "invite.accepted",

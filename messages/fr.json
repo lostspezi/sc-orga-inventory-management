@@ -401,7 +401,17 @@
     "raidHelperClear": "Supprimer la clé",
     "raidHelperConnected": "● Sync DKP Active",
     "raidHelperDisconnected": "○ Non connecté",
-    "guildAlreadyConnected": "Ce serveur Discord est déjà connecté à une autre organisation. Déconnectez-le d'abord avant de le lier ici."
+    "guildAlreadyConnected": "Ce serveur Discord est déjà connecté à une autre organisation. Déconnectez-le d'abord avant de le lier ici.",
+    "permanentInvite": "Lien d'invitation permanent",
+    "permanentInviteDesc": "Partagez ce lien avec n'importe qui — ils peuvent rejoindre votre organisation en tant que membre.",
+    "permanentInviteActive": "● Lien actif",
+    "permanentInviteInactive": "○ Aucun lien actif",
+    "permanentInviteGenerate": "Générer le lien",
+    "permanentInviteRegenerate": "Regénérer",
+    "permanentInviteRevoke": "Révoquer",
+    "permanentInviteCopy": "Copier",
+    "permanentInviteCopied": "Copié !",
+    "permanentInviteWarning": "La regénération remplace le lien existant immédiatement."
   },
   "news": {
     "feed": {
