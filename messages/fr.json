@@ -343,7 +343,9 @@
     "dkpUnavailable": "Portefeuille DKP non connecté",
     "pricePerUnitDkp": "Prix / Unité (DKP)",
     "totalDkp": "Total DKP",
-    "dkpInsufficient": "DKP insuffisant"
+    "dkpInsufficient": "DKP insuffisant",
+    "insufficientStock": "Stock insuffisant. Demandé : {requested}, disponible : {available}.",
+    "onlyInStock": "Seulement {count} en stock."
   },
   "logs": {
     "eyebrow": "Journaux",
@@ -398,7 +400,8 @@
     "raidHelperSave": "Enregistrer la clé API",
     "raidHelperClear": "Supprimer la clé",
     "raidHelperConnected": "● Sync DKP Active",
-    "raidHelperDisconnected": "○ Non connecté"
+    "raidHelperDisconnected": "○ Non connecté",
+    "guildAlreadyConnected": "Ce serveur Discord est déjà connecté à une autre organisation. Déconnectez-le d'abord avant de le lier ici."
   },
   "news": {
     "feed": {

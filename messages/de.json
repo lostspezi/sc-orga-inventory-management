@@ -343,7 +343,9 @@
     "dkpUnavailable": "DKP-Wallet nicht verbunden",
     "pricePerUnitDkp": "Preis / Einheit (DKP)",
     "totalDkp": "Gesamt DKP",
-    "dkpInsufficient": "Nicht genug DKP"
+    "dkpInsufficient": "Nicht genug DKP",
+    "insufficientStock": "Nicht genug Vorrat. Angefordert: {requested}, verfügbar: {available}.",
+    "onlyInStock": "Nur {count} auf Lager."
   },
   "logs": {
     "eyebrow": "Protokoll",
@@ -398,7 +400,8 @@
     "raidHelperSave": "API-Schlüssel speichern",
     "raidHelperClear": "Schlüssel entfernen",
     "raidHelperConnected": "● DKP-Sync aktiv",
-    "raidHelperDisconnected": "○ Nicht verbunden"
+    "raidHelperDisconnected": "○ Nicht verbunden",
+    "guildAlreadyConnected": "Dieser Discord-Server ist bereits mit einer anderen Organisation verbunden. Trenne ihn dort zuerst, bevor du ihn hier verknüpfst."
   },
   "news": {
     "feed": {

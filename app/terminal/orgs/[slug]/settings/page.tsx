@@ -8,10 +8,12 @@ import RaidHelperCard from "@/components/orgs/details/settings/raid-helper-card"
 
 type Props = {
     params: Promise<{ slug: string }>;
+    searchParams: Promise<{ discordInstall?: string }>;
 };
 
-export default async function OrgSettingsPage({ params }: Props) {
+export default async function OrgSettingsPage({ params, searchParams }: Props) {
     const { slug } = await params;
+    const { discordInstall } = await searchParams;
 
     const session = await auth();
 
@@ -81,6 +83,7 @@ export default async function OrgSettingsPage({ params }: Props) {
             <DiscordServerCard
                 organizationSlug={org.slug}
                 discordGuildId={org.discordGuildId}
+                installStatus={discordInstall}
             />
 
             <RaidHelperCard

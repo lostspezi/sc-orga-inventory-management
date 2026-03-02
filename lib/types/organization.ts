@@ -134,3 +134,19 @@ export type OrganizationInviteDocument = {
     createdAt: Date;
     updatedAt: Date;
 };
+
+export type OrganizationInviteView = {
+    id: string;
+    organizationSlug: string;
+    invitedByUserId: string;
+    invitedByUsername?: string;
+    targetRole: "admin" | "member";
+    deliveryMethod: "email" | "discord_dm" | "in_app";
+    inviteToken: string;
+    email?: string;
+    discordUserId?: string;
+    targetUserId?: string;
+    status: "pending" | "accepted" | "declined" | "expired" | "revoked";
+    expiresAt: string;
+    createdAt: string;
+};

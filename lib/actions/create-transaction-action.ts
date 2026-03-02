@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { ObjectId } from "mongodb";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import { getOrganizationInventoryItemDocumentById } from "@/lib/repositories/organization-inventory-item-repository";
@@ -82,6 +83,15 @@ export async function createTransactionAction(
 
     if (!invItem || !invItem.organizationId.equals(org._id)) {
         return { ...initialState, message: "Inventory item not found.", fieldErrors: { inventoryItemId: "Item not found." } };
+    }
+
+    if (direction === "org_to_member" && quantityRaw > invItem.quantity) {
+        const t = await getTranslations("transactions");
+        return {
+            ...initialState,
+            message: t("insufficientStock", { requested: quantityRaw, available: invItem.quantity }),
+            fieldErrors: { quantity: t("onlyInStock", { count: invItem.quantity }) },
+        };
     }
 
     const db = await getDb();

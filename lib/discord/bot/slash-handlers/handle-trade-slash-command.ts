@@ -96,6 +96,12 @@ export async function handleTradeSlashCommand(interaction: ChatInputCommandInter
     const itemName = itemDoc?.name ?? "Unknown Item";
 
     const direction = interaction.commandName === "sell" ? "member_to_org" : "org_to_member";
+
+    if (direction === "org_to_member" && quantity > invDoc.quantity) {
+        await interaction.editReply(`Insufficient stock. You requested ${quantity}x but only ${invDoc.quantity}x are available.`);
+        return;
+    }
+
     const pricePerUnit = direction === "member_to_org" ? invDoc.sellPrice : invDoc.buyPrice;
     const totalPrice = quantity * pricePerUnit;
 

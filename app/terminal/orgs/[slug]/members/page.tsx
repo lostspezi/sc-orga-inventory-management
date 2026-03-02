@@ -61,7 +61,22 @@ export default async function OrgMembersPage({params}: Props) {
         );
     }
 
-    const pendingInvites = await getPendingOrganizationInvitesByOrganizationId(org._id);
+    const pendingInviteDocs = await getPendingOrganizationInvitesByOrganizationId(org._id);
+    const pendingInvites = pendingInviteDocs.map((doc) => ({
+        id: doc._id.toString(),
+        organizationSlug: doc.organizationSlug,
+        invitedByUserId: doc.invitedByUserId,
+        invitedByUsername: doc.invitedByUsername,
+        targetRole: doc.targetRole,
+        deliveryMethod: doc.deliveryMethod,
+        inviteToken: doc.inviteToken,
+        email: doc.email,
+        discordUserId: doc.discordUserId,
+        targetUserId: doc.targetUserId,
+        status: doc.status,
+        expiresAt: doc.expiresAt.toISOString(),
+        createdAt: doc.createdAt.toISOString(),
+    }));
 
     const hasDkpIntegration = !!(orgDoc.raidHelperApiKey && orgDoc.discordGuildId);
 

@@ -343,7 +343,9 @@
     "dkpUnavailable": "DKP wallet not connected",
     "pricePerUnitDkp": "Price / Unit (DKP)",
     "totalDkp": "Total DKP",
-    "dkpInsufficient": "Insufficient DKP"
+    "dkpInsufficient": "Insufficient DKP",
+    "insufficientStock": "Insufficient stock. Requested: {requested}, available: {available}.",
+    "onlyInStock": "Only {count} in stock."
   },
   "logs": {
     "eyebrow": "Logs",
@@ -398,7 +400,8 @@
     "raidHelperSave": "Save API Key",
     "raidHelperClear": "Remove Key",
     "raidHelperConnected": "● DKP Sync Active",
-    "raidHelperDisconnected": "○ Not connected"
+    "raidHelperDisconnected": "○ Not connected",
+    "guildAlreadyConnected": "This Discord server is already connected to another organization. Disconnect it there first before linking it here."
   },
   "news": {
     "feed": {
