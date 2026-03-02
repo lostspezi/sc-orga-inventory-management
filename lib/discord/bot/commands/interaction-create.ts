@@ -9,6 +9,10 @@ import { handleInventorySlashCommand } from "@/lib/discord/bot/slash-handlers/ha
 import { TX_BUTTON_PREFIX } from "@/lib/discord/send-transaction-embed";
 
 export function registerInteractionCreateEvent(client: Client) {
+    // Prevent duplicate listeners — can happen when Next.js hot-reloads the
+    // layout module and the global flag falls out of sync with the client.
+    if (client.listenerCount("interactionCreate") > 0) return;
+
     client.on("interactionCreate", async (interaction) => {
         try {
             if (interaction.isButton()) {

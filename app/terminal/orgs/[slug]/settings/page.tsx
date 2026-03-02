@@ -4,13 +4,16 @@ import { getTranslations } from "next-intl/server";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import OrgSettingsForm from "@/components/orgs/details/settings/org-settings-form";
 import DiscordServerCard from "@/components/orgs/details/settings/discord-server-card";
+import RaidHelperCard from "@/components/orgs/details/settings/raid-helper-card";
 
 type Props = {
     params: Promise<{ slug: string }>;
+    searchParams: Promise<{ discordInstall?: string }>;
 };
 
-export default async function OrgSettingsPage({ params }: Props) {
+export default async function OrgSettingsPage({ params, searchParams }: Props) {
     const { slug } = await params;
+    const { discordInstall } = await searchParams;
 
     const session = await auth();
 
@@ -80,6 +83,12 @@ export default async function OrgSettingsPage({ params }: Props) {
             <DiscordServerCard
                 organizationSlug={org.slug}
                 discordGuildId={org.discordGuildId}
+                installStatus={discordInstall}
+            />
+
+            <RaidHelperCard
+                organizationSlug={org.slug}
+                hasApiKey={!!org.raidHelperApiKey}
             />
 
             <div

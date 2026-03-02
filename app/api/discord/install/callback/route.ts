@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import {
     getOrganizationBySlug,
+    getOrganizationByDiscordGuildId,
     setOrganizationDiscordGuildId,
 } from "@/lib/repositories/organization-repository";
 
@@ -51,6 +52,11 @@ export async function GET(req: Request) {
 
     if (!currentMember || !["owner", "admin"].includes(currentMember.role)) {
         return redirectTo(`/terminal/orgs/${orgSlug}/settings?discordInstall=forbidden`, req);
+    }
+
+    const existingOrg = await getOrganizationByDiscordGuildId(guildId);
+    if (existingOrg && existingOrg.slug !== orgSlug) {
+        return redirectTo(`/terminal/orgs/${orgSlug}/settings?discordInstall=guild_already_connected`, req);
     }
 
     await setOrganizationDiscordGuildId(orgSlug, guildId);

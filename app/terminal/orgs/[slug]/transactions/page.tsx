@@ -66,6 +66,8 @@ export default async function OrgTransactionsPage({ params }: Props) {
     const serializedInventoryItems = inventoryItems.map((item) => ({
         inventoryItemId: item.inventoryItemId.toString(),
         name: item.name,
+        buyPrice: item.buyPrice,
+        sellPrice: item.sellPrice,
     }));
 
     return (

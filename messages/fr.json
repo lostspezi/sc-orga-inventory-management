@@ -145,7 +145,7 @@
     "completed": "Complétées",
     "completedThis": "ce mois-ci",
     "revenue": "Revenus",
-    "currency": "aUEC",
+    "currency": "DKP",
     "inventory": "Inventaire",
     "listedItems": "articles listés"
   },
@@ -229,7 +229,8 @@
     "removeMemberButton": "Retirer le membre",
     "roleMember": "Membre",
     "roleAdmin": "Admin",
-    "loadError": "Impossible de charger les membres Discord."
+    "loadError": "Impossible de charger les membres Discord.",
+    "dkp": "DKP"
   },
   "inventory": {
     "eyebrow": "Inventaire",
@@ -333,7 +334,18 @@
     "statusCompleted": "COMPLÉTÉ",
     "statusRejected": "REJETÉ",
     "statusCancelled": "ANNULÉ",
-    "cancelTrade": "Annuler"
+    "cancelTrade": "Annuler",
+    "dkp": "DKP",
+    "dkpBalance": "Solde DKP",
+    "dkpCost": "Coût DKP",
+    "dkpReward": "Récompense DKP",
+    "dkpLoading": "Chargement DKP…",
+    "dkpUnavailable": "Portefeuille DKP non connecté",
+    "pricePerUnitDkp": "Prix / Unité (DKP)",
+    "totalDkp": "Total DKP",
+    "dkpInsufficient": "DKP insuffisant",
+    "insufficientStock": "Stock insuffisant. Demandé : {requested}, disponible : {available}.",
+    "onlyInStock": "Seulement {count} en stock."
   },
   "logs": {
     "eyebrow": "Journaux",
@@ -381,7 +393,15 @@
     "connectDesc": "Ajoutez le bot au serveur utilisé par cette organisation. Après autorisation, le serveur sélectionné sera lié automatiquement.",
     "disconnect": "Déconnecter",
     "addBot": "Ajouter le bot au serveur",
-    "channelSelected": "Sélectionné : #{name}"
+    "channelSelected": "Sélectionné : #{name}",
+    "raidHelper": "Intégration Raid Helper",
+    "raidHelperApiKeyLabel": "Clé API",
+    "raidHelperDesc": "Connectez Raid Helper pour activer les portefeuilles DKP et la synchronisation automatique des DKP à la fin des échanges. Obtenez votre clé via /apikey sur votre serveur Discord.",
+    "raidHelperSave": "Enregistrer la clé API",
+    "raidHelperClear": "Supprimer la clé",
+    "raidHelperConnected": "● Sync DKP Active",
+    "raidHelperDisconnected": "○ Non connecté",
+    "guildAlreadyConnected": "Ce serveur Discord est déjà connecté à une autre organisation. Déconnectez-le d'abord avant de le lier ici."
   },
   "news": {
     "feed": {

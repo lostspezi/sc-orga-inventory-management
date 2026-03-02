@@ -8,6 +8,7 @@ import { getDiscordBotClient } from "@/lib/discord/bot/client";
 type Props = {
     organizationSlug: string;
     discordGuildId?: string;
+    installStatus?: string;
 };
 
 async function tryGetGuildName(guildId: string): Promise<string | null> {
@@ -19,7 +20,7 @@ async function tryGetGuildName(guildId: string): Promise<string | null> {
     }
 }
 
-export default async function DiscordServerCard({ organizationSlug, discordGuildId }: Props) {
+export default async function DiscordServerCard({ organizationSlug, discordGuildId, installStatus }: Props) {
     const t = await getTranslations("orgSettings");
     const isConnected = !!discordGuildId;
     const guildName = isConnected ? await tryGetGuildName(discordGuildId!) : null;
@@ -92,6 +93,20 @@ export default async function DiscordServerCard({ organizationSlug, discordGuild
                     )}
                 </div>
             </div>
+
+            {installStatus === "guild_already_connected" && (
+                <p
+                    className="mt-3 rounded border px-3 py-2 text-xs"
+                    style={{
+                        borderColor: "rgba(240,100,100,0.3)",
+                        background: "rgba(240,100,100,0.06)",
+                        color: "rgba(240,100,100,0.85)",
+                        fontFamily: "var(--font-mono)",
+                    }}
+                >
+                    {t("guildAlreadyConnected")}
+                </p>
+            )}
 
             <div className="mt-4 flex justify-end">
                 {isConnected ? (

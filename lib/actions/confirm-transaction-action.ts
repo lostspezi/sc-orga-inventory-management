@@ -13,6 +13,8 @@ import { adjustOrganizationInventoryItemQuantity } from "@/lib/repositories/orga
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
 import { updateTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 import { notify, notifyMany } from "@/lib/notify";
+import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
+import { updateMemberDkp } from "@/lib/raid-helper/update-member-dkp";
 
 export async function confirmTransactionAction(formData: FormData): Promise<void> {
     const session = await auth();
@@ -42,10 +44,11 @@ export async function confirmTransactionAction(formData: FormData): Promise<void
 
     if (!isAdminOrOwner && !isMemberParty) return;
 
-    const patch: { memberConfirmed?: boolean; adminConfirmed?: boolean } = {};
+    const patch: { memberConfirmed?: boolean; adminConfirmed?: boolean; adminConfirmedByUsername?: string } = {};
 
     if (isAdminOrOwner && !tx.adminConfirmed) {
         patch.adminConfirmed = true;
+        patch.adminConfirmedByUsername = session.user.name ?? "Admin";
     } else if (isMemberParty && !tx.memberConfirmed) {
         patch.memberConfirmed = true;
     } else {
@@ -73,6 +76,36 @@ export async function confirmTransactionAction(formData: FormData): Promise<void
             message: `Transaction for "${tx.itemName}" completed. Inventory adjusted by ${delta > 0 ? "+" : ""}${delta}.`,
             metadata: { delta, direction: tx.direction, quantity: tx.quantity },
         });
+
+        // Sync DKP with Raid Helper (non-blocking)
+        if (org.raidHelperApiKey && org.discordGuildId) {
+            const memberDiscordId = await getDiscordUserId(tx.memberId);
+            if (memberDiscordId) {
+                const dkpOperation = tx.direction === "member_to_org" ? "add" : "subtract";
+                const verb = tx.direction === "member_to_org" ? "Sell" : "Buy";
+                // Admin name: current actor if they are the admin confirmer, otherwise stored from earlier confirmation
+                const adminName = patch.adminConfirmedByUsername ?? tx.adminConfirmedByUsername ?? "Admin";
+                const memberName = tx.memberUsername;
+                const now = new Date();
+                const ts = now.toLocaleDateString("en-GB", {
+                    day: "2-digit", month: "short", year: "numeric", timeZone: "UTC",
+                }) + " " + now.toLocaleTimeString("en-GB", {
+                    hour: "2-digit", minute: "2-digit", timeZone: "UTC",
+                }) + " UTC";
+                const dkpDescription = `[SC Orga] ${verb} ${tx.quantity}x ${tx.itemName} | TxID: ${transactionId} | Trader: ${memberName} | Admin: ${adminName} | ${ts}`;
+                const dkpOk = await updateMemberDkp(
+                    org.discordGuildId,
+                    memberDiscordId,
+                    org.raidHelperApiKey,
+                    dkpOperation,
+                    tx.totalPrice,
+                    dkpDescription
+                );
+                if (!dkpOk) {
+                    console.error(`[DKP] Failed to update DKP for member ${tx.memberId} after completing transaction ${transactionId}`);
+                }
+            }
+        }
     } else {
         await updateTransactionStatus(transactionId, patch);
 

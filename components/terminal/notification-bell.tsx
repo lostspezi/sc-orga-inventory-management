@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
-import { useTranslations, useFormatter } from "next-intl";
+import { useTranslations, useFormatter, useNow } from "next-intl";
 import type { NotificationView } from "@/lib/types/notification";
 
 export default function NotificationBell() {
@@ -15,6 +15,7 @@ export default function NotificationBell() {
     const router = useRouter();
     const t = useTranslations("notifications");
     const format = useFormatter();
+    const now = useNow({ updateInterval: 60_000 });
 
     // SSE subscription
     useEffect(() => {
@@ -241,7 +242,7 @@ export default function NotificationBell() {
                                                             fontFamily: "var(--font-mono)",
                                                         }}
                                                     >
-                                                        {format.relativeTime(new Date(n.createdAt))}
+                                                        {format.relativeTime(new Date(n.createdAt), now)}
                                                     </p>
                                                 </div>
                                             </div>

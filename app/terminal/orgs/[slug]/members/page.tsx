@@ -1,5 +1,5 @@
 import {notFound, redirect} from "next/navigation";
-import {getOrganizationViewBySlug} from "@/lib/repositories/organization-repository";
+import {getOrganizationBySlug, getOrganizationViewBySlug} from "@/lib/repositories/organization-repository";
 import {getPendingOrganizationInvitesByOrganizationId} from "@/lib/repositories/organization-invite-repository";
 import {getTranslations} from "next-intl/server";
 import DiscordInviteForm from "@/components/orgs/details/members/discord-invite-form";
@@ -8,6 +8,8 @@ import {auth} from "@/auth";
 import Link from "next/link";
 import RemoveMemberButton from "@/components/orgs/details/members/remove-member-button";
 import ChangeMemberRoleControl from "@/components/orgs/details/members/change-member-role-control";
+import {getDiscordAccountsByUserIds} from "@/lib/repositories/auth-account-repository";
+import {getMemberDkp} from "@/lib/raid-helper/get-member-dkp";
 
 type Props = {
     params: Promise<{ slug: string }>;
@@ -23,8 +25,9 @@ export default async function OrgMembersPage({params}: Props) {
     }
 
     const org = await getOrganizationViewBySlug(slug);
+    const orgDoc = await getOrganizationBySlug(slug);
 
-    if (!org) {
+    if (!org || !orgDoc) {
         notFound();
     }
 
@@ -58,7 +61,49 @@ export default async function OrgMembersPage({params}: Props) {
         );
     }
 
-    const pendingInvites = await getPendingOrganizationInvitesByOrganizationId(org._id);
+    const pendingInviteDocs = await getPendingOrganizationInvitesByOrganizationId(org._id);
+    const pendingInvites = pendingInviteDocs.map((doc) => ({
+        id: doc._id.toString(),
+        organizationSlug: doc.organizationSlug,
+        invitedByUserId: doc.invitedByUserId,
+        invitedByUsername: doc.invitedByUsername,
+        targetRole: doc.targetRole,
+        deliveryMethod: doc.deliveryMethod,
+        inviteToken: doc.inviteToken,
+        email: doc.email,
+        discordUserId: doc.discordUserId,
+        targetUserId: doc.targetUserId,
+        status: doc.status,
+        expiresAt: doc.expiresAt.toISOString(),
+        createdAt: doc.createdAt.toISOString(),
+    }));
+
+    const hasDkpIntegration = !!(orgDoc.raidHelperApiKey && orgDoc.discordGuildId);
+
+    // Fetch DKP balances from Raid Helper if integration is configured
+    const dkpByUserId: Map<string, number> = new Map();
+    if (hasDkpIntegration) {
+        try {
+            const memberUserIds = org.members.map((m) => m.userId);
+            const discordAccounts = await getDiscordAccountsByUserIds(memberUserIds);
+            const discordIdByUserId = new Map(discordAccounts.map((a) => [a.userId.toString(), a.providerAccountId]));
+
+            const dkpResults = await Promise.all(
+                org.members.map(async (member) => {
+                    const discordId = discordIdByUserId.get(member.userId);
+                    if (!discordId) return null;
+                    const dkp = await getMemberDkp(orgDoc.discordGuildId!, discordId, orgDoc.raidHelperApiKey!);
+                    return dkp !== null ? [member.userId, dkp] as [string, number] : null;
+                })
+            );
+
+            for (const entry of dkpResults) {
+                if (entry) dkpByUserId.set(entry[0], entry[1]);
+            }
+        } catch (err) {
+            console.error("[DKP] Failed to fetch member DKP for members page:", err);
+        }
+    }
 
     return (
         <div className="space-y-4">
@@ -119,7 +164,7 @@ export default async function OrgMembersPage({params}: Props) {
                             }}
                         >
                             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                <div>
+                                <div className="flex flex-wrap items-center gap-2">
                                 <span
                                     className="text-xs"
                                     style={{color: "rgba(200,220,232,0.55)", fontFamily: "var(--font-mono)"}}
@@ -136,6 +181,18 @@ export default async function OrgMembersPage({params}: Props) {
                                     >
                                     {member.role}
                                 </span>
+                                    {hasDkpIntegration && dkpByUserId.has(member.userId) && (
+                                        <span
+                                            className="rounded border px-2 py-0.5 text-[10px]"
+                                            style={{
+                                                borderColor: "rgba(80,210,120,0.25)",
+                                                color: "rgba(80,210,120,0.75)",
+                                                fontFamily: "var(--font-mono)",
+                                            }}
+                                        >
+                                            {dkpByUserId.get(member.userId)!.toLocaleString()} {t("dkp")}
+                                        </span>
+                                    )}
                                 </div>
                                 {isAdminOrOwner &&
                                     <>

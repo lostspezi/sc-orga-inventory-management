@@ -1,10 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { OrganizationInviteDocument } from "@/lib/types/organization";
+import type { OrganizationInviteView } from "@/lib/types/organization";
 
 type Props = {
-    invites: OrganizationInviteDocument[];
+    invites: OrganizationInviteView[];
 };
 
 export default function PendingOrgInvitesList({ invites }: Props) {
@@ -38,13 +38,13 @@ export default function PendingOrgInvitesList({ invites }: Props) {
     return (
         <div className="space-y-3">
             {invites.map((invite) => (
-                <PendingInviteCard key={invite._id.toString()} invite={invite} />
+                <PendingInviteCard key={invite.id} invite={invite} />
             ))}
         </div>
     );
 }
 
-function PendingInviteCard({ invite }: { invite: OrganizationInviteDocument }) {
+function PendingInviteCard({ invite }: { invite: OrganizationInviteView }) {
     const t = useTranslations("members");
 
     const expiresAt = new Date(invite.expiresAt).toLocaleString("en-GB", {

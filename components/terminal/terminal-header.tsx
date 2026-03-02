@@ -2,6 +2,7 @@ import Link from "next/link";
 import UserDropdown from "@/components/terminal/user-dropdown";
 import TerminalNav from "@/components/terminal/terminal-nav";
 import NotificationBell from "@/components/terminal/notification-bell";
+import DkpBadge from "@/components/terminal/dkp-badge";
 import LanguageSwitcher from "@/components/ui/language-switcher";
 import { getTranslations } from "next-intl/server";
 
@@ -46,6 +47,7 @@ export default async function TerminalHeader({ userName, userImage }: Props) {
                 {/* Right side */}
                 <div className="flex items-center gap-2">
                     <LanguageSwitcher />
+                    <DkpBadge />
                     <NotificationBell />
                     <UserDropdown userName={userName} userImage={userImage} />
                 </div>

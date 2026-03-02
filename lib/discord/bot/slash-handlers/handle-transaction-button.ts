@@ -1,4 +1,5 @@
 import { ButtonInteraction, MessageFlagsBitField } from "discord.js";
+import { ObjectId } from "mongodb";
 import { parseTxButtonId, buildTransactionMessagePayload, updateTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 import { getOrganizationByDiscordGuildId } from "@/lib/repositories/organization-repository";
 import { getUserByDiscordAccountId } from "@/lib/repositories/auth-account-repository";
@@ -10,10 +11,17 @@ import {
 } from "@/lib/repositories/organization-transaction-repository";
 import { adjustOrganizationInventoryItemQuantity } from "@/lib/repositories/organization-inventory-item-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
+import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
+import { updateMemberDkp } from "@/lib/raid-helper/update-member-dkp";
 
 export async function handleTransactionButton(interaction: ButtonInteraction): Promise<void> {
-    // Acknowledge immediately — must happen within 3 s
-    await interaction.deferUpdate();
+    // Acknowledge immediately — must happen within 3 s. If this fails the
+    // interaction has already expired; bail out rather than compounding errors.
+    try {
+        await interaction.deferUpdate();
+    } catch {
+        return;
+    }
 
     const parsed = parseTxButtonId(interaction.customId);
     if (!parsed) return;
@@ -30,6 +38,7 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
         return;
     }
 
+
     const appUser = await getUserByDiscordAccountId(interaction.user.id);
     if (!appUser) {
         await interaction.followUp({ content: "Your Discord account is not linked to an application user.", flags: MessageFlagsBitField.Flags.Ephemeral });
@@ -43,7 +52,13 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
     }
 
     const tx = await getTransactionById(txId);
-    if (!tx || !tx.organizationId.equals(org._id)) {
+    if (!tx) {
+        console.error(`[TxButton] Transaction not found in DB. txId="${txId}" isValidObjectId=${ObjectId.isValid(txId)}`);
+        await interaction.followUp({ content: "Transaction not found.", flags: MessageFlagsBitField.Flags.Ephemeral });
+        return;
+    }
+    if (!tx.organizationId.equals(org._id)) {
+        console.error(`[TxButton] Org mismatch. tx.organizationId="${tx.organizationId.toString()}" org._id="${org._id.toString()}"`);
         await interaction.followUp({ content: "Transaction not found.", flags: MessageFlagsBitField.Flags.Ephemeral });
         return;
     }
@@ -149,10 +164,11 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             return;
         }
 
-        const patch: { memberConfirmed?: boolean; adminConfirmed?: boolean } = {};
+        const patch: { memberConfirmed?: boolean; adminConfirmed?: boolean; adminConfirmedByUsername?: string } = {};
 
         if (isAdminOrOwner && !tx.adminConfirmed) {
             patch.adminConfirmed = true;
+            patch.adminConfirmedByUsername = appUser.name ?? interaction.user.username;
         } else if (isMemberParty && !tx.memberConfirmed) {
             patch.memberConfirmed = true;
         } else {
@@ -180,6 +196,34 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
                 message: `Transaction for "${tx.itemName}" completed via Discord. Inventory adjusted by ${delta > 0 ? "+" : ""}${delta}.`,
                 metadata: { delta, direction: tx.direction, quantity: tx.quantity },
             });
+
+            // Sync DKP with Raid Helper (non-blocking)
+            if (org.raidHelperApiKey && org.discordGuildId) {
+                const memberDiscordId = await getDiscordUserId(tx.memberId);
+                if (memberDiscordId) {
+                    const dkpOperation = tx.direction === "member_to_org" ? "add" : "subtract";
+                    const verb = tx.direction === "member_to_org" ? "Sell" : "Buy";
+                    const adminName = patch.adminConfirmedByUsername ?? tx.adminConfirmedByUsername ?? "Admin";
+                    const now = new Date();
+                    const ts = now.toLocaleDateString("en-GB", {
+                        day: "2-digit", month: "short", year: "numeric", timeZone: "UTC",
+                    }) + " " + now.toLocaleTimeString("en-GB", {
+                        hour: "2-digit", minute: "2-digit", timeZone: "UTC",
+                    }) + " UTC";
+                    const dkpDescription = `[SC Orga] ${verb} ${tx.quantity}x ${tx.itemName} | TxID: ${txId} | Trader: ${tx.memberUsername} | Admin: ${adminName} | ${ts}`;
+                    const dkpOk = await updateMemberDkp(
+                        org.discordGuildId,
+                        memberDiscordId,
+                        org.raidHelperApiKey,
+                        dkpOperation,
+                        tx.totalPrice,
+                        dkpDescription
+                    );
+                    if (!dkpOk) {
+                        console.error(`[DKP] Failed to update DKP for member ${tx.memberId} after completing transaction ${txId} via Discord`);
+                    }
+                }
+            }
 
             await refreshEmbed(interaction, txId);
             await interaction.followUp({ content: `Transaction completed: ${tx.itemName}. Inventory updated.`, flags: MessageFlagsBitField.Flags.Ephemeral });

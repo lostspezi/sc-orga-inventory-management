@@ -234,7 +234,7 @@ export default function InventoryItemDetailsDialog({
                                                         className="mt-1 text-[11px]"
                                                         style={{color: "rgba(200,220,232,0.5)", fontFamily: "var(--font-mono)"}}
                                                     >
-                                                        {tx.quantity}x · {tx.totalPrice.toLocaleString()} aUEC total
+                                                        {tx.quantity}x · {tx.totalPrice.toLocaleString()} DKP total
                                                     </p>
                                                 </div>
                                             );

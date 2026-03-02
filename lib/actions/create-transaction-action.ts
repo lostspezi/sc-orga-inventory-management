@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { ObjectId } from "mongodb";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import { getOrganizationInventoryItemDocumentById } from "@/lib/repositories/organization-inventory-item-repository";
@@ -15,6 +16,8 @@ import { createOrganizationAuditLog } from "@/lib/repositories/organization-audi
 import type { ItemDocument } from "@/lib/types/item";
 import { sendTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 import { notifyMany } from "@/lib/notify";
+import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
+import { getMemberDkp } from "@/lib/raid-helper/get-member-dkp";
 
 export type CreateTransactionActionState = {
     success: boolean;
@@ -23,7 +26,6 @@ export type CreateTransactionActionState = {
         inventoryItemId?: string;
         direction?: string;
         quantity?: string;
-        pricePerUnit?: string;
     };
 };
 
@@ -47,7 +49,6 @@ export async function createTransactionAction(
     const inventoryItemId = String(formData.get("inventoryItemId") ?? "").trim();
     const direction = String(formData.get("direction") ?? "").trim();
     const quantityRaw = Number(formData.get("quantity"));
-    const pricePerUnitRaw = Number(formData.get("pricePerUnit"));
     const note = String(formData.get("note") ?? "").trim() || undefined;
 
     if (!organizationSlug) {
@@ -64,10 +65,6 @@ export async function createTransactionAction(
 
     if (!Number.isInteger(quantityRaw) || quantityRaw < 1) {
         return { ...initialState, message: "Quantity must be a whole number greater than 0.", fieldErrors: { quantity: "Must be at least 1." } };
-    }
-
-    if (isNaN(pricePerUnitRaw) || pricePerUnitRaw < 0) {
-        return { ...initialState, message: "Price per unit must be 0 or greater.", fieldErrors: { pricePerUnit: "Must be 0 or greater." } };
     }
 
     const org = await getOrganizationBySlug(organizationSlug);
@@ -88,11 +85,35 @@ export async function createTransactionAction(
         return { ...initialState, message: "Inventory item not found.", fieldErrors: { inventoryItemId: "Item not found." } };
     }
 
+    if (direction === "org_to_member" && quantityRaw > invItem.quantity) {
+        const t = await getTranslations("transactions");
+        return {
+            ...initialState,
+            message: t("insufficientStock", { requested: quantityRaw, available: invItem.quantity }),
+            fieldErrors: { quantity: t("onlyInStock", { count: invItem.quantity }) },
+        };
+    }
+
     const db = await getDb();
     const itemDoc = await db.collection<ItemDocument>("items").findOne({ _id: invItem.itemId });
     const itemName = itemDoc?.name ?? "Unknown Item";
 
-    const totalPrice = quantityRaw * pricePerUnitRaw;
+    const pricePerUnit = direction === "member_to_org" ? invItem.sellPrice : invItem.buyPrice;
+    const totalPrice = quantityRaw * pricePerUnit;
+
+    // For buy transactions, check the member has enough DKP
+    if (direction === "org_to_member" && org.raidHelperApiKey && org.discordGuildId) {
+        const discordId = await getDiscordUserId(session.user.id);
+        if (discordId) {
+            const currentDkp = await getMemberDkp(org.discordGuildId, discordId, org.raidHelperApiKey);
+            if (currentDkp !== null && totalPrice > currentDkp) {
+                return {
+                    ...initialState,
+                    message: `Insufficient DKP. Required: ${totalPrice.toLocaleString()}, available: ${currentDkp.toLocaleString()}.`,
+                };
+            }
+        }
+    }
 
     const transaction = await createOrganizationTransaction({
         organizationId: org._id,
@@ -105,7 +126,7 @@ export async function createTransactionAction(
         memberId: session.user.id,
         memberUsername: session.user.name ?? "Unknown",
         quantity: quantityRaw,
-        pricePerUnit: pricePerUnitRaw,
+        pricePerUnit: pricePerUnit,
         totalPrice,
         status: "requested",
         memberConfirmed: false,
@@ -121,8 +142,8 @@ export async function createTransactionAction(
         action: "transaction.requested",
         entityType: "transaction",
         entityId: transaction._id,
-        message: `Transaction requested: ${direction === "member_to_org" ? "sell" : "buy"} ${quantityRaw}x "${itemName}" at ${pricePerUnitRaw} aUEC/unit.`,
-        metadata: { direction, quantity: quantityRaw, pricePerUnit: pricePerUnitRaw, totalPrice },
+        message: `Transaction requested: ${direction === "member_to_org" ? "sell" : "buy"} ${quantityRaw}x "${itemName}" at ${pricePerUnit} DKP/unit.`,
+        metadata: { direction, quantity: quantityRaw, pricePerUnit: pricePerUnit, totalPrice },
     });
 
     // Notify relevant org members
