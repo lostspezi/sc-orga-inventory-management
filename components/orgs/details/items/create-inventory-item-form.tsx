@@ -44,6 +44,9 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
             formData.delete("existingItemId");
             if (selection.item.category) formData.set("category", selection.item.category);
             if (selection.item.description) formData.set("description", selection.item.description);
+            if (selection.item.itemClass) formData.set("itemClass", selection.item.itemClass);
+            if (selection.item.grade) formData.set("grade", selection.item.grade);
+            if (selection.item.size) formData.set("size", selection.item.size);
         }
 
         if (selection.selectedVariants.length > 0) {

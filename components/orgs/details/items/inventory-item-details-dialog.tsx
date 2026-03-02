@@ -20,6 +20,9 @@ type Props = {
         name: string;
         category?: string;
         description?: string;
+        itemClass?: string;
+        grade?: string;
+        size?: string;
         buyPrice: number;
         sellPrice: number;
         quantity: number;
@@ -153,6 +156,9 @@ export default function InventoryItemDetailsDialog({
                                 <div className="mt-3 space-y-3">
                                     <InfoRow label={t("name")} value={item.name}/>
                                     <InfoRow label={t("category")} value={item.category ?? t("uncategorized")}/>
+                                    {item.itemClass && <InfoRow label="Class" value={item.itemClass}/>}
+                                    {item.grade && <InfoRow label={t("grade")} value={item.grade}/>}
+                                    {item.size && <InfoRow label={t("size")} value={item.size}/>}
                                 </div>
 
                                 {item.description && (

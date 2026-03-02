@@ -48,7 +48,7 @@ export async function confirmTransactionAction(formData: FormData): Promise<void
 
     if (isAdminOrOwner && !tx.adminConfirmed) {
         patch.adminConfirmed = true;
-        patch.adminConfirmedByUsername = session.user.name ?? "Admin";
+        patch.adminConfirmedByUsername = session.user.rsiHandle ?? session.user.name ?? "Admin";
     } else if (isMemberParty && !tx.memberConfirmed) {
         patch.memberConfirmed = true;
     } else {
@@ -69,7 +69,7 @@ export async function confirmTransactionAction(formData: FormData): Promise<void
             organizationId: tx.organizationId,
             organizationSlug: tx.organizationSlug,
             actorUserId: session.user.id,
-            actorUsername: session.user.name ?? "Unknown",
+            actorUsername: session.user.rsiHandle ?? session.user.name ?? "Unknown",
             action: "transaction.completed",
             entityType: "transaction",
             entityId: transactionId,
@@ -113,7 +113,7 @@ export async function confirmTransactionAction(formData: FormData): Promise<void
             organizationId: tx.organizationId,
             organizationSlug: tx.organizationSlug,
             actorUserId: session.user.id,
-            actorUsername: session.user.name ?? "Unknown",
+            actorUsername: session.user.rsiHandle ?? session.user.name ?? "Unknown",
             action: "transaction.confirmed",
             entityType: "transaction",
             entityId: transactionId,
@@ -152,7 +152,7 @@ export async function confirmTransactionAction(formData: FormData): Promise<void
             adminIds,
             "trade.confirmed",
             "Member Confirmed Trade",
-            `${session.user!.name ?? "A member"} confirmed in-game delivery for ${tx.itemName}. Awaiting admin confirmation.`,
+            `${session.user!.rsiHandle ?? session.user!.name ?? "A member"} confirmed in-game delivery for ${tx.itemName}. Awaiting admin confirmation.`,
             txLink
         );
     }

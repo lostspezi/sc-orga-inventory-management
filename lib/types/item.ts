@@ -6,6 +6,9 @@ export type ItemDocument = {
     normalizedName: string;
     description?: string;
     category?: string;
+    itemClass?: string;
+    grade?: string;
+    size?: string;
     createdAt: Date;
     updatedAt: Date;
 }

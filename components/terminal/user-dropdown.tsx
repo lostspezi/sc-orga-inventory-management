@@ -8,11 +8,13 @@ import { signOutAction } from "@/lib/actions";
 import { useTranslations } from "next-intl";
 
 type Props = {
-    userName: string;
+    rsiHandle: string | null;
+    discordName: string;
     userImage: string | null;
 };
 
-export default function UserDropdown({ userName, userImage }: Props) {
+export default function UserDropdown({ rsiHandle, discordName, userImage }: Props) {
+    const displayName = rsiHandle ?? discordName;
     const [open, setOpen] = useState(false);
     const t = useTranslations("userMenu");
     const containerRef = useRef<HTMLDivElement>(null);
@@ -54,7 +56,7 @@ export default function UserDropdown({ userName, userImage }: Props) {
                 {userImage ? (
                     <Image
                         src={userImage}
-                        alt={userName}
+                        alt={displayName}
                         width={28}
                         height={28}
                         className="rounded-full"
@@ -69,7 +71,7 @@ export default function UserDropdown({ userName, userImage }: Props) {
                             border: "1px solid rgba(79,195,220,0.2)",
                         }}
                     >
-                        {userName.charAt(0).toUpperCase()}
+                        {displayName.charAt(0).toUpperCase()}
                     </div>
                 )}
 
@@ -78,7 +80,7 @@ export default function UserDropdown({ userName, userImage }: Props) {
                     className="hidden max-w-30 truncate text-xs sm:block"
                     style={{ fontFamily: "var(--font-mono)" }}
                 >
-                    {userName}
+                    {displayName}
                 </span>
 
                 <ChevronDown
@@ -125,8 +127,16 @@ export default function UserDropdown({ userName, userImage }: Props) {
                             className="mt-0.5 truncate text-sm font-medium"
                             style={{ color: "rgba(200,220,232,0.9)", fontFamily: "var(--font-mono)" }}
                         >
-                            {userName}
+                            {displayName}
                         </p>
+                        {rsiHandle && (
+                            <p
+                                className="mt-0.5 truncate text-[10px]"
+                                style={{ color: "rgba(200,220,232,0.3)", fontFamily: "var(--font-mono)" }}
+                            >
+                                Discord: {discordName}
+                            </p>
+                        )}
                     </div>
 
                     {/* Menu items */}

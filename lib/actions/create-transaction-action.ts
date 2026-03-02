@@ -124,7 +124,7 @@ export async function createTransactionAction(
         direction: direction as "member_to_org" | "org_to_member",
         initiatedBy: member.role === "member" ? "member" : "admin",
         memberId: session.user.id,
-        memberUsername: session.user.name ?? "Unknown",
+        memberUsername: session.user.rsiHandle ?? session.user.name ?? "Unknown",
         quantity: quantityRaw,
         pricePerUnit: pricePerUnit,
         totalPrice,
@@ -138,7 +138,7 @@ export async function createTransactionAction(
         organizationId: org._id,
         organizationSlug: org.slug,
         actorUserId: session.user.id,
-        actorUsername: session.user.name ?? "Unknown",
+        actorUsername: session.user.rsiHandle ?? session.user.name ?? "Unknown",
         action: "transaction.requested",
         entityType: "transaction",
         entityId: transaction._id,
@@ -158,7 +158,7 @@ export async function createTransactionAction(
             adminIds,
             "trade.requested",
             "New Trade Request",
-            `${session.user.name ?? "A member"} wants to ${directionLabel} ${quantityRaw}x ${itemName}.`,
+            `${session.user.rsiHandle ?? session.user.name ?? "A member"} wants to ${directionLabel} ${quantityRaw}x ${itemName}.`,
             txLink
         );
     } else {

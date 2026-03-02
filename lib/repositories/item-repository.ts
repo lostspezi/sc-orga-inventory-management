@@ -30,6 +30,9 @@ export async function createItemInDb(input: {
     name: string;
     description?: string;
     category?: string;
+    itemClass?: string;
+    grade?: string;
+    size?: string;
 }): Promise<ItemDocument> {
     const db = await getDb();
 
@@ -47,6 +50,9 @@ export async function createItemInDb(input: {
         normalizedName,
         description: input.description?.trim() || undefined,
         category: input.category?.trim() || undefined,
+        itemClass: input.itemClass?.trim() || undefined,
+        grade: input.grade?.trim() || undefined,
+        size: input.size?.trim() || undefined,
         createdAt: now,
         updatedAt: now,
     };

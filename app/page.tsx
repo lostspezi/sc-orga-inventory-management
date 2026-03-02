@@ -224,7 +224,9 @@ export default async function Home() {
         auth(),
     ]);
 
-    const userName = session?.user?.name ?? null;
+    const rsiHandle = session?.user?.rsiHandle ?? null;
+    const discordName = session?.user?.name ?? null;
+    const userName = rsiHandle ?? discordName;
     const userImage = session?.user?.image ?? null;
 
     return (
@@ -267,7 +269,7 @@ export default async function Home() {
                         <LanguageSwitcher />
 
                         {userName ? (
-                            <UserDropdown userName={userName} userImage={userImage} />
+                            <UserDropdown rsiHandle={rsiHandle} discordName={discordName ?? "User"} userImage={userImage} />
                         ) : (
                             <Link href="/login" className="sc-btn sc-btn-primary px-5 py-2.5 text-xs">
                                 {t("accessTerminal")}

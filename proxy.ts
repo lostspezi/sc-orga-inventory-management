@@ -12,6 +12,16 @@ export async function proxy(req: NextRequest) {
         return NextResponse.redirect(loginUrl)
     }
 
+    // Gate: force RSI handle setup before accessing any terminal page except settings
+    const isSettingsPage = req.nextUrl.pathname.startsWith("/terminal/settings")
+    const hasRsiHandle = !!session?.user?.rsiHandle
+
+    if (isTerminal && isLoggedIn && !hasRsiHandle && !isSettingsPage) {
+        const settingsUrl = new URL("/terminal/settings", req.nextUrl.origin)
+        settingsUrl.searchParams.set("setup", "rsi")
+        return NextResponse.redirect(settingsUrl)
+    }
+
     return NextResponse.next()
 }
 

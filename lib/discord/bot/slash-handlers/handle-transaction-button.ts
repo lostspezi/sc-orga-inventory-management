@@ -83,7 +83,7 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             organizationId: tx.organizationId,
             organizationSlug: tx.organizationSlug,
             actorUserId: appUser.id,
-            actorUsername: appUser.name ?? interaction.user.username,
+            actorUsername: appUser.rsiHandle ?? appUser.name ?? interaction.user.username,
             action: "transaction.approved",
             entityType: "transaction",
             entityId: txId,
@@ -112,7 +112,7 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             organizationId: tx.organizationId,
             organizationSlug: tx.organizationSlug,
             actorUserId: appUser.id,
-            actorUsername: appUser.name ?? interaction.user.username,
+            actorUsername: appUser.rsiHandle ?? appUser.name ?? interaction.user.username,
             action: "transaction.rejected",
             entityType: "transaction",
             entityId: txId,
@@ -141,7 +141,7 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             organizationId: tx.organizationId,
             organizationSlug: tx.organizationSlug,
             actorUserId: appUser.id,
-            actorUsername: appUser.name ?? interaction.user.username,
+            actorUsername: appUser.rsiHandle ?? appUser.name ?? interaction.user.username,
             action: "transaction.cancelled",
             entityType: "transaction",
             entityId: txId,
@@ -168,7 +168,7 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
 
         if (isAdminOrOwner && !tx.adminConfirmed) {
             patch.adminConfirmed = true;
-            patch.adminConfirmedByUsername = appUser.name ?? interaction.user.username;
+            patch.adminConfirmedByUsername = appUser.rsiHandle ?? appUser.name ?? interaction.user.username;
         } else if (isMemberParty && !tx.memberConfirmed) {
             patch.memberConfirmed = true;
         } else {
@@ -189,7 +189,7 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
                 organizationId: tx.organizationId,
                 organizationSlug: tx.organizationSlug,
                 actorUserId: appUser.id,
-                actorUsername: appUser.name ?? interaction.user.username,
+                actorUsername: appUser.rsiHandle ?? appUser.name ?? interaction.user.username,
                 action: "transaction.completed",
                 entityType: "transaction",
                 entityId: txId,
@@ -234,7 +234,7 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
                 organizationId: tx.organizationId,
                 organizationSlug: tx.organizationSlug,
                 actorUserId: appUser.id,
-                actorUsername: appUser.name ?? interaction.user.username,
+                actorUsername: appUser.rsiHandle ?? appUser.name ?? interaction.user.username,
                 action: "transaction.confirmed",
                 entityType: "transaction",
                 entityId: txId,

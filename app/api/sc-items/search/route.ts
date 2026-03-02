@@ -10,6 +10,7 @@ export type ScWikiItem = {
     classification: string | null;
     manufacturer: { name: string } | null;
     description: { en_EN?: string } | null;
+    description_data: { name: string; value: string; type: string }[] | null;
     is_base_variant: boolean;
     uex_prices: { price_buy: number; price_sell: number; terminal_name: string }[];
 };
@@ -22,6 +23,9 @@ export type ItemSearchResult = {
     category?: string;
     description?: string;
     manufacturer?: string;
+    itemClass?: string;
+    grade?: string;
+    size?: string;
 };
 
 async function fetchScWikiItems(query: string, limit = 10): Promise<ScWikiItem[]> {
@@ -108,18 +112,25 @@ export async function GET(request: NextRequest) {
             .filter((item) => {
                 const normalized = item.name.trim().toLowerCase().replace(/\s+/g, " ");
                 if (localNames.has(normalized)) return false;
-                if (excludeShopItems && isSoldInShops(item)) return false;
-                return true;
+                return !(excludeShopItems && isSoldInShops(item));
+
             })
             .slice(0, 8)
-            .map((item) => ({
-                source: "sc_wiki",
-                scUuid: item.uuid,
-                name: item.name,
-                category: item.type !== "UNDEFINED" ? item.type : undefined,
-                description: item.description?.en_EN?.slice(0, 300),
-                manufacturer: item.manufacturer?.name,
-            }));
+            .map((item) => {
+                const dd = item.description_data ?? [];
+                const findVal = (n: string) => dd.find((e) => e.name === n)?.value;
+                return {
+                    source: "sc_wiki" as const,
+                    scUuid: item.uuid,
+                    name: item.name,
+                    category: item.type !== "UNDEFINED" ? item.type : undefined,
+                    description: item.description?.en_EN?.slice(0, 300),
+                    manufacturer: item.manufacturer?.name,
+                    itemClass: findVal("Class"),
+                    grade: findVal("Grade"),
+                    size: findVal("Size"),
+                };
+            });
     } catch {
         // SC wiki unreachable
     }

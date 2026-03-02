@@ -48,6 +48,9 @@ export type OrganizationInventoryItemView = {
     normalizedName: string;
     description?: string;
     category?: string;
+    itemClass?: string;
+    grade?: string;
+    size?: string;
     buyPrice: number;
     sellPrice: number;
     quantity: number;
