@@ -163,6 +163,29 @@ export async function expireOrganizationInvite(
     return result.modifiedCount > 0;
 }
 
+export async function getActivePermanentInviteByOrgId(
+    orgId: ObjectId
+): Promise<OrganizationInviteDocument | null> {
+    const db = await getDb();
+
+    return db.collection<OrganizationInviteDocument>(COLLECTION).findOne({
+        organizationId: orgId,
+        isPermanent: true,
+        status: "pending",
+    });
+}
+
+export async function revokeActivePermanentInvitesByOrgId(
+    orgId: ObjectId
+): Promise<void> {
+    const db = await getDb();
+
+    await db.collection<OrganizationInviteDocument>(COLLECTION).updateMany(
+        { organizationId: orgId, isPermanent: true, status: "pending" },
+        { $set: { status: "revoked", updatedAt: new Date() } }
+    );
+}
+
 export async function hasPendingDiscordInviteForOrganization(
     organizationId: ObjectId,
     discordUserId: string
