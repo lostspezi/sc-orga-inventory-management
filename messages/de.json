@@ -288,6 +288,10 @@
     "size": "Größe",
     "outOfStock": "Nicht vorrätig",
     "pieces": "{count, plural, one {# Stück} other {# Stück}}",
+    "minStock": "Mindestbestand",
+    "maxStock": "Maximalbestand",
+    "stockLow": "NIEDRIG",
+    "stockFull": "VOLL",
     "buy": "Kaufen",
     "sell": "Verkaufen",
     "detailsLabel": "INVENTAR.DETAILS",
@@ -355,7 +359,10 @@
     "totalDkp": "Gesamt DKP",
     "dkpInsufficient": "Nicht genug DKP",
     "insufficientStock": "Nicht genug Vorrat. Angefordert: {requested}, verfügbar: {available}.",
-    "onlyInStock": "Nur {count} auf Lager."
+    "onlyInStock": "Nur {count} auf Lager.",
+    "stockAtMax": "Lager ist bereits voll. Es können keine weiteren Artikel angenommen werden.",
+    "stockExceedsMax": "Menge überschreitet den verfügbaren Platz. Maximal akzeptiert: {max}.",
+    "stockExceedsMaxField": "Maximal {max} Einheiten akzeptiert."
   },
   "logs": {
     "eyebrow": "Protokoll",

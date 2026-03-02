@@ -94,6 +94,23 @@ export async function createTransactionAction(
         };
     }
 
+    // Enforce maxStock for member_to_org (selling to org)
+    if (direction === "member_to_org" && invItem.maxStock != null) {
+        const space = invItem.maxStock - invItem.quantity;
+        if (space <= 0) {
+            const t = await getTranslations("transactions");
+            return { ...initialState, message: t("stockAtMax") };
+        }
+        if (quantityRaw > space) {
+            const t = await getTranslations("transactions");
+            return {
+                ...initialState,
+                message: t("stockExceedsMax", { max: space }),
+                fieldErrors: { quantity: t("stockExceedsMaxField", { max: space }) },
+            };
+        }
+    }
+
     const db = await getDb();
     const itemDoc = await db.collection<ItemDocument>("items").findOne({ _id: invItem.itemId });
     const itemName = itemDoc?.name ?? "Unknown Item";

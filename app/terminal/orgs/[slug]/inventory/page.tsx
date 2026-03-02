@@ -60,6 +60,8 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
         itemClass: item.itemClass,
         grade: item.grade,
         size: item.size,
+        minStock: item.minStock,
+        maxStock: item.maxStock,
         buyPrice: item.buyPrice,
         sellPrice: item.sellPrice,
         quantity: item.quantity,

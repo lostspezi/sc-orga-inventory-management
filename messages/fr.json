@@ -288,6 +288,10 @@
     "size": "Taille",
     "outOfStock": "En rupture de stock",
     "pieces": "{count, plural, one {# pièce} other {# pièces}}",
+    "minStock": "Stock minimum",
+    "maxStock": "Stock maximum",
+    "stockLow": "BAS",
+    "stockFull": "PLEIN",
     "buy": "Acheter",
     "sell": "Vendre",
     "detailsLabel": "INVENTAIRE.DÉTAILS",
@@ -355,7 +359,10 @@
     "totalDkp": "Total DKP",
     "dkpInsufficient": "DKP insuffisant",
     "insufficientStock": "Stock insuffisant. Demandé : {requested}, disponible : {available}.",
-    "onlyInStock": "Seulement {count} en stock."
+    "onlyInStock": "Seulement {count} en stock.",
+    "stockAtMax": "Le stock est déjà au maximum. Aucun article supplémentaire ne peut être accepté.",
+    "stockExceedsMax": "La quantité dépasse l'espace disponible. Maximum accepté : {max}.",
+    "stockExceedsMaxField": "Maximum {max} unités acceptées."
   },
   "logs": {
     "eyebrow": "Journaux",

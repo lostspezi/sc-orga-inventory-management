@@ -288,6 +288,10 @@
     "size": "Size",
     "outOfStock": "Out of Stock",
     "pieces": "{count, plural, one {# piece} other {# pieces}}",
+    "minStock": "Min Stock",
+    "maxStock": "Max Stock",
+    "stockLow": "LOW",
+    "stockFull": "FULL",
     "buy": "Buy",
     "sell": "Sell",
     "detailsLabel": "INVENTORY.DETAILS",
@@ -355,7 +359,10 @@
     "totalDkp": "Total DKP",
     "dkpInsufficient": "Insufficient DKP",
     "insufficientStock": "Insufficient stock. Requested: {requested}, available: {available}.",
-    "onlyInStock": "Only {count} in stock."
+    "onlyInStock": "Only {count} in stock.",
+    "stockAtMax": "Stock is already at maximum capacity. Cannot accept more.",
+    "stockExceedsMax": "Quantity exceeds available space. Maximum accepted: {max}.",
+    "stockExceedsMaxField": "Max {max} units accepted."
   },
   "logs": {
     "eyebrow": "Logs",

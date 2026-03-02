@@ -13,6 +13,8 @@ import { adjustOrganizationInventoryItemQuantity } from "@/lib/repositories/orga
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
 import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
 import { updateMemberDkp } from "@/lib/raid-helper/update-member-dkp";
+import { notifyMany } from "@/lib/notify";
+import { sendLowStockAlert } from "@/lib/discord/send-low-stock-alert";
 
 export async function handleTransactionButton(interaction: ButtonInteraction): Promise<void> {
     // Acknowledge immediately — must happen within 3 s. If this fails the
@@ -183,7 +185,29 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             await updateTransactionStatus(txId, { ...patch, status: "completed" });
 
             const delta = tx.direction === "member_to_org" ? tx.quantity : -tx.quantity;
-            await adjustOrganizationInventoryItemQuantity(tx.inventoryItemId, delta);
+            const adjustment = await adjustOrganizationInventoryItemQuantity(tx.inventoryItemId, delta);
+
+            // Low stock notification
+            if (adjustment && adjustment.minStock != null && adjustment.newQuantity < adjustment.minStock) {
+                const adminIds = org.members
+                    .filter((m) => m.role === "admin" || m.role === "owner")
+                    .map((m) => m.userId);
+                await notifyMany(
+                    adminIds,
+                    "inventory.low_stock",
+                    "Low Stock Alert",
+                    `${tx.itemName} is below minimum stock (${adjustment.newQuantity}/${adjustment.minStock}).`,
+                    `/terminal/orgs/${tx.organizationSlug}/inventory`
+                );
+                if (org.discordTransactionChannelId) {
+                    await sendLowStockAlert(
+                        org.discordTransactionChannelId,
+                        tx.itemName,
+                        adjustment.newQuantity,
+                        adjustment.minStock
+                    );
+                }
+            }
 
             await createOrganizationAuditLog({
                 organizationId: tx.organizationId,

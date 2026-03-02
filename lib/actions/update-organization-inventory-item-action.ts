@@ -28,6 +28,12 @@ function parseNumber(value: FormDataEntryValue | null) {
     return Number(value);
 }
 
+function parseOptionalInt(value: FormDataEntryValue | null): number | undefined {
+    if (!value || String(value).trim() === "") return undefined;
+    const n = Math.round(Number(String(value).trim()));
+    return Number.isFinite(n) && n >= 0 ? n : undefined;
+}
+
 export async function updateOrganizationInventoryItemAction(
     _prevState: UpdateOrganizationInventoryItemActionState,
     formData: FormData
@@ -45,6 +51,8 @@ export async function updateOrganizationInventoryItemAction(
     const buyPrice = parseNumber(formData.get("buyPrice"));
     const sellPrice = parseNumber(formData.get("sellPrice"));
     const quantity = parseNumber(formData.get("quantity"));
+    const minStock = parseOptionalInt(formData.get("minStock"));
+    const maxStock = parseOptionalInt(formData.get("maxStock"));
 
     if (!organizationSlug || !inventoryItemId) {
         return { ...initialState, message: "Missing organization or inventory item." };
@@ -74,6 +82,10 @@ export async function updateOrganizationInventoryItemAction(
         };
     }
 
+    if (minStock !== undefined && maxStock !== undefined && minStock > maxStock) {
+        return { ...initialState, message: "Min stock cannot be greater than max stock." };
+    }
+
     const org = await getOrganizationBySlug(organizationSlug);
 
     if (!org) {
@@ -92,6 +104,8 @@ export async function updateOrganizationInventoryItemAction(
         buyPrice,
         sellPrice,
         quantity,
+        minStock,
+        maxStock,
     });
 
     if (!updated) {
