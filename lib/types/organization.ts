@@ -10,6 +10,11 @@ export type OrganizationDocument = {
     discordGuildId?: string;
     discordTransactionChannelId?: string;
     raidHelperApiKey?: string;
+    auecBalance?: number;
+    auecBuyPriceDkp?: number;
+    auecBuyPriceAuec?: number;
+    auecSellPriceDkp?: number;
+    auecSellPriceAuec?: number;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -72,6 +77,11 @@ export type OrganizationView = {
     discordGuildId?: string;
     discordTransactionChannelId?: string;
     raidHelperApiKey?: string;
+    auecBalance?: number;
+    auecBuyPriceDkp?: number;
+    auecBuyPriceAuec?: number;
+    auecSellPriceDkp?: number;
+    auecSellPriceAuec?: number;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -107,9 +117,16 @@ export type OrganizationAuditLogDocument = {
         | "transaction.cancelled"
         | "member.permanent_invite_created"
         | "member.permanent_invite_revoked"
-        | "member.joined_via_permanent_link";
+        | "member.joined_via_permanent_link"
+        | "auec.settings_updated"
+        | "auec_transaction.requested"
+        | "auec_transaction.approved"
+        | "auec_transaction.rejected"
+        | "auec_transaction.confirmed"
+        | "auec_transaction.completed"
+        | "auec_transaction.cancelled";
 
-    entityType: "organization" | "member" | "item" | "inventory_item" | "transaction";
+    entityType: "organization" | "member" | "item" | "inventory_item" | "transaction" | "auec_transaction";
     entityId?: string;
 
     message: string;
