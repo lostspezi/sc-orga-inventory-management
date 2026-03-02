@@ -15,15 +15,23 @@ import type { ItemDocument } from "@/lib/types/item";
 import { sendTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 import { ObjectId } from "mongodb";
 
+async function safeRespond(interaction: AutocompleteInteraction, choices: { name: string; value: string }[]) {
+    try {
+        await interaction.respond(choices);
+    } catch {
+        // 40060 — interaction already acknowledged (expired or superseded). Safe to ignore.
+    }
+}
+
 export async function handleTradeAutocomplete(interaction: AutocompleteInteraction): Promise<void> {
     if (!interaction.guildId) {
-        await interaction.respond([]);
+        await safeRespond(interaction, []);
         return;
     }
 
     const org = await getOrganizationByDiscordGuildId(interaction.guildId);
     if (!org) {
-        await interaction.respond([]);
+        await safeRespond(interaction, []);
         return;
     }
 
@@ -38,7 +46,7 @@ export async function handleTradeAutocomplete(interaction: AutocompleteInteracti
             value: item.inventoryItemId.toString(),
         }));
 
-    await interaction.respond(filtered);
+    await safeRespond(interaction, filtered);
 }
 
 export async function handleTradeSlashCommand(interaction: ChatInputCommandInteraction): Promise<void> {

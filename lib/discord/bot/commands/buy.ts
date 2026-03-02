@@ -17,13 +17,6 @@ export const buyCommand = new SlashCommandBuilder()
             .setRequired(true)
             .setMinValue(1)
     )
-    .addIntegerOption((option) =>
-        option
-            .setName("price")
-            .setDescription("Price per unit in aUEC")
-            .setRequired(true)
-            .setMinValue(0)
-    )
     .addStringOption((option) =>
         option
             .setName("note")

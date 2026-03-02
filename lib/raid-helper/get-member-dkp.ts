@@ -11,7 +11,7 @@ export async function getMemberDkp(
                     Authorization: apiKey,
                     "Content-Type": "application/json; charset=utf-8",
                 },
-                next: { revalidate: 60 },
+                next: { revalidate: 180 },
             }
         );
 

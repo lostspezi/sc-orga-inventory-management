@@ -1,5 +1,5 @@
 import { ButtonInteraction, MessageFlagsBitField } from "discord.js";
-import { revalidatePath } from "next/cache";
+import { ObjectId } from "mongodb";
 import { parseTxButtonId, buildTransactionMessagePayload, updateTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 import { getOrganizationByDiscordGuildId } from "@/lib/repositories/organization-repository";
 import { getUserByDiscordAccountId } from "@/lib/repositories/auth-account-repository";
@@ -38,6 +38,7 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
         return;
     }
 
+
     const appUser = await getUserByDiscordAccountId(interaction.user.id);
     if (!appUser) {
         await interaction.followUp({ content: "Your Discord account is not linked to an application user.", flags: MessageFlagsBitField.Flags.Ephemeral });
@@ -51,7 +52,13 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
     }
 
     const tx = await getTransactionById(txId);
-    if (!tx || !tx.organizationId.equals(org._id)) {
+    if (!tx) {
+        console.error(`[TxButton] Transaction not found in DB. txId="${txId}" isValidObjectId=${ObjectId.isValid(txId)}`);
+        await interaction.followUp({ content: "Transaction not found.", flags: MessageFlagsBitField.Flags.Ephemeral });
+        return;
+    }
+    if (!tx.organizationId.equals(org._id)) {
+        console.error(`[TxButton] Org mismatch. tx.organizationId="${tx.organizationId.toString()}" org._id="${org._id.toString()}"`);
         await interaction.followUp({ content: "Transaction not found.", flags: MessageFlagsBitField.Flags.Ephemeral });
         return;
     }
@@ -83,7 +90,6 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             message: `Transaction for "${tx.itemName}" approved via Discord.`,
         });
 
-        revalidatePath(`/terminal/orgs/${org.slug}/transactions`);
         await refreshEmbed(interaction, txId);
         await interaction.followUp({ content: `Transaction approved: ${tx.itemName}.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         return;
@@ -113,7 +119,6 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             message: `Transaction for "${tx.itemName}" rejected via Discord.`,
         });
 
-        revalidatePath(`/terminal/orgs/${org.slug}/transactions`);
         await refreshEmbed(interaction, txId);
         await interaction.followUp({ content: `Transaction rejected: ${tx.itemName}.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         return;
@@ -143,7 +148,6 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             message: `Transaction for "${tx.itemName}" cancelled via Discord by ${isAdminOrOwner ? "admin" : "member"}.`,
         });
 
-        revalidatePath(`/terminal/orgs/${org.slug}/transactions`);
         await refreshEmbed(interaction, txId);
         await interaction.followUp({ content: `Transaction cancelled: ${tx.itemName}.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         return;
@@ -221,8 +225,6 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
                 }
             }
 
-            revalidatePath(`/terminal/orgs/${org.slug}/transactions`);
-            revalidatePath(`/terminal/orgs/${org.slug}/inventory`);
             await refreshEmbed(interaction, txId);
             await interaction.followUp({ content: `Transaction completed: ${tx.itemName}. Inventory updated.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         } else {
@@ -239,7 +241,6 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
                 message: `${isAdminOrOwner ? "Admin" : "Member"} confirmed in-game trade for "${tx.itemName}" via Discord. Waiting for other party.`,
             });
 
-            revalidatePath(`/terminal/orgs/${org.slug}/transactions`);
             await refreshEmbed(interaction, txId);
             await interaction.followUp({ content: `Confirmed. Waiting for the other party to confirm.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         }
