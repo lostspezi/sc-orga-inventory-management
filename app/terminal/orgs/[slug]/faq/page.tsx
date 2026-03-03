@@ -238,6 +238,22 @@ export default async function FaqPage() {
                         <li>{t.rich("inventorySection.q3Li2", rich)}</li>
                     </ul>
                 </Q>
+                <Q q={t("inventorySection.q4")}>
+                    <P>{t.rich("inventorySection.q4Intro", rich)}</P>
+                    <div className="space-y-2">
+                        <Step n={1}>{t.rich("inventorySection.q4Step1", rich)}</Step>
+                        <Step n={2}>{t.rich("inventorySection.q4Step2", rich)}</Step>
+                        <Step n={3}>{t.rich("inventorySection.q4Step3", rich)}</Step>
+                        <Step n={4}>{t.rich("inventorySection.q4Step4", rich)}</Step>
+                    </div>
+                    <P>{t("inventorySection.q4Outro")}</P>
+                </Q>
+                <Q q={t("inventorySection.q5")}>
+                    <P>{t.rich("inventorySection.q5Body", rich)}</P>
+                </Q>
+                <Q q={t("inventorySection.q6")}>
+                    <P>{t.rich("inventorySection.q6Body", rich)}</P>
+                </Q>
             </Section>
 
             {/* ── Transactions ── */}
