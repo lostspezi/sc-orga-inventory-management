@@ -1,6 +1,7 @@
 "use client";
 
-import {useMemo, useState} from "react";
+import { useEffect, useState } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {Search} from "lucide-react";
 import { useTranslations } from "next-intl";
 import InventoryItemDetailsDialog from "@/components/orgs/details/items/inventory-item-details-dialog";
@@ -24,11 +25,22 @@ type InventoryItem = {
     maxStock?: number;
 };
 
+type PaginationInfo = {
+    page: number;
+    totalPages: number;
+    totalCount: number;
+    pageSize: number;
+};
+
 type Props = {
     items: InventoryItem[];
     canManageItems: boolean;
     slug: string;
     transactionsByItemId?: Record<string, OrganizationTransactionView[]>;
+    pagination: PaginationInfo;
+    categories: string[];
+    initialSearch: string;
+    initialCategory: string;
 };
 
 type TransactionIntent = {
@@ -36,43 +48,66 @@ type TransactionIntent = {
     direction: "org_to_member" | "member_to_org";
 };
 
-function normalize(value: string) {
-    return value.trim().toLowerCase();
-}
-
-export default function InventorySearchPanel({items, canManageItems, slug, transactionsByItemId = {}}: Props) {
-    const [query, setQuery] = useState("");
+export default function InventorySearchPanel({
+    items,
+    canManageItems,
+    slug,
+    transactionsByItemId = {},
+    pagination,
+    categories,
+    initialSearch,
+    initialCategory,
+}: Props) {
     const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [txIntent, setTxIntent] = useState<TransactionIntent | null>(null);
     const t = useTranslations("inventory");
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const [searchValue, setSearchValue] = useState(initialSearch);
+    const [categoryValue, setCategoryValue] = useState(initialCategory);
+
+    // Sync local state when server-driven initial values change (e.g. after navigation)
+    useEffect(() => { setSearchValue(initialSearch); }, [initialSearch]);
+    useEffect(() => { setCategoryValue(initialCategory); }, [initialCategory]);
+
+    // Debounced search → URL update
+    useEffect(() => {
+        const trimmed = searchValue.trim();
+        const timer = setTimeout(() => {
+            const params = new URLSearchParams(searchParams.toString());
+            if (trimmed) { params.set("q", trimmed); } else { params.delete("q"); }
+            params.delete("page");
+            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+        }, 250);
+        return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchValue]);
+
+    const handleCategoryChange = (val: string) => {
+        setCategoryValue(val);
+        const params = new URLSearchParams(searchParams.toString());
+        if (val) { params.set("category", val); } else { params.delete("category"); }
+        params.delete("page");
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    };
+
+    const goToPage = (p: number) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("page", String(p));
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    };
 
     // Derive the selected item from the items list so it auto-updates after router.refresh()
     const selectedItem = selectedItemId
         ? items.find((i) => i.inventoryItemId === selectedItemId) ?? null
         : null;
 
-    const filteredItems = useMemo(() => {
-        const q = normalize(query);
-        if (!q) return items;
-        return items.filter((item) =>
-            item.name.toLowerCase().includes(q) ||
-            item.normalizedName.includes(q) ||
-            item.category?.toLowerCase().includes(q) ||
-            item.description?.toLowerCase().includes(q)
-        );
-    }, [items, query]);
-
     const selectedTransactions = selectedItem
         ? (transactionsByItemId[selectedItem.inventoryItemId] ?? [])
         : [];
-
-    const inventoryItemOptions = items.map((item) => ({
-        inventoryItemId: item.inventoryItemId,
-        name: item.name,
-        buyPrice: item.buyPrice,
-        sellPrice: item.sellPrice,
-    }));
 
     const openTransaction = (item: InventoryItem, direction: "org_to_member" | "member_to_org") => {
         setTxIntent({ inventoryItemId: item.inventoryItemId, direction });
@@ -102,20 +137,33 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                     </h3>
                 </div>
 
-                <div className="relative">
-                    <Search
-                        size={14}
-                        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2"
-                        style={{color: "rgba(79,195,220,0.45)"}}
-                    />
-                    <input
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder={t("searchPlaceholder")}
-                        className="sc-input w-full pl-9!"
-                        autoComplete="off"
-                    />
+                <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                    <div className="relative">
+                        <Search
+                            size={14}
+                            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2"
+                            style={{color: "rgba(79,195,220,0.45)"}}
+                        />
+                        <input
+                            type="text"
+                            value={searchValue}
+                            onChange={(e) => setSearchValue(e.target.value)}
+                            placeholder={t("searchPlaceholder")}
+                            className="sc-input w-full pl-9!"
+                            autoComplete="off"
+                        />
+                    </div>
+                    <select
+                        value={categoryValue}
+                        onChange={(e) => handleCategoryChange(e.target.value)}
+                        className="sc-input"
+                        style={{ fontFamily: "var(--font-mono)", minWidth: 160 }}
+                    >
+                        <option value="">{t("categoryAll")}</option>
+                        {categories.map((cat) => (
+                            <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
@@ -137,11 +185,11 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                         className="mt-1 text-base font-semibold uppercase tracking-[0.08em]"
                         style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
                     >
-                        {t("registeredCount", { count: filteredItems.length })}
+                        {t("registeredCount", { count: pagination.totalCount })}
                     </h3>
                 </div>
 
-                {filteredItems.length === 0 ? (
+                {items.length === 0 ? (
                     <div
                         className="rounded-lg border border-dashed p-8 text-center"
                         style={{
@@ -164,7 +212,7 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                     </div>
                 ) : (
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                        {filteredItems.map((item) => (
+                        {items.map((item) => (
                             <div
                                 onClick={() => {
                                     setSelectedItemId(item.inventoryItemId);
@@ -269,6 +317,33 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                         ))}
                     </div>
                 )}
+
+                {pagination.totalPages > 1 && (
+                    <div className="mt-4 flex items-center justify-between">
+                        <button
+                            disabled={pagination.page <= 1}
+                            onClick={() => goToPage(pagination.page - 1)}
+                            className="flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] transition-colors"
+                            style={{ opacity: pagination.page <= 1 ? 0.35 : 1 }}
+                        >
+                            {t("prevPage")}
+                        </button>
+                        <span
+                            className="text-[11px]"
+                            style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
+                        >
+                            {t("pageOf", { page: pagination.page, total: pagination.totalPages })}
+                        </span>
+                        <button
+                            disabled={pagination.page >= pagination.totalPages}
+                            onClick={() => goToPage(pagination.page + 1)}
+                            className="flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] transition-colors"
+                            style={{ opacity: pagination.page >= pagination.totalPages ? 0.35 : 1 }}
+                        >
+                            {t("nextPage")}
+                        </button>
+                    </div>
+                )}
             </div>
 
             <InventoryItemDetailsDialog
@@ -287,8 +362,10 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                     open={true}
                     onCloseAction={() => setTxIntent(null)}
                     organizationSlug={slug}
-                    inventoryItems={inventoryItemOptions}
-                    defaultInventoryItemId={txIntent.inventoryItemId}
+                    inventoryItemId={txIntent.inventoryItemId}
+                    inventoryItemName={items.find((i) => i.inventoryItemId === txIntent.inventoryItemId)?.name ?? ""}
+                    inventoryItemBuyPrice={items.find((i) => i.inventoryItemId === txIntent.inventoryItemId)?.buyPrice ?? 0}
+                    inventoryItemSellPrice={items.find((i) => i.inventoryItemId === txIntent.inventoryItemId)?.sellPrice ?? 0}
                     defaultDirection={txIntent.direction}
                 />
             )}

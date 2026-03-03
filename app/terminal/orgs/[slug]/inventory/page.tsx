@@ -3,11 +3,12 @@ import {auth} from "@/auth";
 import {getTranslations} from "next-intl/server";
 import {getOrganizationViewBySlug} from "@/lib/repositories/organization-repository";
 import {
-    getOrganizationInventoryItemViewsByOrganizationId
+    getOrganizationInventoryItemViewsPaginated,
+    getDistinctInventoryCategories,
 } from "@/lib/repositories/organization-inventory-item-repository";
 import {
-    getTransactionsByOrganizationId,
-    getTransactionsByMember,
+    getTransactionsByInventoryItemIds,
+    getTransactionsByMemberAndInventoryItemIds,
 } from "@/lib/repositories/organization-transaction-repository";
 import { getAuecTransactionsByOrg } from "@/lib/repositories/organization-auec-transaction-repository";
 import CreateInventoryItemForm from "@/components/orgs/details/items/create-inventory-item-form";
@@ -21,15 +22,18 @@ import AuecCashDesk from "@/components/orgs/details/auec/auec-cash-desk";
 import type {OrganizationTransactionView} from "@/lib/types/transaction";
 import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
 import { getMemberDkp } from "@/lib/raid-helper/get-member-dkp";
+import { ObjectId } from "mongodb";
+
+const PAGE_SIZE = 25;
 
 type Props = {
     params: Promise<{ slug: string }>;
-    searchParams: Promise<{ deleted?: string; tab?: string }>;
+    searchParams: Promise<{ deleted?: string; tab?: string; page?: string; q?: string; category?: string }>;
 };
 
 export default async function OrgItemsPage({params, searchParams}: Props) {
     const {slug} = await params;
-    const {deleted, tab} = await searchParams;
+    const {deleted, tab, page: pageParam, q, category} = await searchParams;
     const session = await auth();
 
     if (!session?.user?.id) {
@@ -49,28 +53,44 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
 
     const activeTab = tab === "auec" ? "auec" : "items";
 
+    const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+    const search = q?.trim() ?? "";
+    const categoryFilter = category?.trim() ?? "";
+
     const [t, tAuec, tCsv] = await Promise.all([
         getTranslations("inventory"),
         getTranslations("auec"),
         getTranslations("csvImport"),
     ]);
 
-    // Fetch data in parallel
-    const [inventoryItems, allTransactions, auecTransactions] = await Promise.all([
+    // Stage 1: fetch paginated items + categories + auec in parallel
+    const [paginatedResult, categories, auecTransactions] = await Promise.all([
         activeTab === "items"
-            ? getOrganizationInventoryItemViewsByOrganizationId(org._id)
-            : Promise.resolve([]),
-        activeTab === "items" && currentMember
-            ? canManageItems
-                ? getTransactionsByOrganizationId(org._id)
-                : getTransactionsByMember(org._id, session.user.id)
-            : Promise.resolve([] as OrganizationTransactionView[]),
+            ? getOrganizationInventoryItemViewsPaginated(org._id, {
+                page,
+                pageSize: PAGE_SIZE,
+                search: search || undefined,
+                category: categoryFilter || undefined,
+            })
+            : Promise.resolve(null),
+        activeTab === "items" ? getDistinctInventoryCategories(org._id) : Promise.resolve([]),
         activeTab === "auec" && currentMember
             ? canManageItems
                 ? getAuecTransactionsByOrg(org._id)
                 : getAuecTransactionsByOrg(org._id, session.user.id)
             : Promise.resolve([]),
     ]);
+
+    // Stage 2: fetch transactions scoped to the current page's items
+    const inventoryItems = paginatedResult?.items ?? [];
+    const pageItemIds: ObjectId[] = inventoryItems.map((i) => i.inventoryItemId);
+
+    const allTransactions: OrganizationTransactionView[] =
+        activeTab === "items" && currentMember && pageItemIds.length > 0
+            ? canManageItems
+                ? await getTransactionsByInventoryItemIds(org._id, pageItemIds)
+                : await getTransactionsByMemberAndInventoryItemIds(org._id, session.user.id, pageItemIds)
+            : [];
 
     // DKP balance for buy direction on aUEC tab
     let currentDkp: number | null = null;
@@ -105,6 +125,13 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
         }
         transactionsByItemId[tx.inventoryItemId].push(tx);
     }
+
+    const pagination = {
+        page: paginatedResult?.page ?? 1,
+        totalPages: paginatedResult?.totalPages ?? 1,
+        totalCount: paginatedResult?.totalCount ?? 0,
+        pageSize: PAGE_SIZE,
+    };
 
     return (
         <>
@@ -195,6 +222,10 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                             canManageItems={canManageItems}
                             slug={org.slug}
                             transactionsByItemId={transactionsByItemId}
+                            pagination={pagination}
+                            categories={categories}
+                            initialSearch={search}
+                            initialCategory={categoryFilter}
                         />
                     </>
                 ) : (

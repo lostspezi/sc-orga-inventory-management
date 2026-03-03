@@ -78,6 +78,41 @@ export async function getTransactionsByMember(
     return docs.map(toView);
 }
 
+export async function getTransactionsByInventoryItemIds(
+    organizationId: ObjectId,
+    inventoryItemIds: ObjectId[]
+): Promise<OrganizationTransactionView[]> {
+    if (inventoryItemIds.length === 0) return [];
+
+    const db = await getDb();
+
+    const docs = await db
+        .collection<OrganizationTransactionDocument>(COLLECTION)
+        .find({ organizationId, inventoryItemId: { $in: inventoryItemIds } })
+        .sort({ createdAt: -1 })
+        .toArray();
+
+    return docs.map(toView);
+}
+
+export async function getTransactionsByMemberAndInventoryItemIds(
+    organizationId: ObjectId,
+    memberId: string,
+    inventoryItemIds: ObjectId[]
+): Promise<OrganizationTransactionView[]> {
+    if (inventoryItemIds.length === 0) return [];
+
+    const db = await getDb();
+
+    const docs = await db
+        .collection<OrganizationTransactionDocument>(COLLECTION)
+        .find({ organizationId, memberId, inventoryItemId: { $in: inventoryItemIds } })
+        .sort({ createdAt: -1 })
+        .toArray();
+
+    return docs.map(toView);
+}
+
 export async function getTransactionsByInventoryItemId(
     inventoryItemId: ObjectId
 ): Promise<OrganizationTransactionView[]> {
