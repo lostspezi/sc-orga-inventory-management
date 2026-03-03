@@ -4,23 +4,33 @@ import Image from "next/image";
 import { getOrganizationViewsByUserId } from "@/lib/repositories/organization-repository";
 import LeaveOrgButton from "@/components/settings/leave-org-button";
 import DeleteAccountButton from "@/components/settings/delete-account-button";
+import RsiHandleForm from "@/components/settings/rsi-handle-form";
 import { getTranslations } from "next-intl/server";
 
 export const metadata = { title: "User Settings" };
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ setup?: string }>;
+}) {
     const session = await auth();
 
     if (!session?.user?.id) {
         redirect("/login");
     }
 
+    const { setup } = await searchParams;
+    const setupRequired = setup === "rsi";
+
     const [orgs, t] = await Promise.all([
         getOrganizationViewsByUserId(session.user.id),
         getTranslations("settings"),
     ]);
 
-    const userName = session.user.name ?? "Authorized User";
+    const rsiHandle = session.user.rsiHandle ?? null;
+    const discordName = session.user.name ?? "Authorized User";
+    const displayName = rsiHandle ?? discordName;
     const userImage = session.user.image ?? null;
 
     return (
@@ -62,6 +72,50 @@ export default async function SettingsPage() {
                     />
                 </section>
 
+                {/* RSI handle setup banner */}
+                {setupRequired && !rsiHandle && (
+                    <section
+                        className="hud-panel p-5 sm:p-6"
+                        style={{
+                            background: "rgba(240,165,0,0.06)",
+                            borderColor: "rgba(240,165,0,0.25)",
+                        }}
+                    >
+                        <p
+                            className="text-[10px] uppercase tracking-[0.25em]"
+                            style={{ color: "rgba(240,165,0,0.7)", fontFamily: "var(--font-mono)" }}
+                        >
+                            {t("rsiHandleRequired")}
+                        </p>
+                        <p
+                            className="mt-1 text-sm"
+                            style={{ color: "rgba(200,220,232,0.55)", fontFamily: "var(--font-mono)" }}
+                        >
+                            {t("rsiHandleRequiredDesc")}
+                        </p>
+                    </section>
+                )}
+
+                {/* RSI Handle */}
+                <section
+                    className="hud-panel p-5 sm:p-6"
+                    style={{ background: "rgba(8,16,24,0.45)" }}
+                >
+                    <p
+                        className="mb-1 text-[10px] uppercase tracking-[0.25em]"
+                        style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
+                    >
+                        {t("rsiHandleSection")}
+                    </p>
+                    <p
+                        className="mb-4 text-xs"
+                        style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
+                    >
+                        {t("rsiHandleDesc")}
+                    </p>
+                    <RsiHandleForm currentHandle={rsiHandle} />
+                </section>
+
                 {/* Profile */}
                 <section
                     className="hud-panel p-5 sm:p-6"
@@ -77,7 +131,7 @@ export default async function SettingsPage() {
                         {userImage ? (
                             <Image
                                 src={userImage}
-                                alt={userName}
+                                alt={displayName}
                                 width={56}
                                 height={56}
                                 className="rounded-full"
@@ -92,7 +146,7 @@ export default async function SettingsPage() {
                                     border: "1px solid rgba(79,195,220,0.2)",
                                 }}
                             >
-                                {userName.charAt(0).toUpperCase()}
+                                {displayName.charAt(0).toUpperCase()}
                             </div>
                         )}
                         <div>
@@ -100,14 +154,23 @@ export default async function SettingsPage() {
                                 className="text-base font-semibold"
                                 style={{ color: "rgba(200,220,232,0.9)", fontFamily: "var(--font-mono)" }}
                             >
-                                {userName}
+                                {displayName}
                             </p>
-                            <p
-                                className="mt-0.5 text-xs"
-                                style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
-                            >
-                                {t("profileVia")}
-                            </p>
+                            {rsiHandle ? (
+                                <p
+                                    className="mt-0.5 text-xs"
+                                    style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
+                                >
+                                    Discord: {discordName}
+                                </p>
+                            ) : (
+                                <p
+                                    className="mt-0.5 text-xs"
+                                    style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
+                                >
+                                    {t("profileVia")}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </section>
@@ -227,7 +290,7 @@ export default async function SettingsPage() {
                         </div>
 
                         <div className="shrink-0">
-                            <DeleteAccountButton userName={userName} />
+                            <DeleteAccountButton userName={displayName} />
                         </div>
                     </div>
                 </section>

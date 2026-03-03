@@ -12,6 +12,7 @@ type UserDocument = {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    rsiHandle?: string | null;
 };
 
 export async function getDiscordAccountByUserId(userId: string): Promise<AccountDocument | null> {
@@ -70,5 +71,6 @@ export async function getUserByDiscordAccountId(discordAccountId: string) {
         id: user._id.toString(),
         name: user.name ?? null,
         email: user.email ?? null,
+        rsiHandle: user.rsiHandle ?? null,
     };
 }

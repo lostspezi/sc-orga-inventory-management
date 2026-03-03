@@ -14,9 +14,14 @@ type InventoryItem = {
     normalizedName: string;
     description?: string;
     category?: string;
+    itemClass?: string;
+    grade?: string;
+    size?: string;
     buyPrice: number;
     sellPrice: number;
     quantity: number;
+    minStock?: number;
+    maxStock?: number;
 };
 
 type Props = {
@@ -37,10 +42,15 @@ function normalize(value: string) {
 
 export default function InventorySearchPanel({items, canManageItems, slug, transactionsByItemId = {}}: Props) {
     const [query, setQuery] = useState("");
-    const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+    const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [txIntent, setTxIntent] = useState<TransactionIntent | null>(null);
     const t = useTranslations("inventory");
+
+    // Derive the selected item from the items list so it auto-updates after router.refresh()
+    const selectedItem = selectedItemId
+        ? items.find((i) => i.inventoryItemId === selectedItemId) ?? null
+        : null;
 
     const filteredItems = useMemo(() => {
         const q = normalize(query);
@@ -157,7 +167,7 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                         {filteredItems.map((item) => (
                             <div
                                 onClick={() => {
-                                    setSelectedItem(item);
+                                    setSelectedItemId(item.inventoryItemId);
                                     setDialogOpen(true);
                                 }}
                                 className="cursor-pointer rounded-md border p-4 text-left transition"
@@ -180,6 +190,25 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                                     >
                                         {item.category ?? t("uncategorized")}
                                     </p>
+                                    {(item.itemClass || item.grade || item.size) && (
+                                        <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                                            {item.itemClass && (
+                                                <span className="text-[10px]" style={{color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)"}}>
+                                                    {item.itemClass}
+                                                </span>
+                                            )}
+                                            {item.grade && (
+                                                <span className="text-[10px]" style={{color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)"}}>
+                                                    {t("grade")}&nbsp;{item.grade}
+                                                </span>
+                                            )}
+                                            {item.size && (
+                                                <span className="text-[10px]" style={{color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)"}}>
+                                                    {t("size")}&nbsp;{item.size}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {item.description && (
@@ -199,6 +228,10 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
                                         value={item.quantity}
                                         outOfStock={t("outOfStock")}
                                         pieces={t("pieces", { count: item.quantity })}
+                                        minStock={item.minStock}
+                                        maxStock={item.maxStock}
+                                        labelLow={t("stockLow")}
+                                        labelFull={t("stockFull")}
                                     />
                                 </div>
 
@@ -240,7 +273,7 @@ export default function InventorySearchPanel({items, canManageItems, slug, trans
 
             <InventoryItemDetailsDialog
                 open={dialogOpen}
-                onCloseAction={() => setDialogOpen(false)}
+                onCloseAction={() => { setDialogOpen(false); setSelectedItemId(null); }}
                 canEdit={canManageItems}
                 organizationSlug={slug}
                 item={selectedItem}
@@ -282,7 +315,28 @@ function InfoRow({label, value}: { label: string; value: string }) {
     );
 }
 
-function QuantityRow({label, value, outOfStock, pieces}: { label: string; value: number; outOfStock: string; pieces: string }) {
+function QuantityRow({
+    label,
+    value,
+    outOfStock,
+    pieces,
+    minStock,
+    maxStock,
+    labelLow,
+    labelFull,
+}: {
+    label: string;
+    value: number;
+    outOfStock: string;
+    pieces: string;
+    minStock?: number;
+    maxStock?: number;
+    labelLow: string;
+    labelFull: string;
+}) {
+    const isLow = minStock != null && value < minStock;
+    const isFull = maxStock != null && value >= maxStock;
+
     return (
         <div className="flex items-center justify-between gap-2">
             <span
@@ -291,12 +345,38 @@ function QuantityRow({label, value, outOfStock, pieces}: { label: string; value:
             >
                 {label}
             </span>
-            <span
-                className="text-[11px]"
-                style={{color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)"}}
-            >
-                {value > 0 ? pieces : outOfStock}
-            </span>
+            <div className="flex items-center gap-1.5">
+                {isLow && (
+                    <span
+                        className="rounded px-1 py-0.5 text-[9px] uppercase tracking-[0.12em]"
+                        style={{
+                            background: "rgba(240,165,0,0.12)",
+                            color: "rgba(240,165,0,0.9)",
+                            fontFamily: "var(--font-mono)",
+                        }}
+                    >
+                        {labelLow}
+                    </span>
+                )}
+                {isFull && (
+                    <span
+                        className="rounded px-1 py-0.5 text-[9px] uppercase tracking-[0.12em]"
+                        style={{
+                            background: "rgba(79,195,220,0.10)",
+                            color: "rgba(79,195,220,0.8)",
+                            fontFamily: "var(--font-mono)",
+                        }}
+                    >
+                        {labelFull}
+                    </span>
+                )}
+                <span
+                    className="text-[11px]"
+                    style={{color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)"}}
+                >
+                    {value > 0 ? pieces : outOfStock}
+                </span>
+            </div>
         </div>
     );
 }

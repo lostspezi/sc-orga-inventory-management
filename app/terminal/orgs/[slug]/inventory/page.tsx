@@ -9,20 +9,25 @@ import {
     getTransactionsByOrganizationId,
     getTransactionsByMember,
 } from "@/lib/repositories/organization-transaction-repository";
+import { getAuecTransactionsByOrg } from "@/lib/repositories/organization-auec-transaction-repository";
 import CreateInventoryItemForm from "@/components/orgs/details/items/create-inventory-item-form";
 import HudAccordion from "@/components/ui/hud-accordion";
 import InventorySearchPanel from "@/components/orgs/details/items/inventory-search-panel";
 import ShowDeleteSuccessMessage from "@/components/orgs/details/items/show-delete-success-message";
+import InventoryTabNav from "@/components/orgs/details/items/inventory-tab-nav";
+import AuecCashDesk from "@/components/orgs/details/auec/auec-cash-desk";
 import type {OrganizationTransactionView} from "@/lib/types/transaction";
+import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
+import { getMemberDkp } from "@/lib/raid-helper/get-member-dkp";
 
 type Props = {
     params: Promise<{ slug: string }>;
-    searchParams: Promise<{ deleted?: string }>;
+    searchParams: Promise<{ deleted?: string; tab?: string }>;
 };
 
 export default async function OrgItemsPage({params, searchParams}: Props) {
     const {slug} = await params;
-    const {deleted} = await searchParams;
+    const {deleted, tab} = await searchParams;
     const session = await auth();
 
     if (!session?.user?.id) {
@@ -38,17 +43,40 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
     const currentMember = org.members.find((m) => m.userId === session?.user?.id);
     const canManageItems =
         !!currentMember && (currentMember.role === "owner" || currentMember.role === "admin");
+    const isAdminOrOwner = canManageItems;
 
-    const t = await getTranslations("inventory");
+    const activeTab = tab === "auec" ? "auec" : "items";
 
-    const [inventoryItems, allTransactions] = await Promise.all([
-        getOrganizationInventoryItemViewsByOrganizationId(org._id),
-        currentMember
+    const [t, tAuec] = await Promise.all([
+        getTranslations("inventory"),
+        getTranslations("auec"),
+    ]);
+
+    // Fetch data in parallel
+    const [inventoryItems, allTransactions, auecTransactions] = await Promise.all([
+        activeTab === "items"
+            ? getOrganizationInventoryItemViewsByOrganizationId(org._id)
+            : Promise.resolve([]),
+        activeTab === "items" && currentMember
             ? canManageItems
                 ? getTransactionsByOrganizationId(org._id)
                 : getTransactionsByMember(org._id, session.user.id)
             : Promise.resolve([] as OrganizationTransactionView[]),
+        activeTab === "auec" && currentMember
+            ? canManageItems
+                ? getAuecTransactionsByOrg(org._id)
+                : getAuecTransactionsByOrg(org._id, session.user.id)
+            : Promise.resolve([]),
     ]);
+
+    // DKP balance for buy direction on aUEC tab
+    let currentDkp: number | null = null;
+    if (activeTab === "auec" && org.raidHelperApiKey && org.discordGuildId) {
+        const discordId = await getDiscordUserId(session.user.id);
+        if (discordId) {
+            currentDkp = await getMemberDkp(org.discordGuildId, discordId, org.raidHelperApiKey);
+        }
+    }
 
     const serializedInventoryItems = inventoryItems.map((item) => ({
         inventoryItemId: item.inventoryItemId.toString(),
@@ -57,6 +85,11 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
         normalizedName: item.normalizedName,
         description: item.description,
         category: item.category,
+        itemClass: item.itemClass,
+        grade: item.grade,
+        size: item.size,
+        minStock: item.minStock,
+        maxStock: item.maxStock,
         buyPrice: item.buyPrice,
         sellPrice: item.sellPrice,
         quantity: item.quantity,
@@ -74,6 +107,7 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
         <>
             {deleted && <ShowDeleteSuccessMessage message={deleted}/>}
             <div className="space-y-4">
+                {/* Header */}
                 <div>
                     <p
                         className="text-[10px] uppercase tracking-[0.25em]"
@@ -95,21 +129,46 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                     </p>
                 </div>
 
-                {canManageItems && (
-                    <HudAccordion
-                        eyebrow={t("eyebrow")}
-                        title={t("addItem")}
-                        description={t("addItemDesc")}
-                    >
-                        <CreateInventoryItemForm organizationSlug={org.slug}/>
-                    </HudAccordion>
-                )}
-                <InventorySearchPanel
-                    items={serializedInventoryItems}
-                    canManageItems={canManageItems}
+                {/* Tab navigation */}
+                <InventoryTabNav
                     slug={org.slug}
-                    transactionsByItemId={transactionsByItemId}
+                    activeTab={activeTab}
+                    tabItemsLabel={tAuec("tabItems")}
+                    tabAuecLabel={tAuec("tabAuec")}
                 />
+
+                {activeTab === "items" ? (
+                    <>
+                        {canManageItems && (
+                            <HudAccordion
+                                eyebrow={t("eyebrow")}
+                                title={t("addItem")}
+                                description={t("addItemDesc")}
+                            >
+                                <CreateInventoryItemForm organizationSlug={org.slug}/>
+                            </HudAccordion>
+                        )}
+                        <InventorySearchPanel
+                            items={serializedInventoryItems}
+                            canManageItems={canManageItems}
+                            slug={org.slug}
+                            transactionsByItemId={transactionsByItemId}
+                        />
+                    </>
+                ) : (
+                    <AuecCashDesk
+                        organizationSlug={org.slug}
+                        currentUserId={session.user.id}
+                        isAdminOrOwner={isAdminOrOwner}
+                        auecBalance={org.auecBalance}
+                        auecBuyPriceDkp={org.auecBuyPriceDkp}
+                        auecBuyPriceAuec={org.auecBuyPriceAuec}
+                        auecSellPriceDkp={org.auecSellPriceDkp}
+                        auecSellPriceAuec={org.auecSellPriceAuec}
+                        transactions={auecTransactions}
+                        currentDkp={currentDkp}
+                    />
+                )}
             </div>
         </>
     );

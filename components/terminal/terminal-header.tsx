@@ -7,11 +7,12 @@ import LanguageSwitcher from "@/components/ui/language-switcher";
 import { getTranslations } from "next-intl/server";
 
 type Props = {
-    userName: string;
+    rsiHandle: string | null;
+    discordName: string;
     userImage: string | null;
 };
 
-export default async function TerminalHeader({ userName, userImage }: Props) {
+export default async function TerminalHeader({ rsiHandle, discordName, userImage }: Props) {
     const t = await getTranslations("header");
 
     return (
@@ -49,7 +50,7 @@ export default async function TerminalHeader({ userName, userImage }: Props) {
                     <LanguageSwitcher />
                     <DkpBadge />
                     <NotificationBell />
-                    <UserDropdown userName={userName} userImage={userImage} />
+                    <UserDropdown rsiHandle={rsiHandle} discordName={discordName} userImage={userImage} />
                 </div>
             </div>
         </header>

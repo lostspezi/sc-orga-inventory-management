@@ -20,9 +20,14 @@ type Props = {
         name: string;
         category?: string;
         description?: string;
+        itemClass?: string;
+        grade?: string;
+        size?: string;
         buyPrice: number;
         sellPrice: number;
         quantity: number;
+        minStock?: number;
+        maxStock?: number;
     } | null;
     slug: string;
     transactions?: OrganizationTransactionView[];
@@ -153,6 +158,9 @@ export default function InventoryItemDetailsDialog({
                                 <div className="mt-3 space-y-3">
                                     <InfoRow label={t("name")} value={item.name}/>
                                     <InfoRow label={t("category")} value={item.category ?? t("uncategorized")}/>
+                                    {item.itemClass && <InfoRow label="Class" value={item.itemClass}/>}
+                                    {item.grade && <InfoRow label={t("grade")} value={item.grade}/>}
+                                    {item.size && <InfoRow label={t("size")} value={item.size}/>}
                                 </div>
 
                                 {item.description && (
@@ -258,7 +266,10 @@ export default function InventoryItemDetailsDialog({
                                 {t("inventoryValues")}
                             </p>
 
-                            <div className="mt-4 space-y-4">
+                            <div
+                                className="mt-4 space-y-4"
+                                key={`${item.buyPrice}-${item.sellPrice}-${item.quantity}-${item.minStock ?? ""}-${item.maxStock ?? ""}`}
+                            >
                                 <Field
                                     id="buyPrice"
                                     name="buyPrice"
@@ -284,6 +295,22 @@ export default function InventoryItemDetailsDialog({
                                     defaultValue={item.quantity}
                                     disabled={!canEdit || isPending}
                                     error={state.fieldErrors?.quantity}
+                                />
+
+                                <OptionalField
+                                    id="minStock"
+                                    name="minStock"
+                                    label={t("minStock")}
+                                    defaultValue={item.minStock}
+                                    disabled={!canEdit || isPending}
+                                />
+
+                                <OptionalField
+                                    id="maxStock"
+                                    name="maxStock"
+                                    label={t("maxStock")}
+                                    defaultValue={item.maxStock}
+                                    disabled={!canEdit || isPending}
                                 />
                             </div>
 
@@ -401,6 +428,43 @@ function Field({
                     {error}
                 </p>
             )}
+        </div>
+    );
+}
+
+function OptionalField({
+    id,
+    name,
+    label,
+    defaultValue,
+    disabled,
+}: {
+    id: string;
+    name: string;
+    label: string;
+    defaultValue?: number;
+    disabled: boolean;
+}) {
+    return (
+        <div>
+            <label
+                htmlFor={id}
+                className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
+                style={{color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)"}}
+            >
+                {label}
+            </label>
+            <input
+                id={id}
+                name={name}
+                type="number"
+                min="0"
+                step="1"
+                defaultValue={defaultValue ?? ""}
+                placeholder="—"
+                disabled={disabled}
+                className="sc-input w-full disabled:opacity-70"
+            />
         </div>
     );
 }

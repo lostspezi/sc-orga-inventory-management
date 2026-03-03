@@ -20,7 +20,8 @@ export default async function TerminalLayout({ children }: Props) {
 
             <div className="relative z-10 min-h-screen">
                 <TerminalHeader
-                    userName={session.user.name ?? "Authorized User"}
+                    rsiHandle={session.user.rsiHandle ?? null}
+                    discordName={session.user.name ?? "Authorized User"}
                     userImage={session.user.image ?? null}
                 />
 

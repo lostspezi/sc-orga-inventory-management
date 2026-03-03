@@ -5,8 +5,10 @@ import {
     handleTradeSlashCommand,
 } from "@/lib/discord/bot/slash-handlers/handle-trade-slash-command";
 import { handleTransactionButton } from "@/lib/discord/bot/slash-handlers/handle-transaction-button";
+import { handleAuecTransactionButton } from "@/lib/discord/bot/slash-handlers/handle-auec-transaction-button";
 import { handleInventorySlashCommand } from "@/lib/discord/bot/slash-handlers/handle-inventory-slash-command";
 import { TX_BUTTON_PREFIX } from "@/lib/discord/send-transaction-embed";
+import { AUEC_TX_BUTTON_PREFIX } from "@/lib/discord/send-auec-transaction-embed";
 
 export function registerInteractionCreateEvent(client: Client) {
     // Prevent duplicate listeners — can happen when Next.js hot-reloads the
@@ -16,7 +18,9 @@ export function registerInteractionCreateEvent(client: Client) {
     client.on("interactionCreate", async (interaction) => {
         try {
             if (interaction.isButton()) {
-                if (interaction.customId.startsWith(TX_BUTTON_PREFIX)) {
+                if (interaction.customId.startsWith(AUEC_TX_BUTTON_PREFIX)) {
+                    await handleAuecTransactionButton(interaction);
+                } else if (interaction.customId.startsWith(TX_BUTTON_PREFIX)) {
                     await handleTransactionButton(interaction);
                 }
                 return;

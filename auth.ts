@@ -6,4 +6,10 @@ import client from "@/lib/db";
 export const { handlers, signIn, signOut, auth } = NextAuth({
     adapter: MongoDBAdapter(client),
     providers: [Discord],
+    callbacks: {
+        session({ session, user }) {
+            session.user.rsiHandle = (user as { rsiHandle?: string | null }).rsiHandle ?? null;
+            return session;
+        },
+    },
 })

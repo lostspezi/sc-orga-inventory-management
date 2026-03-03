@@ -93,9 +93,14 @@ export async function getOrganizationInventoryItemViewsByOrganizationId(
                 normalizedName: item.normalizedName,
                 description: item.description,
                 category: item.category,
+                itemClass: item.itemClass,
+                grade: item.grade,
+                size: item.size,
                 buyPrice: entry.buyPrice,
                 sellPrice: entry.sellPrice,
                 quantity: entry.quantity,
+                minStock: entry.minStock,
+                maxStock: entry.maxStock,
                 createdAt: entry.createdAt,
                 updatedAt: entry.updatedAt,
             };
@@ -127,6 +132,8 @@ export async function updateOrganizationInventoryItemInDb(input: {
     buyPrice: number;
     sellPrice: number;
     quantity: number;
+    minStock: number | undefined;
+    maxStock: number | undefined;
 }): Promise<boolean> {
     if (!ObjectId.isValid(input.inventoryItemId)) {
         return false;
@@ -134,19 +141,34 @@ export async function updateOrganizationInventoryItemInDb(input: {
 
     const db = await getDb();
 
-    const result = await db.collection<OrganizationInventoryItemDocument>("organization_inventory_items").updateOne(
-        {
-            _id: new ObjectId(input.inventoryItemId),
-            organizationId: input.organizationId,
-        },
-        {
-            $set: {
-                buyPrice: input.buyPrice,
-                sellPrice: input.sellPrice,
-                quantity: input.quantity,
-                updatedAt: new Date(),
-            },
-        }
+    const setData: Record<string, unknown> = {
+        buyPrice: input.buyPrice,
+        sellPrice: input.sellPrice,
+        quantity: input.quantity,
+        updatedAt: new Date(),
+    };
+    const unsetData: Record<string, string> = {};
+
+    if (input.minStock !== undefined) {
+        setData.minStock = input.minStock;
+    } else {
+        unsetData.minStock = "";
+    }
+
+    if (input.maxStock !== undefined) {
+        setData.maxStock = input.maxStock;
+    } else {
+        unsetData.maxStock = "";
+    }
+
+    const updateOp: Record<string, unknown> = { $set: setData };
+    if (Object.keys(unsetData).length > 0) {
+        updateOp.$unset = unsetData;
+    }
+
+    const result = await db.collection<OrganizationInventoryItemDocument>(COLLECTION).updateOne(
+        { _id: new ObjectId(input.inventoryItemId), organizationId: input.organizationId },
+        updateOp
     );
 
     return result.modifiedCount > 0;
@@ -190,9 +212,14 @@ export async function getOrganizationInventoryItemViewById(
         normalizedName: item.normalizedName,
         description: item.description,
         category: item.category,
+        itemClass: item.itemClass,
+        grade: item.grade,
+        size: item.size,
         buyPrice: entry.buyPrice,
         sellPrice: entry.sellPrice,
         quantity: entry.quantity,
+        minStock: entry.minStock,
+        maxStock: entry.maxStock,
         createdAt: entry.createdAt,
         updatedAt: entry.updatedAt,
     };
@@ -201,15 +228,18 @@ export async function getOrganizationInventoryItemViewById(
 export async function adjustOrganizationInventoryItemQuantity(
     inventoryItemId: ObjectId,
     delta: number
-): Promise<boolean> {
+): Promise<{ newQuantity: number; minStock?: number } | null> {
     const db = await getDb();
 
-    const result = await db
+    const updated = await db
         .collection<OrganizationInventoryItemDocument>(COLLECTION)
-        .updateOne(
+        .findOneAndUpdate(
             { _id: inventoryItemId },
-            { $inc: { quantity: delta }, $set: { updatedAt: new Date() } }
+            { $inc: { quantity: delta }, $set: { updatedAt: new Date() } },
+            { returnDocument: "after" }
         );
 
-    return result.modifiedCount > 0;
+    if (!updated) return null;
+
+    return { newQuantity: updated.quantity, minStock: updated.minStock };
 }

@@ -154,11 +154,11 @@ export default async function InviteAcceptPage({ params }: Props) {
                 organizationId: org._id,
                 organizationSlug: org.slug,
                 actorUserId: session.user.id,
-                actorUsername: session.user.name ?? "Unknown",
+                actorUsername: session.user.rsiHandle ?? session.user.name ?? "Unknown",
                 action: "member.joined_via_permanent_link",
                 entityType: "member",
                 entityId: session.user.id,
-                message: `${session.user.name ?? "A user"} joined via permanent invite link.`,
+                message: `${session.user.rsiHandle ?? session.user.name ?? "A user"} joined via permanent invite link.`,
             });
 
             const adminUserIds = org.members
@@ -169,7 +169,7 @@ export default async function InviteAcceptPage({ params }: Props) {
                 adminUserIds,
                 "invite.accepted",
                 "New Member Joined",
-                `${session.user.name ?? "Someone"} joined ${org.name} via the permanent invite link.`,
+                `${session.user.rsiHandle ?? session.user.name ?? "Someone"} joined ${org.name} via the permanent invite link.`,
                 `/terminal/orgs/${org.slug}/members`
             );
         }
@@ -185,7 +185,7 @@ export default async function InviteAcceptPage({ params }: Props) {
             invite.invitedByUserId,
             "invite.accepted",
             "Invite Accepted",
-            `${session.user.name ?? "A user"} accepted your invite and joined ${org.name}.`,
+            `${session.user.rsiHandle ?? session.user.name ?? "A user"} accepted your invite and joined ${org.name}.`,
             `/terminal/orgs/${org.slug}/members`
         );
     }

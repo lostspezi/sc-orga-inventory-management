@@ -324,6 +324,11 @@ async function mapOrganizationToView(
         discordGuildId: org.discordGuildId,
         discordTransactionChannelId: org.discordTransactionChannelId,
         raidHelperApiKey: org.raidHelperApiKey,
+        auecBalance: org.auecBalance,
+        auecBuyPriceDkp: org.auecBuyPriceDkp,
+        auecBuyPriceAuec: org.auecBuyPriceAuec,
+        auecSellPriceDkp: org.auecSellPriceDkp,
+        auecSellPriceAuec: org.auecSellPriceAuec,
     };
 }
 
@@ -445,6 +450,41 @@ export async function setOrganizationRaidHelperApiKey(
         .updateOne({ slug }, update);
 
     return result.modifiedCount > 0;
+}
+
+export async function updateOrgAuecSettings(
+    orgId: ObjectId,
+    patch: {
+        auecBalance?: number;
+        auecBuyPriceDkp?: number;
+        auecBuyPriceAuec?: number;
+        auecSellPriceDkp?: number;
+        auecSellPriceAuec?: number;
+    }
+): Promise<boolean> {
+    const db = await getDb();
+
+    const result = await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { _id: orgId },
+        { $set: { ...patch, updatedAt: new Date() } }
+    );
+
+    return result.modifiedCount > 0;
+}
+
+export async function adjustOrgAuecBalance(
+    orgId: ObjectId,
+    delta: number
+): Promise<void> {
+    const db = await getDb();
+
+    await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { _id: orgId },
+        {
+            $inc: { auecBalance: delta },
+            $set: { updatedAt: new Date() },
+        }
+    );
 }
 
 export async function setOrganizationDiscordTransactionChannelId(

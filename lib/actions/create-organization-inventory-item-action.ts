@@ -55,6 +55,9 @@ export async function createOrganizationInventoryItemAction(
     const existingItemId = String(formData.get("existingItemId") ?? "").trim();
     const category = String(formData.get("category") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
+    const itemClass = String(formData.get("itemClass") ?? "").trim() || undefined;
+    const grade = String(formData.get("grade") ?? "").trim() || undefined;
+    const size = String(formData.get("size") ?? "").trim() || undefined;
 
     const buyPrice = parseNumber(formData.get("buyPrice"));
     const sellPrice = parseNumber(formData.get("sellPrice"));
@@ -101,7 +104,7 @@ export async function createOrganizationInventoryItemAction(
         baseItem = await getItemById(existingItemId);
         if (!baseItem) return { ...initialState, message: "Selected item could not be found." };
     } else {
-        baseItem = await createItemInDb({ name: itemName, category, description });
+        baseItem = await createItemInDb({ name: itemName, category, description, itemClass, grade, size });
     }
 
     // --- Build list of items to add: base + variants ---

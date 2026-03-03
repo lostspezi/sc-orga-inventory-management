@@ -1,31 +1,31 @@
 import { ButtonInteraction, MessageFlagsBitField } from "discord.js";
 import { ObjectId } from "mongodb";
-import { parseTxButtonId, buildTransactionMessagePayload, updateTransactionEmbed } from "@/lib/discord/send-transaction-embed";
-import { getOrganizationByDiscordGuildId } from "@/lib/repositories/organization-repository";
+import {
+    parseAuecTxButtonId,
+    buildAuecTransactionMessagePayload,
+    updateAuecTransactionEmbed,
+} from "@/lib/discord/send-auec-transaction-embed";
+import { getOrganizationByDiscordGuildId, adjustOrgAuecBalance } from "@/lib/repositories/organization-repository";
 import { getUserByDiscordAccountId } from "@/lib/repositories/auth-account-repository";
 import {
-    getTransactionById,
-    getTransactionViewById,
-    updateTransactionStatus,
-    setTransactionDiscordMessage,
-} from "@/lib/repositories/organization-transaction-repository";
-import { adjustOrganizationInventoryItemQuantity } from "@/lib/repositories/organization-inventory-item-repository";
+    getAuecTransactionById,
+    getAuecTransactionViewById,
+    updateAuecTransactionStatus,
+    setAuecTransactionDiscordMessage,
+} from "@/lib/repositories/organization-auec-transaction-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
 import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
 import { updateMemberDkp } from "@/lib/raid-helper/update-member-dkp";
-import { notifyMany } from "@/lib/notify";
-import { sendLowStockAlert } from "@/lib/discord/send-low-stock-alert";
+import { notify } from "@/lib/notify";
 
-export async function handleTransactionButton(interaction: ButtonInteraction): Promise<void> {
-    // Acknowledge immediately — must happen within 3 s. If this fails the
-    // interaction has already expired; bail out rather than compounding errors.
+export async function handleAuecTransactionButton(interaction: ButtonInteraction): Promise<void> {
     try {
         await interaction.deferUpdate();
     } catch {
         return;
     }
 
-    const parsed = parseTxButtonId(interaction.customId);
+    const parsed = parseAuecTxButtonId(interaction.customId);
     if (!parsed) return;
     const { action, txId } = parsed;
 
@@ -40,7 +40,6 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
         return;
     }
 
-
     const appUser = await getUserByDiscordAccountId(interaction.user.id);
     if (!appUser) {
         await interaction.followUp({ content: "Your Discord account is not linked to an application user.", flags: MessageFlagsBitField.Flags.Ephemeral });
@@ -53,14 +52,17 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
         return;
     }
 
-    const tx = await getTransactionById(txId);
+    if (!ObjectId.isValid(txId)) {
+        await interaction.followUp({ content: "Invalid transaction ID.", flags: MessageFlagsBitField.Flags.Ephemeral });
+        return;
+    }
+
+    const tx = await getAuecTransactionById(txId);
     if (!tx) {
-        console.error(`[TxButton] Transaction not found in DB. txId="${txId}" isValidObjectId=${ObjectId.isValid(txId)}`);
-        await interaction.followUp({ content: "Transaction not found.", flags: MessageFlagsBitField.Flags.Ephemeral });
+        await interaction.followUp({ content: "aUEC transaction not found.", flags: MessageFlagsBitField.Flags.Ephemeral });
         return;
     }
     if (!tx.organizationId.equals(org._id)) {
-        console.error(`[TxButton] Org mismatch. tx.organizationId="${tx.organizationId.toString()}" org._id="${org._id.toString()}"`);
         await interaction.followUp({ content: "Transaction not found.", flags: MessageFlagsBitField.Flags.Ephemeral });
         return;
     }
@@ -71,7 +73,7 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
     // ── approve ──────────────────────────────────────────────────────────────
     if (action === "approve") {
         if (!isAdminOrOwner) {
-            await interaction.followUp({ content: "Only admins and owners can approve transactions.", flags: MessageFlagsBitField.Flags.Ephemeral });
+            await interaction.followUp({ content: "Only admins and owners can approve aUEC transactions.", flags: MessageFlagsBitField.Flags.Ephemeral });
             return;
         }
         if (tx.status !== "requested") {
@@ -79,28 +81,28 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             return;
         }
 
-        await updateTransactionStatus(txId, { status: "approved" });
+        await updateAuecTransactionStatus(txId, { status: "approved" });
 
         await createOrganizationAuditLog({
             organizationId: tx.organizationId,
             organizationSlug: tx.organizationSlug,
             actorUserId: appUser.id,
             actorUsername: appUser.rsiHandle ?? appUser.name ?? interaction.user.username,
-            action: "transaction.approved",
-            entityType: "transaction",
+            action: "auec_transaction.approved",
+            entityType: "auec_transaction",
             entityId: txId,
-            message: `Transaction for "${tx.itemName}" approved via Discord.`,
+            message: `aUEC transaction approved via Discord.`,
         });
 
         await refreshEmbed(interaction, txId);
-        await interaction.followUp({ content: `Transaction approved: ${tx.itemName}.`, flags: MessageFlagsBitField.Flags.Ephemeral });
+        await interaction.followUp({ content: `aUEC transaction approved.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         return;
     }
 
     // ── reject ───────────────────────────────────────────────────────────────
     if (action === "reject") {
         if (!isAdminOrOwner) {
-            await interaction.followUp({ content: "Only admins and owners can reject transactions.", flags: MessageFlagsBitField.Flags.Ephemeral });
+            await interaction.followUp({ content: "Only admins and owners can reject aUEC transactions.", flags: MessageFlagsBitField.Flags.Ephemeral });
             return;
         }
         if (tx.status !== "requested") {
@@ -108,21 +110,21 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             return;
         }
 
-        await updateTransactionStatus(txId, { status: "rejected" });
+        await updateAuecTransactionStatus(txId, { status: "rejected" });
 
         await createOrganizationAuditLog({
             organizationId: tx.organizationId,
             organizationSlug: tx.organizationSlug,
             actorUserId: appUser.id,
             actorUsername: appUser.rsiHandle ?? appUser.name ?? interaction.user.username,
-            action: "transaction.rejected",
-            entityType: "transaction",
+            action: "auec_transaction.rejected",
+            entityType: "auec_transaction",
             entityId: txId,
-            message: `Transaction for "${tx.itemName}" rejected via Discord.`,
+            message: `aUEC transaction rejected via Discord.`,
         });
 
         await refreshEmbed(interaction, txId);
-        await interaction.followUp({ content: `Transaction rejected: ${tx.itemName}.`, flags: MessageFlagsBitField.Flags.Ephemeral });
+        await interaction.followUp({ content: `aUEC transaction rejected.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         return;
     }
 
@@ -137,21 +139,21 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
             return;
         }
 
-        await updateTransactionStatus(txId, { status: "cancelled" });
+        await updateAuecTransactionStatus(txId, { status: "cancelled" });
 
         await createOrganizationAuditLog({
             organizationId: tx.organizationId,
             organizationSlug: tx.organizationSlug,
             actorUserId: appUser.id,
             actorUsername: appUser.rsiHandle ?? appUser.name ?? interaction.user.username,
-            action: "transaction.cancelled",
-            entityType: "transaction",
+            action: "auec_transaction.cancelled",
+            entityType: "auec_transaction",
             entityId: txId,
-            message: `Transaction for "${tx.itemName}" cancelled via Discord by ${isAdminOrOwner ? "admin" : "member"}.`,
+            message: `aUEC transaction cancelled via Discord by ${isAdminOrOwner ? "admin" : "member"}.`,
         });
 
         await refreshEmbed(interaction, txId);
-        await interaction.followUp({ content: `Transaction cancelled: ${tx.itemName}.`, flags: MessageFlagsBitField.Flags.Ephemeral });
+        await interaction.followUp({ content: `aUEC transaction cancelled.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         return;
     }
 
@@ -182,43 +184,21 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
         const updatedAdminConfirmed  = patch.adminConfirmed  ?? tx.adminConfirmed;
 
         if (updatedMemberConfirmed && updatedAdminConfirmed) {
-            await updateTransactionStatus(txId, { ...patch, status: "completed" });
+            await updateAuecTransactionStatus(txId, { ...patch, status: "completed" });
 
-            const delta = tx.direction === "member_to_org" ? tx.quantity : -tx.quantity;
-            const adjustment = await adjustOrganizationInventoryItemQuantity(tx.inventoryItemId, delta);
-
-            // Low stock notification
-            if (adjustment && adjustment.minStock != null && adjustment.newQuantity < adjustment.minStock) {
-                const adminIds = org.members
-                    .filter((m) => m.role === "admin" || m.role === "owner")
-                    .map((m) => m.userId);
-                await notifyMany(
-                    adminIds,
-                    "inventory.low_stock",
-                    "Low Stock Alert",
-                    `${tx.itemName} is below minimum stock (${adjustment.newQuantity}/${adjustment.minStock}).`,
-                    `/terminal/orgs/${tx.organizationSlug}/inventory`
-                );
-                if (org.discordTransactionChannelId) {
-                    await sendLowStockAlert(
-                        org.discordTransactionChannelId,
-                        tx.itemName,
-                        adjustment.newQuantity,
-                        adjustment.minStock
-                    );
-                }
-            }
+            const delta = tx.direction === "member_to_org" ? tx.auecAmount : -tx.auecAmount;
+            await adjustOrgAuecBalance(org._id, delta);
 
             await createOrganizationAuditLog({
                 organizationId: tx.organizationId,
                 organizationSlug: tx.organizationSlug,
                 actorUserId: appUser.id,
                 actorUsername: appUser.rsiHandle ?? appUser.name ?? interaction.user.username,
-                action: "transaction.completed",
-                entityType: "transaction",
+                action: "auec_transaction.completed",
+                entityType: "auec_transaction",
                 entityId: txId,
-                message: `Transaction for "${tx.itemName}" completed via Discord. Inventory adjusted by ${delta > 0 ? "+" : ""}${delta}.`,
-                metadata: { delta, direction: tx.direction, quantity: tx.quantity },
+                message: `aUEC transaction completed via Discord. Balance adjusted by ${delta > 0 ? "+" : ""}${delta.toLocaleString()} aUEC.`,
+                metadata: { delta, direction: tx.direction, auecAmount: tx.auecAmount, totalDkp: tx.totalDkp },
             });
 
             // Sync DKP with Raid Helper (non-blocking)
@@ -234,35 +214,40 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
                     }) + " " + now.toLocaleTimeString("en-GB", {
                         hour: "2-digit", minute: "2-digit", timeZone: "UTC",
                     }) + " UTC";
-                    const dkpDescription = `[SC Orga] ${verb} ${tx.quantity}x ${tx.itemName} | TxID: ${txId} | Trader: ${tx.memberUsername} | Admin: ${adminName} | ${ts}`;
-                    const dkpOk = await updateMemberDkp(
+                    const dkpDescription = `[SC Orga] ${verb} ${tx.auecAmount.toLocaleString()} aUEC | TxID: ${txId} | Trader: ${tx.memberUsername} | Admin: ${adminName} | ${ts}`;
+                    await updateMemberDkp(
                         org.discordGuildId,
                         memberDiscordId,
                         org.raidHelperApiKey,
                         dkpOperation,
-                        tx.totalPrice,
+                        tx.totalDkp,
                         dkpDescription
                     );
-                    if (!dkpOk) {
-                        console.error(`[DKP] Failed to update DKP for member ${tx.memberId} after completing transaction ${txId} via Discord`);
-                    }
                 }
             }
 
+            await notify(
+                tx.memberId,
+                "trade.completed",
+                "aUEC Trade Completed",
+                `Your aUEC trade of ${tx.auecAmount.toLocaleString()} aUEC is complete.`,
+                `/terminal/orgs/${tx.organizationSlug}/inventory?tab=auec`
+            );
+
             await refreshEmbed(interaction, txId);
-            await interaction.followUp({ content: `Transaction completed: ${tx.itemName}. Inventory updated.`, flags: MessageFlagsBitField.Flags.Ephemeral });
+            await interaction.followUp({ content: `aUEC transaction completed. Balance updated.`, flags: MessageFlagsBitField.Flags.Ephemeral });
         } else {
-            await updateTransactionStatus(txId, patch);
+            await updateAuecTransactionStatus(txId, patch);
 
             await createOrganizationAuditLog({
                 organizationId: tx.organizationId,
                 organizationSlug: tx.organizationSlug,
                 actorUserId: appUser.id,
                 actorUsername: appUser.rsiHandle ?? appUser.name ?? interaction.user.username,
-                action: "transaction.confirmed",
-                entityType: "transaction",
+                action: "auec_transaction.confirmed",
+                entityType: "auec_transaction",
                 entityId: txId,
-                message: `${isAdminOrOwner ? "Admin" : "Member"} confirmed in-game trade for "${tx.itemName}" via Discord. Waiting for other party.`,
+                message: `${isAdminOrOwner ? "Admin" : "Member"} confirmed aUEC trade via Discord. Waiting for other party.`,
             });
 
             await refreshEmbed(interaction, txId);
@@ -272,23 +257,20 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
     }
 }
 
-// Fetches the updated transaction view and edits the button interaction's original message.
 async function refreshEmbed(interaction: ButtonInteraction, txId: string): Promise<void> {
-    const updatedView = await getTransactionViewById(txId);
+    const updatedView = await getAuecTransactionViewById(txId);
     if (!updatedView) return;
 
-    const payload = buildTransactionMessagePayload(updatedView);
+    const payload = buildAuecTransactionMessagePayload(updatedView);
     try {
         await interaction.editReply({ embeds: payload.embeds, components: payload.components });
     } catch {
-        // If editing the reply fails (e.g. message deleted), try updating via channel
         if (updatedView.discordChannelId && updatedView.discordMessageId) {
-            await updateTransactionEmbed(updatedView.discordChannelId, updatedView.discordMessageId, updatedView);
+            await updateAuecTransactionEmbed(updatedView.discordChannelId, updatedView.discordMessageId, updatedView);
         }
     }
 
-    // Also save message coordinates if not already stored (shouldn't be needed but as safety)
     if (!updatedView.discordMessageId && interaction.message) {
-        await setTransactionDiscordMessage(txId, interaction.channelId, interaction.message.id);
+        await setAuecTransactionDiscordMessage(txId, interaction.channelId, interaction.message.id);
     }
 }

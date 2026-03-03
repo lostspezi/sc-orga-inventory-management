@@ -94,6 +94,23 @@ export async function createTransactionAction(
         };
     }
 
+    // Enforce maxStock for member_to_org (selling to org)
+    if (direction === "member_to_org" && invItem.maxStock != null) {
+        const space = invItem.maxStock - invItem.quantity;
+        if (space <= 0) {
+            const t = await getTranslations("transactions");
+            return { ...initialState, message: t("stockAtMax") };
+        }
+        if (quantityRaw > space) {
+            const t = await getTranslations("transactions");
+            return {
+                ...initialState,
+                message: t("stockExceedsMax", { max: space }),
+                fieldErrors: { quantity: t("stockExceedsMaxField", { max: space }) },
+            };
+        }
+    }
+
     const db = await getDb();
     const itemDoc = await db.collection<ItemDocument>("items").findOne({ _id: invItem.itemId });
     const itemName = itemDoc?.name ?? "Unknown Item";
@@ -124,7 +141,7 @@ export async function createTransactionAction(
         direction: direction as "member_to_org" | "org_to_member",
         initiatedBy: member.role === "member" ? "member" : "admin",
         memberId: session.user.id,
-        memberUsername: session.user.name ?? "Unknown",
+        memberUsername: session.user.rsiHandle ?? session.user.name ?? "Unknown",
         quantity: quantityRaw,
         pricePerUnit: pricePerUnit,
         totalPrice,
@@ -138,7 +155,7 @@ export async function createTransactionAction(
         organizationId: org._id,
         organizationSlug: org.slug,
         actorUserId: session.user.id,
-        actorUsername: session.user.name ?? "Unknown",
+        actorUsername: session.user.rsiHandle ?? session.user.name ?? "Unknown",
         action: "transaction.requested",
         entityType: "transaction",
         entityId: transaction._id,
@@ -158,7 +175,7 @@ export async function createTransactionAction(
             adminIds,
             "trade.requested",
             "New Trade Request",
-            `${session.user.name ?? "A member"} wants to ${directionLabel} ${quantityRaw}x ${itemName}.`,
+            `${session.user.rsiHandle ?? session.user.name ?? "A member"} wants to ${directionLabel} ${quantityRaw}x ${itemName}.`,
             txLink
         );
     } else {

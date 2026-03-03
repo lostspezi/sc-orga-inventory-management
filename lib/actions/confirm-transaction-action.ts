@@ -15,6 +15,7 @@ import { updateTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 import { notify, notifyMany } from "@/lib/notify";
 import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
 import { updateMemberDkp } from "@/lib/raid-helper/update-member-dkp";
+import { sendLowStockAlert } from "@/lib/discord/send-low-stock-alert";
 
 export async function confirmTransactionAction(formData: FormData): Promise<void> {
     const session = await auth();
@@ -48,7 +49,7 @@ export async function confirmTransactionAction(formData: FormData): Promise<void
 
     if (isAdminOrOwner && !tx.adminConfirmed) {
         patch.adminConfirmed = true;
-        patch.adminConfirmedByUsername = session.user.name ?? "Admin";
+        patch.adminConfirmedByUsername = session.user.rsiHandle ?? session.user.name ?? "Admin";
     } else if (isMemberParty && !tx.memberConfirmed) {
         patch.memberConfirmed = true;
     } else {
@@ -63,13 +64,35 @@ export async function confirmTransactionAction(formData: FormData): Promise<void
 
         // Adjust inventory: member_to_org = org gains stock; org_to_member = org loses stock
         const delta = tx.direction === "member_to_org" ? tx.quantity : -tx.quantity;
-        await adjustOrganizationInventoryItemQuantity(tx.inventoryItemId, delta);
+        const adjustment = await adjustOrganizationInventoryItemQuantity(tx.inventoryItemId, delta);
+
+        // Low stock notification
+        if (adjustment && adjustment.minStock != null && adjustment.newQuantity < adjustment.minStock) {
+            const adminIds = org.members
+                .filter((m) => m.role === "admin" || m.role === "owner")
+                .map((m) => m.userId);
+            await notifyMany(
+                adminIds,
+                "inventory.low_stock",
+                "Low Stock Alert",
+                `${tx.itemName} is below minimum stock (${adjustment.newQuantity}/${adjustment.minStock}).`,
+                `/terminal/orgs/${tx.organizationSlug}/inventory`
+            );
+            if (org.discordTransactionChannelId) {
+                await sendLowStockAlert(
+                    org.discordTransactionChannelId,
+                    tx.itemName,
+                    adjustment.newQuantity,
+                    adjustment.minStock
+                );
+            }
+        }
 
         await createOrganizationAuditLog({
             organizationId: tx.organizationId,
             organizationSlug: tx.organizationSlug,
             actorUserId: session.user.id,
-            actorUsername: session.user.name ?? "Unknown",
+            actorUsername: session.user.rsiHandle ?? session.user.name ?? "Unknown",
             action: "transaction.completed",
             entityType: "transaction",
             entityId: transactionId,
@@ -113,7 +136,7 @@ export async function confirmTransactionAction(formData: FormData): Promise<void
             organizationId: tx.organizationId,
             organizationSlug: tx.organizationSlug,
             actorUserId: session.user.id,
-            actorUsername: session.user.name ?? "Unknown",
+            actorUsername: session.user.rsiHandle ?? session.user.name ?? "Unknown",
             action: "transaction.confirmed",
             entityType: "transaction",
             entityId: transactionId,
@@ -152,7 +175,7 @@ export async function confirmTransactionAction(formData: FormData): Promise<void
             adminIds,
             "trade.confirmed",
             "Member Confirmed Trade",
-            `${session.user!.name ?? "A member"} confirmed in-game delivery for ${tx.itemName}. Awaiting admin confirmation.`,
+            `${session.user!.rsiHandle ?? session.user!.name ?? "A member"} confirmed in-game delivery for ${tx.itemName}. Awaiting admin confirmation.`,
             txLink
         );
     }
