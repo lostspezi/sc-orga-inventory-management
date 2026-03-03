@@ -318,7 +318,7 @@ export default async function Home() {
 
                     {/* Feature pills */}
                     <div className="mb-10 flex flex-wrap justify-center gap-2" style={{ animation: "slide-in-up 0.6s 0.3s ease both" }}>
-                        {(["pill1", "pill2", "pill3", "pill4", "pill5", "pill6"] as const).map((key) => (
+                        {(["pill1", "pill2", "pill3", "pill4", "pill5", "pill6", "pill7"] as const).map((key) => (
                             <span key={key} className="rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.12em]" style={{
                                 borderColor: "rgba(79,195,220,0.2)",
                                 color: "rgba(79,195,220,0.6)",
@@ -396,7 +396,7 @@ export default async function Home() {
                                 icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>}
                                 title={t("features.inventoryTitle")}
                                 desc={t("features.inventoryDesc")}
-                                tags={[t("features.inventoryTag1"), t("features.inventoryTag2")]}
+                                tags={[t("features.inventoryTag1"), t("features.inventoryTag2"), t("features.inventoryTag3")]}
                             />
                             <FeatureCard
                                 delay="0.16s" accent="rgba(240,165,0"
@@ -432,6 +432,13 @@ export default async function Home() {
                                 title={t("features.notificationsTitle")}
                                 desc={t("features.notificationsDesc")}
                                 tags={[t("features.notificationsTag1"), t("features.notificationsTag2"), t("features.notificationsTag3")]}
+                            />
+                            <FeatureCard
+                                delay="0.56s" accent="rgba(240,165,0"
+                                icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>}
+                                title={t("features.csvImportTitle")}
+                                desc={t("features.csvImportDesc")}
+                                tags={[t("features.csvImportTag1"), t("features.csvImportTag2"), t("features.csvImportTag3")]}
                             />
                         </div>
                     </div>

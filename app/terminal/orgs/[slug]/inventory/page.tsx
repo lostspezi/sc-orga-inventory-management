@@ -13,6 +13,8 @@ import { getAuecTransactionsByOrg } from "@/lib/repositories/organization-auec-t
 import CreateInventoryItemForm from "@/components/orgs/details/items/create-inventory-item-form";
 import HudAccordion from "@/components/ui/hud-accordion";
 import InventorySearchPanel from "@/components/orgs/details/items/inventory-search-panel";
+import CsvImportForm from "@/components/orgs/details/items/csv-import-form";
+import Link from "next/link";
 import ShowDeleteSuccessMessage from "@/components/orgs/details/items/show-delete-success-message";
 import InventoryTabNav from "@/components/orgs/details/items/inventory-tab-nav";
 import AuecCashDesk from "@/components/orgs/details/auec/auec-cash-desk";
@@ -47,9 +49,10 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
 
     const activeTab = tab === "auec" ? "auec" : "items";
 
-    const [t, tAuec] = await Promise.all([
+    const [t, tAuec, tCsv] = await Promise.all([
         getTranslations("inventory"),
         getTranslations("auec"),
+        getTranslations("csvImport"),
     ]);
 
     // Fetch data in parallel
@@ -140,13 +143,52 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                 {activeTab === "items" ? (
                     <>
                         {canManageItems && (
-                            <HudAccordion
-                                eyebrow={t("eyebrow")}
-                                title={t("addItem")}
-                                description={t("addItemDesc")}
-                            >
-                                <CreateInventoryItemForm organizationSlug={org.slug}/>
-                            </HudAccordion>
+                            <>
+                                <HudAccordion
+                                    eyebrow={t("eyebrow")}
+                                    title={t("addItem")}
+                                    description={t("addItemDesc")}
+                                >
+                                    <CreateInventoryItemForm organizationSlug={org.slug}/>
+                                </HudAccordion>
+                                <HudAccordion
+                                    eyebrow={tCsv("eyebrow")}
+                                    title={tCsv("title")}
+                                    description={tCsv("description")}
+                                >
+                                    <CsvImportForm
+                                        organizationSlug={org.slug}
+                                        labels={{
+                                            downloadTemplate: tCsv("downloadTemplate"),
+                                            dropzone: tCsv("dropzone"),
+                                            browse: tCsv("browse"),
+                                            previewTitle: tCsv("previewTitle"),
+                                            previewDesc: tCsv("previewDesc"),
+                                            colName: tCsv("colName"),
+                                            colBuyPrice: tCsv("colBuyPrice"),
+                                            colSellPrice: tCsv("colSellPrice"),
+                                            colQuantity: tCsv("colQuantity"),
+                                            colMinStock: tCsv("colMinStock"),
+                                            colMaxStock: tCsv("colMaxStock"),
+                                            submitBtn: tCsv("submitBtn"),
+                                            submitting: tCsv("submitting"),
+                                            clearFile: tCsv("clearFile"),
+                                            rowsLoaded: tCsv("rowsLoaded"),
+                                            parseError: tCsv("parseError"),
+                                            tooManyRows: tCsv("tooManyRows"),
+                                        }}
+                                    />
+                                    <div className="mt-4 border-t pt-3" style={{ borderColor: "rgba(79,195,220,0.08)" }}>
+                                        <Link
+                                            href={`/terminal/orgs/${org.slug}/inventory/imports`}
+                                            className="inline-flex items-center gap-1.5 text-xs transition-colors"
+                                            style={{ color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)" }}
+                                        >
+                                            {tCsv("viewAllImports")} →
+                                        </Link>
+                                    </div>
+                                </HudAccordion>
+                            </>
                         )}
                         <InventorySearchPanel
                             items={serializedInventoryItems}
