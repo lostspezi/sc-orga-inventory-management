@@ -11,14 +11,32 @@ type InventoryItemOption = {
     sellPrice: number;
 };
 
+// Two usage modes:
+// 1. Opened from a specific item card: provide inventoryItemId + inventoryItemName + prices directly
+// 2. Opened from the transactions page "New Request" button: provide inventoryItems list
 type Props = {
     open: boolean;
     onCloseAction: () => void;
     organizationSlug: string;
-    inventoryItems: InventoryItemOption[];
-    defaultInventoryItemId?: string;
     defaultDirection?: "org_to_member" | "member_to_org";
-};
+} & (
+    | {
+          inventoryItemId: string;
+          inventoryItemName: string;
+          inventoryItemBuyPrice: number;
+          inventoryItemSellPrice: number;
+          inventoryItems?: never;
+          defaultInventoryItemId?: never;
+      }
+    | {
+          inventoryItems: InventoryItemOption[];
+          defaultInventoryItemId?: string;
+          inventoryItemId?: never;
+          inventoryItemName?: never;
+          inventoryItemBuyPrice?: never;
+          inventoryItemSellPrice?: never;
+      }
+);
 
 const initialState = {
     success: false,
@@ -30,16 +48,19 @@ export default function CreateTransactionDialog({
     open,
     onCloseAction,
     organizationSlug,
-    inventoryItems,
-    defaultInventoryItemId,
     defaultDirection,
+    ...rest
 }: Props) {
     const t = useTranslations("transactions");
     const tc = useTranslations("common");
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const [state, formAction, isPending] = useActionState(createTransactionAction, initialState);
 
-    const [selectedItemId, setSelectedItemId] = useState(defaultInventoryItemId ?? "");
+    // In list mode, track selected item from the dropdown
+    const isSingleItemMode = "inventoryItemId" in rest && rest.inventoryItemId != null;
+    const [selectedItemId, setSelectedItemId] = useState(
+        isSingleItemMode ? rest.inventoryItemId : (rest.defaultInventoryItemId ?? "")
+    );
     const [selectedDirection, setSelectedDirection] = useState<"org_to_member" | "member_to_org" | "">(
         defaultDirection ?? ""
     );
@@ -93,12 +114,25 @@ export default function CreateTransactionDialog({
             ? t("sellToOrgFull")
             : t("requestLabel");
 
-    const selectedItem = inventoryItems.find((i) => i.inventoryItemId === selectedItemId);
+    // Resolve current item prices
+    let buyPrice: number | null = null;
+    let sellPrice: number | null = null;
+    if (isSingleItemMode) {
+        buyPrice = rest.inventoryItemBuyPrice;
+        sellPrice = rest.inventoryItemSellPrice;
+    } else {
+        const found = rest.inventoryItems?.find((i) => i.inventoryItemId === selectedItemId);
+        if (found) {
+            buyPrice = found.buyPrice;
+            sellPrice = found.sellPrice;
+        }
+    }
+
     const pricePerUnit =
-        selectedItem && selectedDirection
-            ? selectedDirection === "member_to_org"
-                ? selectedItem.sellPrice
-                : selectedItem.buyPrice
+        selectedDirection === "member_to_org"
+            ? sellPrice
+            : selectedDirection === "org_to_member"
+            ? buyPrice
             : null;
     const totalDkp = pricePerUnit !== null ? pricePerUnit * quantity : null;
 
@@ -139,6 +173,14 @@ export default function CreateTransactionDialog({
                         >
                             {directionLabel}
                         </h2>
+                        {isSingleItemMode && rest.inventoryItemName && (
+                            <p
+                                className="mt-0.5 text-[11px]"
+                                style={{ color: "rgba(200,220,232,0.5)", fontFamily: "var(--font-mono)" }}
+                            >
+                                {rest.inventoryItemName}
+                            </p>
+                        )}
                     </div>
                     <button
                         type="button"
@@ -175,36 +217,40 @@ export default function CreateTransactionDialog({
                 <form action={formAction} className="space-y-4">
                     <input type="hidden" name="organizationSlug" value={organizationSlug} />
 
-                    <div>
-                        <label
-                            htmlFor="inventoryItemId"
-                            className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
-                            style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
-                        >
-                            {t("item")}
-                        </label>
-                        <select
-                            id="inventoryItemId"
-                            name="inventoryItemId"
-                            required
-                            disabled={isPending}
-                            defaultValue={defaultInventoryItemId ?? ""}
-                            onChange={(e) => setSelectedItemId(e.target.value)}
-                            className="sc-input w-full disabled:opacity-70"
-                        >
-                            <option value="">{t("selectItem")}</option>
-                            {inventoryItems.map((item) => (
-                                <option key={item.inventoryItemId} value={item.inventoryItemId}>
-                                    {item.name}
-                                </option>
-                            ))}
-                        </select>
-                        {state.fieldErrors?.inventoryItemId && (
-                            <p className="mt-1 text-xs" style={{ color: "rgba(240,165,0,0.85)" }}>
-                                {state.fieldErrors.inventoryItemId}
-                            </p>
-                        )}
-                    </div>
+                    {isSingleItemMode ? (
+                        <input type="hidden" name="inventoryItemId" value={rest.inventoryItemId} />
+                    ) : (
+                        <div>
+                            <label
+                                htmlFor="inventoryItemId"
+                                className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
+                                style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
+                            >
+                                {t("item")}
+                            </label>
+                            <select
+                                id="inventoryItemId"
+                                name="inventoryItemId"
+                                required
+                                disabled={isPending}
+                                defaultValue={rest.defaultInventoryItemId ?? ""}
+                                onChange={(e) => setSelectedItemId(e.target.value)}
+                                className="sc-input w-full disabled:opacity-70"
+                            >
+                                <option value="">{t("selectItem")}</option>
+                                {rest.inventoryItems?.map((item) => (
+                                    <option key={item.inventoryItemId} value={item.inventoryItemId}>
+                                        {item.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {state.fieldErrors?.inventoryItemId && (
+                                <p className="mt-1 text-xs" style={{ color: "rgba(240,165,0,0.85)" }}>
+                                    {state.fieldErrors.inventoryItemId}
+                                </p>
+                            )}
+                        </div>
+                    )}
 
                     <div>
                         <label

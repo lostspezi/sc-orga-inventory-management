@@ -4,6 +4,18 @@ import { OrganizationInventoryItemDocument } from "@/lib/types/organization";
 import { ItemDocument } from "@/lib/types/item";
 import { OrganizationInventoryItemView } from "@/lib/types/organization";
 
+export type PaginatedInventoryResult = {
+    items: OrganizationInventoryItemView[];
+    totalCount: number;
+    totalPages: number;
+    page: number;
+    pageSize: number;
+};
+
+function escapeRegex(s: string): string {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 const COLLECTION = "organization_inventory_items";
 
 export async function createOrganizationInventoryItemInDb(input: {
@@ -223,6 +235,114 @@ export async function getOrganizationInventoryItemViewById(
         createdAt: entry.createdAt,
         updatedAt: entry.updatedAt,
     };
+}
+
+export async function getOrganizationInventoryItemViewsPaginated(
+    organizationId: ObjectId,
+    options: { page: number; pageSize: number; search?: string; category?: string }
+): Promise<PaginatedInventoryResult> {
+    const db = await getDb();
+    const { page, pageSize, search, category } = options;
+    const offset = (page - 1) * pageSize;
+
+    const postLookupMatch: Record<string, unknown> = {};
+    if (search) {
+        const re = new RegExp(escapeRegex(search), "i");
+        postLookupMatch.$or = [
+            { "itemDoc.name": re },
+            { "itemDoc.description": re },
+        ];
+    }
+    if (category) {
+        postLookupMatch["itemDoc.category"] = new RegExp(`^${escapeRegex(category)}$`, "i");
+    }
+
+    const pipeline: object[] = [
+        { $match: { organizationId } },
+        {
+            $lookup: {
+                from: "items",
+                localField: "itemId",
+                foreignField: "_id",
+                as: "itemDoc",
+            },
+        },
+        { $unwind: { path: "$itemDoc", preserveNullAndEmptyArrays: false } },
+    ];
+
+    if (Object.keys(postLookupMatch).length > 0) {
+        pipeline.push({ $match: postLookupMatch });
+    }
+
+    pipeline.push({ $sort: { createdAt: -1 } });
+
+    pipeline.push({
+        $facet: {
+            metadata: [{ $count: "total" }],
+            data: [{ $skip: offset }, { $limit: pageSize }],
+        },
+    });
+
+    type FacetResult = {
+        metadata: { total: number }[];
+        data: (OrganizationInventoryItemDocument & { itemDoc: ItemDocument })[];
+    };
+
+    const [result] = await db
+        .collection<OrganizationInventoryItemDocument>(COLLECTION)
+        .aggregate<FacetResult>(pipeline)
+        .toArray();
+
+    const totalCount = result?.metadata[0]?.total ?? 0;
+    const totalPages = totalCount === 0 ? 1 : Math.ceil(totalCount / pageSize);
+
+    const items: OrganizationInventoryItemView[] = (result?.data ?? []).map((row) => ({
+        inventoryItemId: row._id,
+        itemId: row.itemDoc._id,
+        name: row.itemDoc.name,
+        normalizedName: row.itemDoc.normalizedName,
+        description: row.itemDoc.description,
+        category: row.itemDoc.category,
+        itemClass: row.itemDoc.itemClass,
+        grade: row.itemDoc.grade,
+        size: row.itemDoc.size,
+        buyPrice: row.buyPrice,
+        sellPrice: row.sellPrice,
+        quantity: row.quantity,
+        minStock: row.minStock,
+        maxStock: row.maxStock,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+    }));
+
+    return { items, totalCount, totalPages, page, pageSize };
+}
+
+export async function getDistinctInventoryCategories(
+    organizationId: ObjectId
+): Promise<string[]> {
+    const db = await getDb();
+
+    const result = await db
+        .collection<OrganizationInventoryItemDocument>(COLLECTION)
+        .aggregate<{ _id: string }>([
+            { $match: { organizationId } },
+            {
+                $lookup: {
+                    from: "items",
+                    localField: "itemId",
+                    foreignField: "_id",
+                    as: "itemDoc",
+                },
+            },
+            { $unwind: "$itemDoc" },
+            { $match: { "itemDoc.category": { $exists: true, $ne: null } } },
+            { $group: { _id: "$itemDoc.category" } },
+            { $sort: { _id: 1 } },
+        ])
+        .toArray();
+
+    return result.map((r) => r._id);
 }
 
 export async function adjustOrganizationInventoryItemQuantity(

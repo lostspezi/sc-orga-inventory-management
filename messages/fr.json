@@ -312,7 +312,11 @@
     "noItemsFound": "Aucun article trouvé pour « {query} »",
     "configLabel": "INVENTAIRE.CONFIG",
     "hide": "Masquer",
-    "show": "Afficher"
+    "show": "Afficher",
+    "categoryAll": "Toutes les catégories",
+    "pageOf": "Page {page} sur {total}",
+    "prevPage": "← Préc.",
+    "nextPage": "Suiv. →"
   },
   "transactions": {
     "eyebrow": "Transactions",

@@ -312,7 +312,11 @@
     "noItemsFound": "No items found for \"{query}\"",
     "configLabel": "INVENTORY.CONFIG",
     "hide": "Hide",
-    "show": "Show"
+    "show": "Show",
+    "categoryAll": "All Categories",
+    "pageOf": "Page {page} of {total}",
+    "prevPage": "← Prev",
+    "nextPage": "Next →"
   },
   "transactions": {
     "eyebrow": "Transactions",
