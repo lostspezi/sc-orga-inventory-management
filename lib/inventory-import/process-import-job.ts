@@ -14,6 +14,7 @@ import {
 import { notify } from "@/lib/notify";
 import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
 import { sendDiscordDm } from "@/lib/discord/send-discord-dm";
+import { triggerGoogleSheetSync } from "@/lib/google-sheets/trigger-sync";
 
 type ScWikiItem = {
     uuid: string;
@@ -227,6 +228,11 @@ export async function processImportJob(
     const failedCount = results.filter(
         (r) => r.status === "not_found" || r.status === "error"
     ).length;
+
+    // Always push final org state back to sheet after import (bi-directional sync)
+    if (org.googleSheetId) {
+        triggerGoogleSheetSync(org._id, org.googleSheetId);
+    }
 
     const summary = `${successCount} imported, ${updatedCount} updated, ${alreadyExistsCount} already existed, ${failedCount} failed.`;
     const resultsLink = `/terminal/orgs/${org.slug}/inventory/import/${jobId.toString()}`;

@@ -8,6 +8,7 @@ import {
     deleteOrganizationInventoryItemInDb,
 } from "@/lib/repositories/organization-inventory-item-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
+import { triggerGoogleSheetSync } from "@/lib/google-sheets/trigger-sync";
 
 export type RemoveOrganizationInventoryItemActionState = {
     success: boolean;
@@ -89,6 +90,10 @@ export async function removeOrganizationInventoryItemAction(
     });
 
     revalidatePath(`/terminal/orgs/${org.slug}/inventory`);
+
+    if (org.googleSheetId) {
+        triggerGoogleSheetSync(org._id, org.googleSheetId);
+    }
 
     return {
         success: true,

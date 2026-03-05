@@ -324,7 +324,36 @@ async function mapOrganizationToView(
         discordGuildId: org.discordGuildId,
         discordTransactionChannelId: org.discordTransactionChannelId,
         auecBalance: org.auecBalance,
+        googleSheetId: org.googleSheetId,
+        googleSheetLastSyncedAt: org.googleSheetLastSyncedAt,
     };
+}
+
+export async function setOrgGoogleSheetId(
+    orgId: ObjectId,
+    sheetId: string
+): Promise<void> {
+    const db = await getDb();
+    await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { _id: orgId },
+        { $set: { googleSheetId: sheetId, updatedAt: new Date() } }
+    );
+}
+
+export async function clearOrgGoogleSheetId(orgId: ObjectId): Promise<void> {
+    const db = await getDb();
+    await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { _id: orgId },
+        { $unset: { googleSheetId: "", googleSheetLastSyncedAt: "" }, $set: { updatedAt: new Date() } }
+    );
+}
+
+export async function setOrgGoogleSheetLastSynced(orgId: ObjectId): Promise<void> {
+    const db = await getDb();
+    await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { _id: orgId },
+        { $set: { googleSheetLastSyncedAt: new Date(), updatedAt: new Date() } }
+    );
 }
 
 export async function unsetOrganizationDiscordGuildId(slug: string): Promise<boolean> {

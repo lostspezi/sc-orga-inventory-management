@@ -4,10 +4,12 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import { startDiscordBot } from "@/lib/discord/bot/start-discord-bot";
+import { startGoogleSheetAutoSync } from "@/lib/google-sheets/auto-sync-scheduler";
 
 startDiscordBot().catch((error) => {
     console.error("[discord-bot] Startup failed", error);
 });
+startGoogleSheetAutoSync();
 
 const orbitron = Orbitron({
     variable: "--font-orbitron",

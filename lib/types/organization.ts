@@ -10,6 +10,8 @@ export type OrganizationDocument = {
     discordGuildId?: string;
     discordTransactionChannelId?: string;
     auecBalance?: number;
+    googleSheetId?: string;
+    googleSheetLastSyncedAt?: Date;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -73,6 +75,8 @@ export type OrganizationView = {
     discordGuildId?: string;
     discordTransactionChannelId?: string;
     auecBalance?: number;
+    googleSheetId?: string;
+    googleSheetLastSyncedAt?: Date;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -114,7 +118,9 @@ export type OrganizationAuditLogDocument = {
         | "auec_transaction.confirmed"
         | "auec_transaction.completed"
         | "auec_transaction.cancelled"
-        | "inventory.cleared";
+        | "inventory.cleared"
+        | "integration.google_sheet_connected"
+        | "integration.google_sheet_disconnected";
 
     entityType: "organization" | "member" | "item" | "inventory_item" | "inventory" | "transaction" | "auec_transaction";
     entityId?: string;

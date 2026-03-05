@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import { createOrganizationInventoryItemInDb } from "@/lib/repositories/organization-inventory-item-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
+import { triggerGoogleSheetSync } from "@/lib/google-sheets/trigger-sync";
 
 export type CreateOrganizationInventoryItemActionState = {
     success: boolean;
@@ -160,6 +161,10 @@ export async function createOrganizationInventoryItemAction(
     }
 
     revalidatePath(`/terminal/orgs/${org.slug}/items`);
+
+    if (addedCount > 0 && org.googleSheetId) {
+        triggerGoogleSheetSync(org._id, org.googleSheetId);
+    }
 
     if (addedCount === 0 && skippedCount > 0) {
         return {
