@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { CheckCircle, XCircle, AlertCircle, Clock, Loader2, SkipForward, Download, History } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle, Clock, Loader2, SkipForward, Download, History, RefreshCw } from "lucide-react";
 import { ImportJobView, ImportRowResult } from "@/lib/types/import-job";
 
 type Props = {
@@ -19,6 +19,7 @@ type Props = {
         colStatus: string;
         colMessage: string;
         statusSuccess: string;
+        statusUpdated: string;
         statusNotFound: string;
         statusAlreadyExists: string;
         statusError: string;
@@ -29,6 +30,7 @@ type Props = {
         viewAllImports: string;
         summary: string;
         summaryImported: string;
+        summaryUpdated: string;
         summarySkipped: string;
         summaryFailed: string;
         downloadFailed: string;
@@ -41,6 +43,11 @@ function StatusBadge({ status, labels }: { status: ImportRowResult["status"]; la
             icon: <CheckCircle size={12} />,
             label: labels.statusSuccess,
             style: { background: "rgba(79,195,120,0.12)", color: "rgba(79,195,120,1)", borderColor: "rgba(79,195,120,0.2)" },
+        },
+        updated: {
+            icon: <RefreshCw size={12} />,
+            label: labels.statusUpdated,
+            style: { background: "rgba(79,195,220,0.1)", color: "rgba(79,195,220,1)", borderColor: "rgba(79,195,220,0.2)" },
         },
         not_found: {
             icon: <AlertCircle size={12} />,
@@ -141,6 +148,7 @@ export default function CsvImportResultsClient({ initialJob, organizationSlug, l
     }, [job.status, poll]);
 
     const successCount = job.results.filter((r) => r.status === "success").length;
+    const updatedCount = job.results.filter((r) => r.status === "updated").length;
     const skippedCount = job.results.filter((r) => r.status === "already_exists").length;
     const failedCount = job.results.filter(
         (r) => r.status === "not_found" || r.status === "error"
@@ -202,6 +210,10 @@ export default function CsvImportResultsClient({ initialJob, organizationSlug, l
                             <CheckCircle size={13} />
                             {successCount} {labels.summaryImported}
                         </span>
+                        <span className="flex items-center gap-1.5" style={{ color: "rgba(79,195,220,1)", fontFamily: "var(--font-mono)" }}>
+                            <RefreshCw size={13} />
+                            {updatedCount} {labels.summaryUpdated}
+                        </span>
                         <span className="flex items-center gap-1.5" style={{ color: "rgba(120,160,220,1)", fontFamily: "var(--font-mono)" }}>
                             <SkipForward size={13} />
                             {skippedCount} {labels.summarySkipped}
@@ -248,6 +260,8 @@ export default function CsvImportResultsClient({ initialJob, organizationSlug, l
                                         background:
                                             result.status === "success"
                                                 ? "rgba(79,195,120,0.03)"
+                                                : result.status === "updated"
+                                                ? "rgba(79,195,220,0.04)"
                                                 : result.status === "error" || result.status === "not_found"
                                                 ? "rgba(220,79,79,0.03)"
                                                 : "transparent",
