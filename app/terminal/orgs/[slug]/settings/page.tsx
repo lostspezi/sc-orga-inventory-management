@@ -5,7 +5,6 @@ import { getOrganizationBySlug } from "@/lib/repositories/organization-repositor
 import { getActivePermanentInviteByOrgId } from "@/lib/repositories/organization-invite-repository";
 import OrgSettingsForm from "@/components/orgs/details/settings/org-settings-form";
 import DiscordServerCard from "@/components/orgs/details/settings/discord-server-card";
-import RaidHelperCard from "@/components/orgs/details/settings/raid-helper-card";
 import PermanentInviteCard from "@/components/orgs/details/settings/permanent-invite-card";
 
 type Props = {
@@ -94,11 +93,6 @@ export default async function OrgSettingsPage({ params, searchParams }: Props) {
                 organizationSlug={org.slug}
                 discordGuildId={org.discordGuildId}
                 installStatus={discordInstall}
-            />
-
-            <RaidHelperCard
-                organizationSlug={org.slug}
-                hasApiKey={!!org.raidHelperApiKey}
             />
 
             <PermanentInviteCard

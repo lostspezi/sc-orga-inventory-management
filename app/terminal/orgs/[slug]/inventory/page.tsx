@@ -20,8 +20,7 @@ import ShowDeleteSuccessMessage from "@/components/orgs/details/items/show-delet
 import InventoryTabNav from "@/components/orgs/details/items/inventory-tab-nav";
 import AuecCashDesk from "@/components/orgs/details/auec/auec-cash-desk";
 import type {OrganizationTransactionView} from "@/lib/types/transaction";
-import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
-import { getMemberDkp } from "@/lib/raid-helper/get-member-dkp";
+import { getUserAuecBalance } from "@/lib/repositories/user-repository";
 import { ObjectId } from "mongodb";
 
 const PAGE_SIZE = 25;
@@ -92,14 +91,8 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                 : await getTransactionsByMemberAndInventoryItemIds(org._id, session.user.id, pageItemIds)
             : [];
 
-    // DKP balance for buy direction on aUEC tab
-    let currentDkp: number | null = null;
-    if (activeTab === "auec" && org.raidHelperApiKey && org.discordGuildId) {
-        const discordId = await getDiscordUserId(session.user.id);
-        if (discordId) {
-            currentDkp = await getMemberDkp(org.discordGuildId, discordId, org.raidHelperApiKey);
-        }
-    }
+    // Member aUEC balance for the aUEC tab
+    const memberAuecBalance = activeTab === "auec" ? await getUserAuecBalance(session.user.id) : null;
 
     const serializedInventoryItems = inventoryItems.map((item) => ({
         inventoryItemId: item.inventoryItemId.toString(),
@@ -234,12 +227,8 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                         currentUserId={session.user.id}
                         isAdminOrOwner={isAdminOrOwner}
                         auecBalance={org.auecBalance}
-                        auecBuyPriceDkp={org.auecBuyPriceDkp}
-                        auecBuyPriceAuec={org.auecBuyPriceAuec}
-                        auecSellPriceDkp={org.auecSellPriceDkp}
-                        auecSellPriceAuec={org.auecSellPriceAuec}
                         transactions={auecTransactions}
-                        currentDkp={currentDkp}
+                        memberAuecBalance={memberAuecBalance}
                     />
                 )}
             </div>

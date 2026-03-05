@@ -2,9 +2,11 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { getOrganizationViewsByUserId } from "@/lib/repositories/organization-repository";
+import { getUserAuecBalance } from "@/lib/repositories/user-repository";
 import LeaveOrgButton from "@/components/settings/leave-org-button";
 import DeleteAccountButton from "@/components/settings/delete-account-button";
 import RsiHandleForm from "@/components/settings/rsi-handle-form";
+import AuecBalanceForm from "@/components/settings/auec-balance-form";
 import { getTranslations } from "next-intl/server";
 
 export const metadata = { title: "User Settings" };
@@ -23,9 +25,10 @@ export default async function SettingsPage({
     const { setup } = await searchParams;
     const setupRequired = setup === "rsi";
 
-    const [orgs, t] = await Promise.all([
+    const [orgs, t, userAuecBalance] = await Promise.all([
         getOrganizationViewsByUserId(session.user.id),
         getTranslations("settings"),
+        getUserAuecBalance(session.user.id),
     ]);
 
     const rsiHandle = session.user.rsiHandle ?? null;
@@ -115,6 +118,16 @@ export default async function SettingsPage({
                     </p>
                     <RsiHandleForm currentHandle={rsiHandle} />
                 </section>
+
+                {/* aUEC Balance */}
+                <AuecBalanceForm
+                    currentBalance={userAuecBalance}
+                    sectionLabel={t("auecBalanceSection")}
+                    sectionDesc={t("auecBalanceDesc")}
+                    balanceLabel={t("auecBalanceLabel")}
+                    saveLabel={t("auecBalanceSave")}
+                    savingLabel={t("saving")}
+                />
 
                 {/* Profile */}
                 <section

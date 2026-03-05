@@ -23,10 +23,6 @@ export async function updateAuecSettingsAction(
 
     const organizationSlug = String(formData.get("organizationSlug") ?? "").trim();
     const auecBalanceRaw = formData.get("auecBalance");
-    const auecBuyPriceDkpRaw = formData.get("auecBuyPriceDkp");
-    const auecBuyPriceAuecRaw = formData.get("auecBuyPriceAuec");
-    const auecSellPriceDkpRaw = formData.get("auecSellPriceDkp");
-    const auecSellPriceAuecRaw = formData.get("auecSellPriceAuec");
 
     if (!organizationSlug) {
         return { success: false, message: "Missing organization." };
@@ -44,13 +40,7 @@ export async function updateAuecSettingsAction(
         return { success: false, message: "Only admins and owners can update aUEC settings." };
     }
 
-    const patch: {
-        auecBalance?: number;
-        auecBuyPriceDkp?: number;
-        auecBuyPriceAuec?: number;
-        auecSellPriceDkp?: number;
-        auecSellPriceAuec?: number;
-    } = {};
+    const patch: { auecBalance?: number } = {};
 
     if (auecBalanceRaw !== null && auecBalanceRaw !== "") {
         const val = Number(auecBalanceRaw);
@@ -58,38 +48,6 @@ export async function updateAuecSettingsAction(
             return { success: false, message: "Invalid aUEC balance." };
         }
         patch.auecBalance = Math.round(val);
-    }
-
-    if (auecBuyPriceDkpRaw !== null && auecBuyPriceDkpRaw !== "") {
-        const val = Number(auecBuyPriceDkpRaw);
-        if (!Number.isFinite(val) || val <= 0) {
-            return { success: false, message: "Buy DKP must be a positive number." };
-        }
-        patch.auecBuyPriceDkp = Math.round(val);
-    }
-
-    if (auecBuyPriceAuecRaw !== null && auecBuyPriceAuecRaw !== "") {
-        const val = Number(auecBuyPriceAuecRaw);
-        if (!Number.isFinite(val) || val <= 0) {
-            return { success: false, message: "Buy aUEC amount must be a positive number." };
-        }
-        patch.auecBuyPriceAuec = Math.round(val);
-    }
-
-    if (auecSellPriceDkpRaw !== null && auecSellPriceDkpRaw !== "") {
-        const val = Number(auecSellPriceDkpRaw);
-        if (!Number.isFinite(val) || val <= 0) {
-            return { success: false, message: "Sell DKP must be a positive number." };
-        }
-        patch.auecSellPriceDkp = Math.round(val);
-    }
-
-    if (auecSellPriceAuecRaw !== null && auecSellPriceAuecRaw !== "") {
-        const val = Number(auecSellPriceAuecRaw);
-        if (!Number.isFinite(val) || val <= 0) {
-            return { success: false, message: "Sell aUEC amount must be a positive number." };
-        }
-        patch.auecSellPriceAuec = Math.round(val);
     }
 
     await updateOrgAuecSettings(org._id, patch);

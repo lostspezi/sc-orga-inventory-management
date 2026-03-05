@@ -16,8 +16,6 @@ import { createOrganizationAuditLog } from "@/lib/repositories/organization-audi
 import type { ItemDocument } from "@/lib/types/item";
 import { sendTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 import { notifyMany } from "@/lib/notify";
-import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
-import { getMemberDkp } from "@/lib/raid-helper/get-member-dkp";
 
 export type CreateTransactionActionState = {
     success: boolean;
@@ -118,20 +116,6 @@ export async function createTransactionAction(
     const pricePerUnit = direction === "member_to_org" ? invItem.sellPrice : invItem.buyPrice;
     const totalPrice = quantityRaw * pricePerUnit;
 
-    // For buy transactions, check the member has enough DKP
-    if (direction === "org_to_member" && org.raidHelperApiKey && org.discordGuildId) {
-        const discordId = await getDiscordUserId(session.user.id);
-        if (discordId) {
-            const currentDkp = await getMemberDkp(org.discordGuildId, discordId, org.raidHelperApiKey);
-            if (currentDkp !== null && totalPrice > currentDkp) {
-                return {
-                    ...initialState,
-                    message: `Insufficient DKP. Required: ${totalPrice.toLocaleString()}, available: ${currentDkp.toLocaleString()}.`,
-                };
-            }
-        }
-    }
-
     const transaction = await createOrganizationTransaction({
         organizationId: org._id,
         organizationSlug: org.slug,
@@ -159,7 +143,7 @@ export async function createTransactionAction(
         action: "transaction.requested",
         entityType: "transaction",
         entityId: transaction._id,
-        message: `Transaction requested: ${direction === "member_to_org" ? "sell" : "buy"} ${quantityRaw}x "${itemName}" at ${pricePerUnit} DKP/unit.`,
+        message: `Transaction requested: ${direction === "member_to_org" ? "sell" : "buy"} ${quantityRaw}x "${itemName}" at ${pricePerUnit} aUEC/unit.`,
         metadata: { direction, quantity: quantityRaw, pricePerUnit: pricePerUnit, totalPrice },
     });
 

@@ -8,8 +8,6 @@ export type AuecTransactionDocument = {
     memberUsername: string;
     direction: "member_to_org" | "org_to_member";
     auecAmount: number;
-    dkpRate: number;
-    totalDkp: number;
     status: "requested" | "approved" | "completed" | "rejected" | "cancelled";
     note?: string;
     memberConfirmed: boolean;
@@ -29,8 +27,6 @@ export type AuecTransactionView = {
     memberUsername: string;
     direction: "member_to_org" | "org_to_member";
     auecAmount: number;
-    dkpRate: number;
-    totalDkp: number;
     status: "requested" | "approved" | "completed" | "rejected" | "cancelled";
     note?: string;
     memberConfirmed: boolean;

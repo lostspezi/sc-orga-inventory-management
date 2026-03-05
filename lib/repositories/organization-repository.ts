@@ -323,12 +323,7 @@ async function mapOrganizationToView(
         })),
         discordGuildId: org.discordGuildId,
         discordTransactionChannelId: org.discordTransactionChannelId,
-        raidHelperApiKey: org.raidHelperApiKey,
         auecBalance: org.auecBalance,
-        auecBuyPriceDkp: org.auecBuyPriceDkp,
-        auecBuyPriceAuec: org.auecBuyPriceAuec,
-        auecSellPriceDkp: org.auecSellPriceDkp,
-        auecSellPriceAuec: org.auecSellPriceAuec,
     };
 }
 
@@ -435,31 +430,10 @@ export async function transferOrganizationOwnership(
     return result.modifiedCount > 0;
 }
 
-export async function setOrganizationRaidHelperApiKey(
-    slug: string,
-    apiKey: string | null
-): Promise<boolean> {
-    const db = await getDb();
-
-    const update = apiKey
-        ? { $set: { raidHelperApiKey: apiKey, updatedAt: new Date() } }
-        : { $unset: { raidHelperApiKey: "" as const }, $set: { updatedAt: new Date() } };
-
-    const result = await db
-        .collection<OrganizationDocument>(COLLECTION)
-        .updateOne({ slug }, update);
-
-    return result.modifiedCount > 0;
-}
-
 export async function updateOrgAuecSettings(
     orgId: ObjectId,
     patch: {
         auecBalance?: number;
-        auecBuyPriceDkp?: number;
-        auecBuyPriceAuec?: number;
-        auecSellPriceDkp?: number;
-        auecSellPriceAuec?: number;
     }
 ): Promise<boolean> {
     const db = await getDb();

@@ -19,6 +19,7 @@ type Props = {
     onCloseAction: () => void;
     organizationSlug: string;
     defaultDirection?: "org_to_member" | "member_to_org";
+    memberAuecBalance?: number | null;
 } & (
     | {
           inventoryItemId: string;
@@ -49,6 +50,7 @@ export default function CreateTransactionDialog({
     onCloseAction,
     organizationSlug,
     defaultDirection,
+    memberAuecBalance,
     ...rest
 }: Props) {
     const t = useTranslations("transactions");
@@ -66,28 +68,6 @@ export default function CreateTransactionDialog({
     );
     const [quantity, setQuantity] = useState(1);
 
-    const [dkp, setDkp] = useState<number | null>(null);
-    const [hasDkpIntegration, setHasDkpIntegration] = useState(false);
-
-    useEffect(() => {
-        if (!open) return;
-        let cancelled = false;
-        fetch(`/api/orgs/${organizationSlug}/members/dkp`)
-            .then((r) => r.json())
-            .then((data: { dkp: number | null; hasDkpIntegration: boolean }) => {
-                if (!cancelled) {
-                    setDkp(data.dkp);
-                    setHasDkpIntegration(data.hasDkpIntegration);
-                }
-            })
-            .catch(() => {
-                if (!cancelled) {
-                    setDkp(null);
-                    setHasDkpIntegration(false);
-                }
-            });
-        return () => { cancelled = true; };
-    }, [open, organizationSlug]);
 
     useEffect(() => {
         const dialog = dialogRef.current;
@@ -134,14 +114,7 @@ export default function CreateTransactionDialog({
             : selectedDirection === "org_to_member"
             ? buyPrice
             : null;
-    const totalDkp = pricePerUnit !== null ? pricePerUnit * quantity : null;
-
-    const insufficientDkp =
-        hasDkpIntegration &&
-        selectedDirection === "org_to_member" &&
-        dkp !== null &&
-        totalDkp !== null &&
-        totalDkp > dkp;
+    const totalPrice = pricePerUnit !== null ? pricePerUnit * quantity : null;
 
     return (
         <dialog
@@ -197,20 +170,17 @@ export default function CreateTransactionDialog({
                     </button>
                 </div>
 
-                {hasDkpIntegration && (
+                {memberAuecBalance != null && (
                     <div
                         className="mb-4 rounded-md border px-3 py-2 text-[11px]"
                         style={{
                             borderColor: "rgba(79,195,220,0.18)",
                             background: "rgba(79,195,220,0.04)",
-                            color: "rgba(79,195,220,0.7)",
+                            color: "rgba(200,220,232,0.5)",
                             fontFamily: "var(--font-mono)",
                         }}
                     >
-                        {t("dkpBalance")}:{" "}
-                        {dkp !== null
-                            ? `${dkp.toLocaleString()} DKP`
-                            : t("dkpUnavailable")}
+                        {t("memberAuecBalance")}: <span style={{ color: "var(--accent-primary)" }}>{memberAuecBalance.toLocaleString()} aUEC</span>
                     </div>
                 )}
 
@@ -313,29 +283,28 @@ export default function CreateTransactionDialog({
                                 className="mb-1.5 text-[10px] uppercase tracking-[0.22em]"
                                 style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
                             >
-                                {t("pricePerUnitDkp")}
+                                {t("pricePerUnit")}
                             </p>
                             <div
                                 className="sc-input flex w-full items-center opacity-70"
                                 style={{ color: "rgba(200,220,232,0.6)" }}
                             >
                                 {pricePerUnit !== null
-                                    ? `${pricePerUnit.toLocaleString()} DKP`
+                                    ? `${pricePerUnit.toLocaleString()} aUEC`
                                     : "—"}
                             </div>
                         </div>
                     </div>
 
-                    {totalDkp !== null && (
+                    {totalPrice !== null && (
                         <p
                             className="text-[11px]"
                             style={{
-                                color: insufficientDkp ? "rgba(220,80,80,0.85)" : "rgba(79,195,220,0.65)",
+                                color: "rgba(79,195,220,0.65)",
                                 fontFamily: "var(--font-mono)",
                             }}
                         >
-                            {t("totalDkp")}: {totalDkp.toLocaleString()} DKP
-                            {insufficientDkp && ` — ${t("dkpInsufficient")}`}
+                            {t("totalAuec")}: {totalPrice.toLocaleString()} aUEC
                         </p>
                     )}
 
@@ -384,7 +353,7 @@ export default function CreateTransactionDialog({
                         >
                             {tc("cancel")}
                         </button>
-                        <button type="submit" className="sc-btn" disabled={isPending || insufficientDkp}>
+                        <button type="submit" className="sc-btn" disabled={isPending}>
                             {isPending ? t("submitting") : t("submit")}
                         </button>
                     </div>

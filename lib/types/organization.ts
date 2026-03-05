@@ -9,12 +9,7 @@ export type OrganizationDocument = {
     members: OrganizationMember[];
     discordGuildId?: string;
     discordTransactionChannelId?: string;
-    raidHelperApiKey?: string;
     auecBalance?: number;
-    auecBuyPriceDkp?: number;
-    auecBuyPriceAuec?: number;
-    auecSellPriceDkp?: number;
-    auecSellPriceAuec?: number;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -76,12 +71,7 @@ export type OrganizationView = {
     members: OrganizationMemberView[];
     discordGuildId?: string;
     discordTransactionChannelId?: string;
-    raidHelperApiKey?: string;
     auecBalance?: number;
-    auecBuyPriceDkp?: number;
-    auecBuyPriceAuec?: number;
-    auecSellPriceDkp?: number;
-    auecSellPriceAuec?: number;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -103,8 +93,6 @@ export type OrganizationAuditLogDocument = {
         | "member.role_changed"
         | "integration.discord_disconnected"
         | "integration.discord_connected"
-        | "integration.raidhelper_connected"
-        | "integration.raidhelper_disconnected"
         | "item.created"
         | "inventory.item_added"
         | "inventory.item_removed"

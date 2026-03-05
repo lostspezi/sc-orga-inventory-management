@@ -122,20 +122,6 @@ export default function AuecTransactionList({ transactions, currentUserId, isAdm
                                             className="text-[10px] uppercase"
                                             style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
                                         >
-                                            {t("totalDkp")}:{" "}
-                                        </span>
-                                        <span
-                                            className="text-sm font-semibold"
-                                            style={{ color: "rgba(200,220,232,0.8)", fontFamily: "var(--font-mono)" }}
-                                        >
-                                            {tx.totalDkp.toLocaleString()} DKP
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <span
-                                            className="text-[10px] uppercase"
-                                            style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
-                                        >
                                             {t("memberLabel")}:{" "}
                                         </span>
                                         <span
