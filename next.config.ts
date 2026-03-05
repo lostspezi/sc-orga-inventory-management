@@ -4,7 +4,13 @@ import type { NextConfig } from "next";
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const nextConfig: NextConfig = {
-    serverExternalPackages: ["discord.js", "@discordjs/ws"],
+    serverExternalPackages: [
+        "discord.js",
+        "@discordjs/ws",
+        "node-cron",
+        "@react-pdf/renderer",
+        "canvas",
+    ],
     images: {
         remotePatterns: [
             {

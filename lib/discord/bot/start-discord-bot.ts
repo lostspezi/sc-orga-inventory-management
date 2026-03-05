@@ -1,6 +1,7 @@
 import { getDiscordBotClient } from "@/lib/discord/bot/client";
 import { registerCoreDiscordBotEvents } from "@/lib/discord/bot/register-core-events";
 import {registerSlashCommands} from "@/lib/discord/bot/register-slash-commands";
+import { startReportingCron } from "@/lib/reporting/cron";
 
 declare global {
      
@@ -29,4 +30,7 @@ export async function startDiscordBot() {
     }
 
     global.__discordBotStarted = true;
+
+    // Start weekly report cron (Monday 02:00 UTC)
+    startReportingCron();
 }

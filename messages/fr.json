@@ -195,7 +195,8 @@
     "navMembers": "Membres",
     "navLogs": "Journaux",
     "navSettings": "Paramètres",
-    "navFaq": "Aide"
+    "navFaq": "Aide",
+    "navReporting": "Rapports"
   },
   "members": {
     "eyebrow": "Membres",
@@ -479,7 +480,8 @@
     "billingFeature3": "Synchronisation Google Sheets — auto-sync bidirectionnel toutes les 10 minutes",
     "tabGeneral": "Général",
     "tabDiscord": "Discord",
-    "tabPro": "PRO"
+    "tabPro": "PRO",
+    "billingFeature4": "Rapports hebdomadaires — rapport PDF généré automatiquement chaque lundi"
   },
   "auec": {
     "eyebrow": "Bureau de change aUEC",
@@ -628,7 +630,12 @@
       "inviteTitle": "Liens d’invitation permanents",
       "inviteDesc": "Partagez un lien permanent unique pour permettre à n’importe qui de rejoindre votre org. Sans expiration — régénérez ou révoquez-le à tout moment depuis les paramètres.",
       "inviteTag1": "Lien partageable",
-      "inviteTag2": "Révocation en 1 clic"
+      "inviteTag2": "Révocation en 1 clic",
+      "reportingTitle": "Rapports hebdomadaires",
+      "reportingDesc": "Rapports PDF générés automatiquement chaque lundi couvrant tous les échanges de la semaine — résumé des KPI, flux de crédits, articles phares, membres les plus actifs, mouvements d'inventaire et tendances semaine par semaine. Téléchargez ou régénérez n'importe quelle semaine passée à la demande.",
+      "reportingTag1": "PDF auto chaque lundi",
+      "reportingTag2": "KPI & tendances",
+      "reportingTag3": "PRO"
     },
     "discordSection": {
       "label": "Intégration Discord",
@@ -684,7 +691,8 @@
       "proFeature1": "Tout ce qui est inclus dans Gratuit",
       "proFeature2": "Import CSV en masse — jusqu’à 500 éléments",
       "proFeature3": "Export CSV — inventaire complet",
-      "proFeature4": "Synchronisation Google Sheets — auto toutes les 10 min"
+      "proFeature4": "Synchronisation Google Sheets — auto toutes les 10 min",
+      "proFeature5": "Rapports hebdomadaires — PDF auto chaque lundi"
     }
   },
   "csvImport": {
@@ -831,6 +839,31 @@
       "q6Step4": "Une fois terminé, vous recevez une notification in-app et un DM Discord avec un résumé.",
       "q6Outro": "Colonnes optionnelles : buyPrice, sellPrice, quantity, minStock, maxStock. Max 500 lignes par import. Les lignes échouées peuvent être téléchargées en CSV pour correction."
     },
+    "reportingSection": {
+      "title": "Rapports hebdomadaires",
+      "subtitle": "PRO — rapports PDF automatiques",
+      "q1": "Qu'est-ce que les rapports hebdomadaires ?",
+      "q1Body": "Les rapports hebdomadaires sont une fonctionnalité PRO qui génère automatiquement un rapport PDF chaque lundi pour la semaine précédente. Il résume tous les échanges terminés, les métriques KPI, le flux de crédits, les articles phares, les membres les plus actifs et les mouvements d'inventaire — avec une comparaison de tendances semaine par semaine.",
+      "q2": "Que contient un rapport ?",
+      "q2Intro": "Chaque rapport PDF comprend :",
+      "q2Li1": "<h>Journal de transactions</h> — tous les échanges terminés de la semaine (jusqu'à 500 lignes ; tronqué avec un avertissement si dépassé).",
+      "q2Li2": "<h>Résumé des KPI</h> — total des transactions, crédits gagnés/dépensés, flux net de crédits et delta du pool aUEC de l'org.",
+      "q2Li3": "<h>Articles phares</h> — les 5 articles les plus échangés par volume avec quantité, nombre d'échanges et crédits nets.",
+      "q2Li4": "<h>Membres les plus actifs</h> — les 5 membres avec le plus d'échanges.",
+      "q2Li5": "<h>Échange le plus important</h> — la transaction à la plus haute valeur de la semaine.",
+      "q2Li6": "<h>Tendances semaine par semaine</h> — delta par rapport au rapport de la semaine précédente (si disponible).",
+      "q3": "Comment les rapports sont-ils générés ?",
+      "q3Body": "Les rapports sont générés <h>automatiquement chaque lundi à 02h00 UTC</h> pour toutes les orgs PRO, couvrant la semaine ISO précédente (lundi–dimanche). Les administrateurs et propriétaires peuvent également générer ou régénérer n'importe quelle semaine <h>à la demande</h> depuis la page Rapports.",
+      "q4": "Comment accéder à la page Rapports ?",
+      "q4Intro": "La page Rapports est accessible depuis la navigation latérale (orgs PRO uniquement) :",
+      "q4Step1": "Allez dans votre org et cliquez sur <c>Rapports</c> dans la barre de navigation de gauche (visible uniquement pour les orgs PRO pour les admins et propriétaires).",
+      "q4Step2": "Cliquez sur <c>Générer un rapport</c> pour créer un rapport pour la semaine en cours, ou attendez la génération automatique du lundi.",
+      "q4Step3": "Une fois que le statut affiche Prêt, cliquez sur Télécharger pour enregistrer le PDF.",
+      "q5": "Puis-je régénérer un rapport après la modification des transactions ?",
+      "q5Body": "Oui. Les admins et propriétaires peuvent cliquer sur <c>Régénérer</c> sur tout rapport existant. Cela recalcule tous les KPI et reconstruit le PDF à partir des données de transaction actuelles, en incrémentant le numéro de version. Le fichier précédent est écrasé.",
+      "q6": "Que se passe-t-il si la génération du rapport échoue ?",
+      "q6Body": "Le statut du rapport passe à Échoué et un message d'erreur s'affiche sur la page Rapports. Le planificateur réessaiera automatiquement jusqu'à 3 fois lors des exécutions du lundi suivant. Après 3 échecs, tous les admins et propriétaires de l'org reçoivent une notification in-app pour régénérer manuellement."
+    },
     "transactionsSection": {
       "title": "Transactions",
       "subtitle": "Le flux de demandes d'achat/vente",
@@ -975,5 +1008,46 @@
     "yesCancelBtn": "Oui, résilier",
     "cancelling": "Résiliation...",
     "fetchError": "Impossible de charger les données de facturation depuis Stripe. Veuillez réessayer plus tard."
+  },
+  "reports": {
+    "eyebrow": "Fonctionnalité PRO",
+    "title": "Rapports",
+    "description": "Rapports d'opérations hebdomadaires générés automatiquement chaque lundi. Téléchargez ou générez des rapports pour n'importe quelle semaine passée.",
+    "proRequired": "Abonnement PRO requis",
+    "proRequiredDesc": "Les rapports hebdomadaires automatisés sont une fonctionnalité PRO. Passez à PRO pour accéder aux rapports PDF, aux résumés KPI et à l'historique des transactions.",
+    "upgradeBtn": "Passer à PRO",
+    "generateBtn": "Générer un rapport",
+    "generateConfirmTitle": "Générer un rapport hebdomadaire",
+    "generateConfirmMessage": "Un rapport PDF sera généré pour la semaine sélectionnée. Cela peut prendre un moment.",
+    "generateConfirm": "Générer",
+    "generating": "Génération…",
+    "alreadyExists": "Un rapport existe déjà pour cette semaine.",
+    "currentWeek": "Semaine en cours : {week}",
+    "currentWeekTz": "Semaine en cours",
+    "totalReports": "Total rapports",
+    "timezone": "Fuseau horaire",
+    "autoNote": "Les rapports sont générés automatiquement chaque lundi à 02:00 UTC pour la semaine précédente. Vous pouvez également générer ou régénérer n'importe quelle semaine manuellement.",
+    "colWeekRange": "Semaine",
+    "colStatus": "Statut",
+    "colGenerated": "Généré le",
+    "colActions": "Actions",
+    "download": "Télécharger",
+    "regenerate": "Régénérer",
+    "regenerating": "Régénération…",
+    "regenerateConfirmTitle": "Régénérer le rapport",
+    "regenerateConfirmMessage": "Les KPI seront recalculés et le PDF sera reconstruit à partir des données de transaction actuelles. Le fichier existant sera écrasé.",
+    "regenerateConfirm": "Régénérer",
+    "cancel": "Annuler",
+    "statusReady": "Prêt",
+    "statusGenerating": "En cours",
+    "statusPending": "En attente",
+    "statusFailed": "Échec",
+    "noReports": "Aucun rapport",
+    "noReportsDesc": "Cliquez sur « Générer un rapport » pour créer votre premier rapport hebdomadaire, ou attendez la génération automatique du lundi.",
+    "errorDetails": "Erreur",
+    "neverGenerated": "—",
+    "version": "Version",
+    "size": "Taille",
+    "bytes": "octets"
   }
 }

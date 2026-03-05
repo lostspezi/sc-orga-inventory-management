@@ -30,6 +30,7 @@ export type OrganizationDocument = {
     auecBalance?: number;
     googleSheetId?: string;
     googleSheetLastSyncedAt?: Date;
+    timezone?: string;
     subscription?: OrgSubscription;
     proOverride?: OrgProOverride;
     createdAt: Date;
@@ -154,9 +155,12 @@ export type OrganizationAuditLogDocument = {
         | "billing.canceled"
         | "billing.payment_failed"
         | "billing.pro_override_enabled"
-        | "billing.pro_override_disabled";
+        | "billing.pro_override_disabled"
+        | "report.generation_requested"
+        | "report.downloaded"
+        | "report.regenerated";
 
-    entityType: "organization" | "member" | "item" | "inventory_item" | "inventory" | "transaction" | "auec_transaction";
+    entityType: "organization" | "member" | "item" | "inventory_item" | "inventory" | "transaction" | "auec_transaction" | "report";
     entityId?: string;
 
     message: string;

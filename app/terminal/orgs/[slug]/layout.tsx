@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { notFound, redirect } from "next/navigation";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
+import { isProOrg } from "@/lib/billing/is-pro";
 import OrgDetailsShell from "@/components/orgs/details/org-details-shell";
 import {OrganizationRole} from "@/components/orgs/details/org-details-nav";
 
@@ -36,6 +37,7 @@ export default async function OrgLayout({ children, params }: Props) {
     }
 
     const currentRole = currentMember.role as OrganizationRole;
+    const isPro = isProOrg(org);
 
     return (
         <OrgDetailsShell
@@ -43,6 +45,7 @@ export default async function OrgLayout({ children, params }: Props) {
             orgName={org.name}
             orgRsiUrl={org.starCitizenOrganizationUrl}
             currentRole={currentRole}
+            isPro={isPro}
         >
             {children}
         </OrgDetailsShell>

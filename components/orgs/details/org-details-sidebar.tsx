@@ -8,9 +8,10 @@ import { ORG_NAV_ITEMS, type OrganizationRole } from "@/components/orgs/details/
 type Props = {
     slug: string;
     currentRole: OrganizationRole;
+    isPro?: boolean;
 };
 
-export default function OrgDetailsSidebar({ slug, currentRole }: Props) {
+export default function OrgDetailsSidebar({ slug, currentRole, isPro = false }: Props) {
     const pathname = usePathname();
     const t = useTranslations("orgShell");
 
@@ -21,6 +22,7 @@ export default function OrgDetailsSidebar({ slug, currentRole }: Props) {
         members: t("navMembers"),
         logs: t("navLogs"),
         settings: t("navSettings"),
+        reporting: t("navReporting"),
         faq: t("navFaq"),
     };
 
@@ -47,8 +49,11 @@ export default function OrgDetailsSidebar({ slug, currentRole }: Props) {
 
             <nav className="space-y-2">
                 {visibleItems.map((item) => {
-                    const href = item.href(slug);
-                    const isActive = pathname === href;
+                    const locked = !!item.requiresPro && !isPro;
+                    const href = locked
+                        ? `/terminal/orgs/${slug}/settings?tab=pro`
+                        : item.href(slug);
+                    const isActive = !locked && pathname === item.href(slug);
                     const Icon = item.icon;
 
                     return (
@@ -59,18 +64,37 @@ export default function OrgDetailsSidebar({ slug, currentRole }: Props) {
                             style={{
                                 borderColor: isActive
                                     ? "rgba(79,195,220,0.35)"
-                                    : "rgba(79,195,220,0.12)",
+                                    : locked
+                                        ? "rgba(251,191,36,0.12)"
+                                        : "rgba(79,195,220,0.12)",
                                 background: isActive
                                     ? "rgba(79,195,220,0.08)"
-                                    : "rgba(79,195,220,0.02)",
+                                    : locked
+                                        ? "rgba(251,191,36,0.03)"
+                                        : "rgba(79,195,220,0.02)",
                                 color: isActive
                                     ? "rgba(79,195,220,0.95)"
-                                    : "rgba(200,220,232,0.65)",
+                                    : locked
+                                        ? "rgba(200,220,232,0.4)"
+                                        : "rgba(200,220,232,0.65)",
                                 fontFamily: "var(--font-mono)",
                             }}
                         >
                             <Icon size={16} />
                             <span className="uppercase tracking-[0.12em]">{navLabels[item.key] ?? item.label}</span>
+                            {locked && (
+                                <span
+                                    className="ml-auto rounded px-1.5 py-0.5 text-[9px] uppercase tracking-[0.15em]"
+                                    style={{
+                                        background: "rgba(251,191,36,0.12)",
+                                        color: "rgba(251,191,36,0.8)",
+                                        fontFamily: "var(--font-mono)",
+                                        border: "1px solid rgba(251,191,36,0.2)",
+                                    }}
+                                >
+                                    PRO
+                                </span>
+                            )}
                         </Link>
                     );
                 })}

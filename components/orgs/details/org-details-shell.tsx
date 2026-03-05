@@ -12,9 +12,10 @@ type Props = {
     orgRsiUrl?: string;
     children: React.ReactNode;
     currentRole: OrganizationRole;
+    isPro?: boolean;
 };
 
-export default async function OrgDetailsShell({ slug, orgName, orgRsiUrl, children, currentRole }: Props) {
+export default async function OrgDetailsShell({ slug, orgName, orgRsiUrl, children, currentRole, isPro = false }: Props) {
     const t = await getTranslations("orgShell");
 
     return (
@@ -69,11 +70,11 @@ export default async function OrgDetailsShell({ slug, orgName, orgRsiUrl, childr
                 </header>
 
                 {/* Mobile nav */}
-                <OrgDetailsMobileNav slug={slug} currentRole={currentRole} />
+                <OrgDetailsMobileNav slug={slug} currentRole={currentRole} isPro={isPro} />
 
                 {/* Content grid */}
                 <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
-                    <OrgDetailsSidebar slug={slug} currentRole={currentRole} />
+                    <OrgDetailsSidebar slug={slug} currentRole={currentRole} isPro={isPro} />
 
                     <section
                         className="hud-panel corner-tr corner-bl relative p-4 sm:p-5"

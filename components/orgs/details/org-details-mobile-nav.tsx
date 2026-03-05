@@ -11,7 +11,7 @@ const GAP = 8;             // min distance from screen edge
 const DRAG_THRESHOLD = 5;  // px moved before treating as a drag
 const POS_KEY = "org-fab-pos";
 
-type Props = { slug: string; currentRole: OrganizationRole };
+type Props = { slug: string; currentRole: OrganizationRole; isPro?: boolean };
 
 // Inline clamp used outside a component for lazy state initializer
 function clampPos(x: number, y: number) {
@@ -30,7 +30,7 @@ function getInitialPos() {
     return clampPos(window.innerWidth - BTN - 16, window.innerHeight - BTN - 80);
 }
 
-export default function OrgDetailsMobileNav({ slug, currentRole }: Props) {
+export default function OrgDetailsMobileNav({ slug, currentRole, isPro = false }: Props) {
     const pathname = usePathname();
     // True, only on the client — no effect or setState needed
     const mounted = useSyncExternalStore(
@@ -145,8 +145,11 @@ export default function OrgDetailsMobileNav({ slug, currentRole }: Props) {
 
                     <div className="p-1.5">
                         {visibleItems.map((item) => {
-                            const href = item.href(slug);
-                            const isActive = pathname === href;
+                            const locked = !!item.requiresPro && !isPro;
+                            const href = locked
+                                ? `/terminal/orgs/${slug}/settings?tab=pro`
+                                : item.href(slug);
+                            const isActive = !locked && pathname === item.href(slug);
                             const Icon = item.icon;
                             return (
                                 <Link
@@ -159,12 +162,25 @@ export default function OrgDetailsMobileNav({ slug, currentRole }: Props) {
                                         background: isActive ? "rgba(79,195,220,0.1)" : "transparent",
                                         color: isActive
                                             ? "rgba(79,195,220,0.95)"
-                                            : "rgba(200,220,232,0.6)",
+                                            : locked
+                                                ? "rgba(200,220,232,0.4)"
+                                                : "rgba(200,220,232,0.6)",
                                     }}
                                 >
                                     <Icon size={14} />
                                     <span className="uppercase tracking-[0.12em]">{item.label}</span>
-                                    {isActive && (
+                                    {locked ? (
+                                        <span
+                                            className="ml-auto rounded px-1.5 py-0.5 text-[9px] uppercase tracking-[0.15em]"
+                                            style={{
+                                                background: "rgba(251,191,36,0.12)",
+                                                color: "rgba(251,191,36,0.8)",
+                                                border: "1px solid rgba(251,191,36,0.2)",
+                                            }}
+                                        >
+                                            PRO
+                                        </span>
+                                    ) : isActive && (
                                         <span
                                             className="ml-auto h-1.5 w-1.5 rounded-full"
                                             style={{ background: "var(--accent-primary)" }}

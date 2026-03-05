@@ -195,7 +195,8 @@
     "navMembers": "Mitglieder",
     "navLogs": "Protokoll",
     "navSettings": "Einstellungen",
-    "navFaq": "Hilfe"
+    "navFaq": "Hilfe",
+    "navReporting": "Berichte"
   },
   "members": {
     "eyebrow": "Mitglieder",
@@ -479,7 +480,8 @@
     "billingFeature3": "Google-Sheets-Sync — bidirektionaler Auto-Sync alle 10 Minuten",
     "tabGeneral": "Allgemein",
     "tabDiscord": "Discord",
-    "tabPro": "PRO"
+    "tabPro": "PRO",
+    "billingFeature4": "Wöchentliche Berichte — automatisch generierter PDF-Bericht jeden Montag"
   },
   "auec": {
     "eyebrow": "aUEC-Schalter",
@@ -628,7 +630,12 @@
       "inviteTitle": "Permanente Einladungslinks",
       "inviteDesc": "Teile einen einzigen permanenten Link, damit jeder deiner Org beitreten kann. Kein Ablaufdatum, keine Einzeltokens — regeneriere oder widerrufe ihn jederzeit in den Einstellungen.",
       "inviteTag1": "Teilbarer Link",
-      "inviteTag2": "Ein-Klick-Widerruf"
+      "inviteTag2": "Ein-Klick-Widerruf",
+      "reportingTitle": "Wöchentliche Berichte",
+      "reportingDesc": "Automatisch generierte PDF-Berichte jeden Montag mit allen abgeschlossenen Trades der Woche — KPI-Übersicht, Kreditfluss, Top-Artikel, aktivste Mitglieder, Lagerveränderungen und Woche-für-Woche-Trends. Vergangene Wochen auf Abruf herunterladen oder neu generieren.",
+      "reportingTag1": "Auto-PDF jeden Montag",
+      "reportingTag2": "KPIs & Trends",
+      "reportingTag3": "PRO"
     },
     "discordSection": {
       "label": "Discord-Integration",
@@ -684,7 +691,8 @@
       "proFeature1": "Alles aus Kostenlos",
       "proFeature2": "CSV-Massenimport — bis zu 500 Einträge",
       "proFeature3": "CSV-Export — vollständiges Inventar",
-      "proFeature4": "Google-Sheets-Sync — automatisch alle 10 Min."
+      "proFeature4": "Google-Sheets-Sync — automatisch alle 10 Min.",
+      "proFeature5": "Wöchentliche Berichte — auto PDF jeden Montag"
     }
   },
   "csvImport": {
@@ -831,6 +839,31 @@
       "q6Step4": "Nach Abschluss erhältst du eine In-App-Benachrichtigung und eine Discord-DM mit einer Zusammenfassung.",
       "q6Outro": "Optionale Spalten: buyPrice, sellPrice, quantity, minStock, maxStock. Max. 500 Zeilen pro Import. Fehlgeschlagene Zeilen können als CSV heruntergeladen und korrigiert werden."
     },
+    "reportingSection": {
+      "title": "Wöchentliche Berichte",
+      "subtitle": "PRO — automatische PDF-Berichte",
+      "q1": "Was sind wöchentliche Berichte?",
+      "q1Body": "Wöchentliche Berichte sind eine PRO-Funktion, die jeden Montag automatisch einen PDF-Bericht für die Vorwoche generiert. Er fasst alle abgeschlossenen Trades, KPI-Kennzahlen, Kreditfluss, Top-Artikel, aktivste Mitglieder und Lagerveränderungen zusammen — mit Woche-für-Woche-Trendvergleich.",
+      "q2": "Was enthält ein Bericht?",
+      "q2Intro": "Jeder PDF-Bericht enthält:",
+      "q2Li1": "<h>Transaktionslog</h> — alle abgeschlossenen Trades der Woche (max. 500 Zeilen; mit Warnung abgeschnitten, falls überschritten).",
+      "q2Li2": "<h>KPI-Übersicht</h> — Gesamttransaktionen, verdiente/ausgegebene Credits, Netto-Kreditfluss und aUEC-Pool-Delta der Org.",
+      "q2Li3": "<h>Top-Artikel</h> — die 5 meistgehandelten Artikel nach Menge mit Anzahl, Tradezahl und Netto-Credits.",
+      "q2Li4": "<h>Aktivste Mitglieder</h> — die 5 Mitglieder mit den meisten Trades.",
+      "q2Li5": "<h>Größter Trade</h> — die einzelne Transaktion mit dem höchsten Wert der Woche.",
+      "q2Li6": "<h>Woche-für-Woche-Trends</h> — Delta gegenüber dem Bericht der Vorwoche (wenn vorhanden).",
+      "q3": "Wie werden Berichte generiert?",
+      "q3Body": "Berichte werden <h>automatisch jeden Montag um 02:00 UTC</h> für alle PRO-Orgs für die vorherige ISO-Woche (Montag–Sonntag) generiert. Admins und Eigentümer können auch jede Woche <h>auf Abruf</h> von der Berichtsseite aus generieren oder neu generieren.",
+      "q4": "Wie greife ich auf die Berichtsseite zu?",
+      "q4Intro": "Die Berichtsseite ist über die Seitenleistennavigation erreichbar (nur PRO-Orgs):",
+      "q4Step1": "Gehe zu deiner Org und klicke in der linken Navigationsleiste auf <c>Berichte</c> (nur für PRO-Orgs für Admins und Eigentümer sichtbar).",
+      "q4Step2": "Klicke auf <c>Bericht generieren</c>, um einen Bericht für die aktuelle Woche zu erstellen, oder warte auf die automatische Montags-Generierung.",
+      "q4Step3": "Wenn der Status Bereit anzeigt, klicke auf Herunterladen, um die PDF zu speichern.",
+      "q5": "Kann ich einen Bericht nach Transaktionsänderungen neu generieren?",
+      "q5Body": "Ja. Admins und Eigentümer können bei jedem vorhandenen Bericht auf <c>Neu generieren</c> klicken. Dabei werden alle KPIs neu berechnet und die PDF aus den aktuellen Transaktionsdaten neu erstellt, wobei die Versionsnummer erhöht wird. Die vorherige Datei wird überschrieben.",
+      "q6": "Was passiert, wenn die Berichtsgenerierung fehlschlägt?",
+      "q6Body": "Der Berichtsstatus wechselt zu Fehlgeschlagen und auf der Berichtsseite wird eine Fehlermeldung angezeigt. Der Scheduler versucht es bei den nächsten Montagsläufen automatisch bis zu 3 Mal erneut. Nach 3 Fehlschlägen erhalten alle Org-Admins und -Eigentümer eine In-App-Benachrichtigung, um manuell neu zu generieren."
+    },
     "transactionsSection": {
       "title": "Transaktionen",
       "subtitle": "Der Kauf-/Verkaufsanfragen-Ablauf",
@@ -975,5 +1008,46 @@
     "yesCancelBtn": "Ja, kündigen",
     "cancelling": "Wird gekündigt...",
     "fetchError": "Abrechnungsdaten konnten nicht von Stripe geladen werden. Bitte später erneut versuchen."
+  },
+  "reports": {
+    "eyebrow": "PRO-Funktion",
+    "title": "Berichte",
+    "description": "Wöchentliche Betriebsberichte werden jeden Montag automatisch erstellt. Lade Berichte für jede vergangene Woche herunter oder erstelle neue.",
+    "proRequired": "PRO-Abonnement erforderlich",
+    "proRequiredDesc": "Automatische Wochenberichte sind eine PRO-Funktion. Upgrade für PDF-Berichte, KPI-Zusammenfassungen und Transaktionshistorie.",
+    "upgradeBtn": "Auf PRO upgraden",
+    "generateBtn": "Bericht erstellen",
+    "generateConfirmTitle": "Wochenbericht erstellen",
+    "generateConfirmMessage": "Es wird ein PDF-Bericht für die ausgewählte Woche erstellt. Dies kann einen Moment dauern.",
+    "generateConfirm": "Erstellen",
+    "generating": "Wird erstellt…",
+    "alreadyExists": "Für diese Woche existiert bereits ein Bericht.",
+    "currentWeek": "Aktuelle Woche: {week}",
+    "currentWeekTz": "Aktuelle Woche",
+    "totalReports": "Berichte gesamt",
+    "timezone": "Zeitzone",
+    "autoNote": "Berichte werden jeden Montag um 02:00 UTC automatisch für die Vorwoche erstellt. Du kannst auch jede Woche manuell erstellen oder neu generieren.",
+    "colWeekRange": "Woche",
+    "colStatus": "Status",
+    "colGenerated": "Erstellt",
+    "colActions": "Aktionen",
+    "download": "Herunterladen",
+    "regenerate": "Neu erstellen",
+    "regenerating": "Wird neu erstellt…",
+    "regenerateConfirmTitle": "Bericht neu erstellen",
+    "regenerateConfirmMessage": "Die KPIs werden neu berechnet und der PDF-Bericht anhand aktueller Transaktionsdaten neu erstellt. Die vorhandene Datei wird überschrieben.",
+    "regenerateConfirm": "Neu erstellen",
+    "cancel": "Abbrechen",
+    "statusReady": "Bereit",
+    "statusGenerating": "Wird erstellt",
+    "statusPending": "Ausstehend",
+    "statusFailed": "Fehlgeschlagen",
+    "noReports": "Noch keine Berichte",
+    "noReportsDesc": "Klicke auf \"Bericht erstellen\", um deinen ersten Wochenbericht zu erstellen, oder warte auf die automatische Erstellung am Montag.",
+    "errorDetails": "Fehler",
+    "neverGenerated": "—",
+    "version": "Version",
+    "size": "Größe",
+    "bytes": "Bytes"
   }
 }
