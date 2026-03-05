@@ -10,11 +10,13 @@ class InventoryItem {
 
 type Props = {
     organizationSlug: string;
+    isPro: boolean;
     labels: {
         exportCsv: string;
         exportCsvDesc: string;
         exportStarted: string;
         exportFailed: string;
+        exportProRequired: string;
         clearInventory: string;
         clearInventoryDesc: string;
         clearInventoryConfirmTitle: string;
@@ -27,7 +29,7 @@ type Props = {
 
 const clearInitialState: ClearInventoryActionState = { success: false, message: "" };
 
-export default function InventoryAdminTools({ organizationSlug, labels, items }: Props) {
+export default function InventoryAdminTools({ organizationSlug, isPro, labels, items }: Props) {
     const router = useRouter();
     const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -49,6 +51,10 @@ export default function InventoryAdminTools({ organizationSlug, labels, items }:
     );
 
     async function handleExport() {
+        if (!isPro) {
+            setExportMessage({ text: labels.exportProRequired, ok: false });
+            return;
+        }
         setExportPending(true);
         setExportMessage(null);
         try {

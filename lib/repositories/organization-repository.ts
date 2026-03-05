@@ -4,8 +4,11 @@ import type {
     OrganizationDocument,
     OrganizationMember,
     OrganizationMemberView,
-    OrganizationView
+    OrganizationView,
+    OrgSubscription,
+    OrgProOverride,
 } from "@/lib/types/organization";
+import { isProOrg } from "@/lib/billing/is-pro";
 import {createOrganizationAuditLog} from "@/lib/repositories/organization-audit-log-repository";
 import {auth} from "@/auth";
 
@@ -326,8 +329,74 @@ async function mapOrganizationToView(
         auecBalance: org.auecBalance,
         googleSheetId: org.googleSheetId,
         googleSheetLastSyncedAt: org.googleSheetLastSyncedAt,
+        billing: {
+            isPro: isProOrg(org),
+            status: org.subscription?.status,
+            currentPeriodEnd: org.subscription?.currentPeriodEnd?.toISOString(),
+            cancelAtPeriodEnd: org.subscription?.cancelAtPeriodEnd,
+            proOverride: org.proOverride?.enabled,
+        },
     };
 }
+
+/* ─── Billing helpers ───────────────────────────────────────────────────── */
+
+export async function setOrgStripeCustomerId(
+    orgId: ObjectId,
+    stripeCustomerId: string
+): Promise<void> {
+    const db = await getDb();
+    await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { _id: orgId },
+        { $set: { "subscription.stripeCustomerId": stripeCustomerId, updatedAt: new Date() } }
+    );
+}
+
+export async function setOrgSubscription(
+    orgId: ObjectId,
+    patch: Partial<OrgSubscription>
+): Promise<void> {
+    const db = await getDb();
+    const setFields: Record<string, unknown> = { updatedAt: new Date() };
+    for (const [k, v] of Object.entries(patch)) {
+        setFields[`subscription.${k}`] = v;
+    }
+    await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { _id: orgId },
+        { $set: setFields }
+    );
+}
+
+export async function getOrgByStripeCustomerId(
+    stripeCustomerId: string
+): Promise<OrganizationDocument | null> {
+    const db = await getDb();
+    return db
+        .collection<OrganizationDocument>(COLLECTION)
+        .findOne({ "subscription.stripeCustomerId": stripeCustomerId });
+}
+
+export async function getOrgByStripeSubscriptionId(
+    stripeSubscriptionId: string
+): Promise<OrganizationDocument | null> {
+    const db = await getDb();
+    return db
+        .collection<OrganizationDocument>(COLLECTION)
+        .findOne({ "subscription.stripeSubscriptionId": stripeSubscriptionId });
+}
+
+export async function setOrgProOverride(
+    orgId: ObjectId,
+    override: OrgProOverride
+): Promise<void> {
+    const db = await getDb();
+    await db.collection<OrganizationDocument>(COLLECTION).updateOne(
+        { _id: orgId },
+        { $set: { proOverride: override, updatedAt: new Date() } }
+    );
+}
+
+/* ─── Google Sheets helpers ─────────────────────────────────────────────── */
 
 export async function setOrgGoogleSheetId(
     orgId: ObjectId,

@@ -1,5 +1,7 @@
 import { getAllOrganizationsForAdmin } from "@/lib/repositories/organization-repository";
 import TransferOwnerDialog from "@/components/admin/transfer-owner-dialog";
+import ProOverrideToggle from "@/components/admin/pro-override-toggle";
+import { isProOrg } from "@/lib/billing/is-pro";
 import { getTranslations } from "next-intl/server";
 
 export const metadata = { title: "Admin · Organizations" };
@@ -82,7 +84,7 @@ export default async function AdminOrganizationsPage() {
                                             color: "rgba(79,195,220,0.5)",
                                         }}
                                     >
-                                        {[t("colName"), t("colSlug"), t("colOwner"), t("colMembers"), t("colDiscord"), t("colCreated"), ""].map(
+                                        {[t("colName"), t("colSlug"), t("colOwner"), t("colMembers"), t("colDiscord"), t("colCreated"), "PRO", ""].map(
                                             (h) => (
                                                 <th
                                                     key={h}
@@ -134,6 +136,14 @@ export default async function AdminOrganizationsPage() {
                                                 style={{ color: "rgba(200,220,232,0.45)" }}
                                             >
                                                 {formatDate(org.createdAt)}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <ProOverrideToggle
+                                                    orgId={org._id.toString()}
+                                                    orgName={org.name}
+                                                    isPro={isProOrg(org)}
+                                                    currentOverride={!!org.proOverride?.enabled}
+                                                />
                                             </td>
                                             <td className="px-4 py-3 text-right">
                                                 <TransferOwnerDialog

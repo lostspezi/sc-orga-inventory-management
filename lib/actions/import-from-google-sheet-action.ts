@@ -6,6 +6,7 @@ import { createImportJob } from "@/lib/repositories/import-job-repository";
 import { processImportJob } from "@/lib/inventory-import/process-import-job";
 import { readInventoryFromSheet } from "@/lib/google-sheets/read-inventory-from-sheet";
 import { syncInventoryToSheet } from "@/lib/google-sheets/sync-inventory-to-sheet";
+import { isProOrg } from "@/lib/billing/is-pro";
 
 export type ImportFromSheetState = {
     success: boolean;
@@ -26,6 +27,10 @@ export async function importFromGoogleSheetAction(
     const member = org.members.find((m) => m.userId === session.user!.id);
     if (!member || (member.role !== "owner" && member.role !== "admin")) {
         return { success: false, error: "Insufficient permissions." };
+    }
+
+    if (!isProOrg(org)) {
+        return { success: false, error: "PRO_REQUIRED" };
     }
 
     if (!org.googleSheetId) return { success: false, error: "No Google Sheet configured." };

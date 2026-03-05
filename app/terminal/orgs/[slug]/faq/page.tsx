@@ -10,6 +10,9 @@ import {
     XCircle,
     Terminal,
     ShieldCheck,
+    CreditCard,
+    Coins,
+    Ship,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
@@ -238,21 +241,78 @@ export default async function FaqPage() {
                         <li>{t.rich("inventorySection.q3Li2", rich)}</li>
                     </ul>
                 </Q>
-                <Q q={t("inventorySection.q4")}>
-                    <P>{t.rich("inventorySection.q4Intro", rich)}</P>
+            </Section>
+
+            {/* ── Cargo Tab ── */}
+            <Section icon={Ship} title={t("cargoSection.title")} subtitle={t("cargoSection.subtitle")}>
+                <Q q={t("cargoSection.q1")}>
+                    <P>{t("cargoSection.q1Body")}</P>
+                </Q>
+                <Q q={t("cargoSection.q2")}>
+                    <P>{t.rich("cargoSection.q2Intro", rich)}</P>
+                    <P>{t.rich("cargoSection.q2Pricing", rich)}</P>
+                </Q>
+                <Q q={t("cargoSection.q3")}>
+                    <P>{t("cargoSection.q3Body")}</P>
+                </Q>
+            </Section>
+
+            {/* ── aUEC Cash Desk ── */}
+            <Section icon={Coins} title={t("auecSection.title")} subtitle={t("auecSection.subtitle")}>
+                <Q q={t("auecSection.q1")}>
+                    <P>{t("auecSection.q1Body")}</P>
+                </Q>
+                <Q q={t("auecSection.q2")}>
+                    <P>{t.rich("auecSection.q2Intro", rich)}</P>
+                    <ul className="ml-4 list-disc space-y-1">
+                        <li>{t("auecSection.q2Li1")}</li>
+                        <li>{t("auecSection.q2Li2")}</li>
+                        <li>{t("auecSection.q2Li3")}</li>
+                        <li>{t("auecSection.q2Li4")}</li>
+                    </ul>
+                </Q>
+                <Q q={t("auecSection.q3")}>
+                    <P>{t.rich("auecSection.q3Body", rich)}</P>
+                </Q>
+            </Section>
+
+            {/* ── PRO Plan ── */}
+            <Section icon={CreditCard} title={t("proSection.title")} subtitle={t("proSection.subtitle")}>
+                <Q q={t("proSection.q1")}>
+                    <P>{t("proSection.q1Body")}</P>
+                </Q>
+                <Q q={t("proSection.q2")}>
+                    <P>{t("proSection.q2Intro")}</P>
+                    <ul className="ml-4 list-disc space-y-1">
+                        <li>{t.rich("proSection.q2Li1", rich)}</li>
+                        <li>{t.rich("proSection.q2Li2", rich)}</li>
+                        <li>{t.rich("proSection.q2Li3", rich)}</li>
+                    </ul>
+                </Q>
+                <Q q={t("proSection.q3")}>
+                    <P>{t.rich("proSection.q3Body", rich)}</P>
+                </Q>
+                <Q q={t("proSection.q4")}>
+                    <P>{t.rich("proSection.q4Body", rich)}</P>
+                </Q>
+                <Q q={t("proSection.q5")}>
+                    <P>{t.rich("proSection.q5Intro", rich)}</P>
                     <div className="space-y-2">
-                        <Step n={1}>{t.rich("inventorySection.q4Step1", rich)}</Step>
-                        <Step n={2}>{t.rich("inventorySection.q4Step2", rich)}</Step>
-                        <Step n={3}>{t.rich("inventorySection.q4Step3", rich)}</Step>
-                        <Step n={4}>{t.rich("inventorySection.q4Step4", rich)}</Step>
+                        <Step n={1}>{t.rich("proSection.q5Step1", rich)}</Step>
+                        <Step n={2}>{t.rich("proSection.q5Step2", rich)}</Step>
+                        <Step n={3}>{t.rich("proSection.q5Step3", rich)}</Step>
                     </div>
-                    <P>{t("inventorySection.q4Outro")}</P>
+                    <P>{t("proSection.q5Outro")}</P>
                 </Q>
-                <Q q={t("inventorySection.q5")}>
-                    <P>{t.rich("inventorySection.q5Body", rich)}</P>
-                </Q>
-                <Q q={t("inventorySection.q6")}>
-                    <P>{t.rich("inventorySection.q6Body", rich)}</P>
+                <Q q={t("proSection.q6")}>
+                    <P>{t.rich("proSection.q6Intro", rich)}</P>
+                    <div className="space-y-2">
+                        <Step n={1}>{t.rich("proSection.q6Step1", rich)}</Step>
+                        <Step n={2}>{t("proSection.q6Step2")}</Step>
+                        <Step n={3}>{t("proSection.q6Step3")}</Step>
+                        <Step n={4}>{t("proSection.q6Step4")}</Step>
+                    </div>
+                    <P>{t("proSection.q6Outro")}</P>
                 </Q>
             </Section>
 
@@ -298,6 +358,9 @@ export default async function FaqPage() {
                 </Q>
                 <Q q={t("membersSection.q2")}>
                     <P>{t.rich("membersSection.q2Body", rich)}</P>
+                </Q>
+                <Q q={t("membersSection.q3")}>
+                    <P>{t.rich("membersSection.q3Body", rich)}</P>
                 </Q>
             </Section>
 

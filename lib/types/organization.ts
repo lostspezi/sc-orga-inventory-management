@@ -1,5 +1,23 @@
 import {ObjectId} from "mongodb";
 
+export type OrgSubscription = {
+    status: "active" | "trialing" | "past_due" | "unpaid" | "canceled" | "incomplete";
+    stripeCustomerId: string;
+    stripeSubscriptionId: string;
+    stripePriceId: string;
+    currentPeriodEnd: Date;
+    cancelAtPeriodEnd: boolean;
+    updatedAt: Date;
+};
+
+export type OrgProOverride = {
+    enabled: boolean;
+    enabledByUserId: string;
+    enabledByUsername: string;
+    reason?: string;
+    enabledAt: Date;
+};
+
 export type OrganizationDocument = {
     _id: ObjectId;
     name: string;
@@ -12,6 +30,8 @@ export type OrganizationDocument = {
     auecBalance?: number;
     googleSheetId?: string;
     googleSheetLastSyncedAt?: Date;
+    subscription?: OrgSubscription;
+    proOverride?: OrgProOverride;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -65,6 +85,14 @@ export type OrganizationInventoryItemView = {
     updatedAt: Date;
 };
 
+export type OrgBillingView = {
+    isPro: boolean;
+    status?: OrgSubscription["status"];
+    currentPeriodEnd?: string; // ISO string
+    cancelAtPeriodEnd?: boolean;
+    proOverride?: boolean;
+};
+
 export type OrganizationView = {
     _id: ObjectId;
     name: string;
@@ -77,6 +105,7 @@ export type OrganizationView = {
     auecBalance?: number;
     googleSheetId?: string;
     googleSheetLastSyncedAt?: Date;
+    billing: OrgBillingView;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -120,7 +149,12 @@ export type OrganizationAuditLogDocument = {
         | "auec_transaction.cancelled"
         | "inventory.cleared"
         | "integration.google_sheet_connected"
-        | "integration.google_sheet_disconnected";
+        | "integration.google_sheet_disconnected"
+        | "billing.subscribed"
+        | "billing.canceled"
+        | "billing.payment_failed"
+        | "billing.pro_override_enabled"
+        | "billing.pro_override_disabled";
 
     entityType: "organization" | "member" | "item" | "inventory_item" | "inventory" | "transaction" | "auec_transaction";
     entityId?: string;
