@@ -7,17 +7,22 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint --fix",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.1",
+    "@react-pdf/renderer": "^4.3.2",
     "bufferutil": "^4.1.0",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "discord.js": "^14.25.1",
     "lucide-react": "^0.575.0",
     "mongodb": "^6.21.0",
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.30",
     "next-intl": "^4.8.3",
+    "node-cron": "^4.2.1",
     "node-gyp": "^12.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -26,6 +31,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/node-cron": "^3.0.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

@@ -13,6 +13,7 @@ import {
     CreditCard,
     Coins,
     Ship,
+    BarChart3,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
@@ -313,6 +314,41 @@ export default async function FaqPage() {
                         <Step n={4}>{t("proSection.q6Step4")}</Step>
                     </div>
                     <P>{t("proSection.q6Outro")}</P>
+                </Q>
+            </Section>
+
+            {/* ── Reporting ── */}
+            <Section icon={BarChart3} title={t("reportingSection.title")} subtitle={t("reportingSection.subtitle")}>
+                <Q q={t("reportingSection.q1")}>
+                    <P>{t("reportingSection.q1Body")}</P>
+                </Q>
+                <Q q={t("reportingSection.q2")}>
+                    <P>{t("reportingSection.q2Intro")}</P>
+                    <ul className="ml-4 list-disc space-y-1">
+                        <li>{t.rich("reportingSection.q2Li1", rich)}</li>
+                        <li>{t.rich("reportingSection.q2Li2", rich)}</li>
+                        <li>{t.rich("reportingSection.q2Li3", rich)}</li>
+                        <li>{t.rich("reportingSection.q2Li4", rich)}</li>
+                        <li>{t.rich("reportingSection.q2Li5", rich)}</li>
+                        <li>{t.rich("reportingSection.q2Li6", rich)}</li>
+                    </ul>
+                </Q>
+                <Q q={t("reportingSection.q3")}>
+                    <P>{t.rich("reportingSection.q3Body", rich)}</P>
+                </Q>
+                <Q q={t("reportingSection.q4")}>
+                    <P>{t("reportingSection.q4Intro")}</P>
+                    <div className="space-y-2">
+                        <Step n={1}>{t.rich("reportingSection.q4Step1", rich)}</Step>
+                        <Step n={2}>{t.rich("reportingSection.q4Step2", rich)}</Step>
+                        <Step n={3}>{t("reportingSection.q4Step3")}</Step>
+                    </div>
+                </Q>
+                <Q q={t("reportingSection.q5")}>
+                    <P>{t.rich("reportingSection.q5Body", rich)}</P>
+                </Q>
+                <Q q={t("reportingSection.q6")}>
+                    <P>{t("reportingSection.q6Body")}</P>
                 </Q>
             </Section>
 

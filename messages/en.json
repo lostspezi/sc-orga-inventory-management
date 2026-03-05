@@ -195,7 +195,8 @@
     "navMembers": "Members",
     "navLogs": "Logs",
     "navSettings": "Settings",
-    "navFaq": "Help"
+    "navFaq": "Help",
+    "navReporting": "Reporting"
   },
   "members": {
     "eyebrow": "Members",
@@ -476,7 +477,11 @@
     "billingFeaturesTitle": "What you get with PRO",
     "billingFeature1": "CSV Bulk Import — import up to 500 items at once",
     "billingFeature2": "CSV Export — export your full inventory as CSV",
-    "billingFeature3": "Google Sheets Sync — bi-directional auto-sync every 10 minutes"
+    "billingFeature3": "Google Sheets Sync — bi-directional auto-sync every 10 minutes",
+    "tabGeneral": "General",
+    "tabDiscord": "Discord",
+    "tabPro": "PRO",
+    "billingFeature4": "Weekly Reporting — auto-generated PDF report every Monday"
   },
   "auec": {
     "eyebrow": "aUEC Cash Desk",
@@ -625,7 +630,12 @@
       "inviteTitle": "Permanent Invite Links",
       "inviteDesc": "Share a single permanent link to let anyone join your org. No expiry, no per-user tokens — regenerate or revoke it any time from Settings.",
       "inviteTag1": "Shareable link",
-      "inviteTag2": "One-click revoke"
+      "inviteTag2": "One-click revoke",
+      "reportingTitle": "Weekly Reporting",
+      "reportingDesc": "Auto-generated PDF reports every Monday covering every completed trade — KPI summary, credit flow, top items, most active members, inventory movement, and week-over-week trends. Download or regenerate any past week on demand.",
+      "reportingTag1": "Auto PDF every Monday",
+      "reportingTag2": "KPIs & trends",
+      "reportingTag3": "PRO"
     },
     "discordSection": {
       "label": "Discord Integration",
@@ -681,7 +691,8 @@
       "proFeature1": "Everything in Free",
       "proFeature2": "CSV Bulk Import — up to 500 items",
       "proFeature3": "CSV Export — full inventory",
-      "proFeature4": "Google Sheets Sync — auto every 10 min"
+      "proFeature4": "Google Sheets Sync — auto every 10 min",
+      "proFeature5": "Weekly Reports — auto PDF every Monday"
     }
   },
   "csvImport": {
@@ -828,6 +839,31 @@
       "q6Step4": "When finished, you receive an in-app notification and a Discord DM with a summary.",
       "q6Outro": "Optional columns: buyPrice, sellPrice, quantity, minStock, maxStock. Max 500 rows per import. Failed rows can be downloaded as a CSV for correction."
     },
+    "reportingSection": {
+      "title": "Weekly Reporting",
+      "subtitle": "PRO — automated PDF reports",
+      "q1": "What is Weekly Reporting?",
+      "q1Body": "Weekly Reporting is a PRO feature that automatically generates a PDF report every Monday for the previous week. It summarises all completed trades, KPI metrics, credit flow, top traded items, most active members, and inventory movement — with week-over-week trend comparison.",
+      "q2": "What does a report contain?",
+      "q2Intro": "Each PDF report includes:",
+      "q2Li1": "<h>Transaction log</h> — every completed trade that week (up to 500 rows; truncated with a warning if exceeded).",
+      "q2Li2": "<h>KPI summary</h> — total transactions, credits earned/spent, net credit flow, and org aUEC pool delta.",
+      "q2Li3": "<h>Top traded items</h> — top 5 items by volume with quantity, trade count, and net credits.",
+      "q2Li4": "<h>Most active members</h> — top 5 members by trade count.",
+      "q2Li5": "<h>Largest trade</h> — the single highest-value transaction of the week.",
+      "q2Li6": "<h>Week-over-week trends</h> — delta vs. the previous week's report (if available).",
+      "q3": "How are reports generated?",
+      "q3Body": "Reports are generated <h>automatically every Monday at 02:00 UTC</h> for all PRO orgs covering the previous ISO week (Monday–Sunday). Admins and owners can also generate or regenerate any week <h>on demand</h> from the Reporting page.",
+      "q4": "How do I access the Reporting page?",
+      "q4Intro": "The Reporting page is accessible from the sidebar navigation (PRO orgs only):",
+      "q4Step1": "Go to your org and click <c>Reporting</c> in the left navigation sidebar (visible only for PRO orgs to admins and owners).",
+      "q4Step2": "Click <c>Generate Report</c> to create a report for the current week, or wait for the Monday auto-generation.",
+      "q4Step3": "Once the status shows Ready, click Download to save the PDF.",
+      "q5": "Can I regenerate a report after transactions are edited?",
+      "q5Body": "Yes. Admins and owners can click <c>Regenerate</c> on any existing report. This recalculates all KPIs and rebuilds the PDF from current transaction data, incrementing the version number. The previous file is overwritten.",
+      "q6": "What happens if report generation fails?",
+      "q6Body": "The report status changes to Failed and an error message is shown on the Reporting page. The scheduler will automatically retry up to 3 times on subsequent Monday runs. After 3 failures, all org admins and owners receive an in-app notification to regenerate manually."
+    },
     "transactionsSection": {
       "title": "Transactions",
       "subtitle": "The buy/sell request flow",
@@ -972,5 +1008,46 @@
     "yesCancelBtn": "Yes, Cancel",
     "cancelling": "Cancelling...",
     "fetchError": "Could not load billing data from Stripe. Please try again later."
+  },
+  "reports": {
+    "eyebrow": "PRO Feature",
+    "title": "Reporting",
+    "description": "Weekly operation reports generated automatically every Monday. Download or generate reports for any past week.",
+    "proRequired": "PRO Subscription Required",
+    "proRequiredDesc": "Automated weekly reports are a PRO feature. Upgrade to access PDF reports, KPI summaries, and transaction history.",
+    "upgradeBtn": "Upgrade to PRO",
+    "generateBtn": "Generate Report",
+    "generateConfirmTitle": "Generate Weekly Report",
+    "generateConfirmMessage": "A PDF report will be generated for the selected week. This may take a moment.",
+    "generateConfirm": "Generate",
+    "generating": "Generating…",
+    "alreadyExists": "A report for this week already exists.",
+    "currentWeek": "Current week: {week}",
+    "currentWeekTz": "Current Week",
+    "totalReports": "Total Reports",
+    "timezone": "Timezone",
+    "autoNote": "Reports are automatically generated every Monday at 02:00 UTC for the previous week. You can also generate or regenerate any week on demand.",
+    "colWeekRange": "Week",
+    "colStatus": "Status",
+    "colGenerated": "Generated",
+    "colActions": "Actions",
+    "download": "Download",
+    "regenerate": "Regenerate",
+    "regenerating": "Regenerating…",
+    "regenerateConfirmTitle": "Regenerate Report",
+    "regenerateConfirmMessage": "This will recalculate all KPIs and rebuild the PDF using current transaction data. The existing file will be overwritten.",
+    "regenerateConfirm": "Regenerate",
+    "cancel": "Cancel",
+    "statusReady": "Ready",
+    "statusGenerating": "Generating",
+    "statusPending": "Pending",
+    "statusFailed": "Failed",
+    "noReports": "No Reports Yet",
+    "noReportsDesc": "Click \"Generate Report\" to create your first weekly report, or wait for the Monday auto-generation.",
+    "errorDetails": "Error",
+    "neverGenerated": "—",
+    "version": "Version",
+    "size": "Size",
+    "bytes": "bytes"
   }
 }

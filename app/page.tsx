@@ -461,6 +461,13 @@ export default async function Home() {
                                 desc={t("features.inviteDesc")}
                                 tags={[t("features.inviteTag1"), t("features.inviteTag2")]}
                             />
+                            <FeatureCard
+                                delay="0.88s" accent="rgba(240,165,0"
+                                icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><path d="M2 20h20"/></svg>}
+                                title={t("features.reportingTitle")}
+                                desc={t("features.reportingDesc")}
+                                tags={[t("features.reportingTag1"), t("features.reportingTag2"), t("features.reportingTag3")]}
+                            />
                         </div>
                     </div>
                 </section>
@@ -534,7 +541,7 @@ export default async function Home() {
                                     {t("pricing.proNote")}
                                 </p>
                                 <ul className="mb-7 space-y-2.5">
-                                    {(["proFeature1","proFeature2","proFeature3","proFeature4"] as const).map((k) => (
+                                    {(["proFeature1","proFeature2","proFeature3","proFeature4","proFeature5"] as const).map((k) => (
                                         <li key={k} className="flex items-start gap-2.5 text-[12px]" style={{ color: "rgba(200,220,232,0.6)", fontFamily: "var(--font-mono)" }}>
                                             <span style={{ color: "rgba(240,165,0,0.7)", flexShrink: 0, marginTop: 1 }}>✓</span>
                                             {t(`pricing.${k}`)}
