@@ -59,7 +59,7 @@ export default function ToastContainer({
                                         className="mt-0.5 text-[11px]"
                                         style={{ color: "rgba(200,220,232,0.5)", fontFamily: "var(--font-mono)" }}
                                     >
-                                        {dirLabel} · {tx.quantity}× · {tx.totalPrice.toLocaleString()} DKP
+                                        {dirLabel} · {tx.quantity}× · {tx.totalPrice.toLocaleString()} aUEC
                                     </p>
                                     <p
                                         className="text-[11px]"

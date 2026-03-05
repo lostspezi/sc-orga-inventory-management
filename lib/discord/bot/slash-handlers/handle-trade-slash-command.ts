@@ -10,8 +10,6 @@ import {
     setTransactionDiscordMessage,
 } from "@/lib/repositories/organization-transaction-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
-import { getDb } from "@/lib/db";
-import type { ItemDocument } from "@/lib/types/item";
 import { sendTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 import { ObjectId } from "mongodb";
 
@@ -91,10 +89,7 @@ export async function handleTradeSlashCommand(interaction: ChatInputCommandInter
         return;
     }
 
-    const db = await getDb();
-    const itemDoc = await db.collection<ItemDocument>("items").findOne({ _id: invDoc.itemId });
-    const itemName = itemDoc?.name ?? "Unknown Item";
-
+    const itemName = invDoc.name;
     const direction = interaction.commandName === "sell" ? "member_to_org" : "org_to_member";
 
     if (direction === "org_to_member" && quantity > invDoc.quantity) {
@@ -109,7 +104,7 @@ export async function handleTradeSlashCommand(interaction: ChatInputCommandInter
         organizationId: org._id,
         organizationSlug: org.slug,
         inventoryItemId: invDoc._id,
-        itemId: invDoc.itemId,
+        itemId: invDoc._id,
         itemName,
         direction,
         initiatedBy: member.role === "member" ? "member" : "admin",
@@ -151,5 +146,5 @@ export async function handleTradeSlashCommand(interaction: ChatInputCommandInter
     }
 
     const verb = interaction.commandName === "sell" ? "sell" : "buy";
-    await interaction.editReply(`Transaction request submitted: ${verb} ${quantity}x "${itemName}" at ${pricePerUnit} DKP/unit (total: ${totalPrice} DKP).`);
+    await interaction.editReply(`Transaction request submitted: ${verb} ${quantity}x "${itemName}" at ${pricePerUnit} aUEC/unit (total: ${totalPrice} aUEC).`);
 }

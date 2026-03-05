@@ -243,7 +243,6 @@
     "roleMember": "Membre",
     "roleAdmin": "Admin",
     "loadError": "Impossible de charger les membres Discord.",
-    "dkp": "DKP",
     "auec": "aUEC"
   },
   "inventory": {
@@ -414,13 +413,6 @@
     "disconnect": "Déconnecter",
     "addBot": "Ajouter le bot au serveur",
     "channelSelected": "Sélectionné : #{name}",
-    "raidHelper": "Intégration Raid Helper",
-    "raidHelperApiKeyLabel": "Clé API",
-    "raidHelperDesc": "Connectez Raid Helper pour activer les portefeuilles DKP et la synchronisation automatique des DKP à la fin des échanges. Obtenez votre clé via /apikey sur votre serveur Discord.",
-    "raidHelperSave": "Enregistrer la clé API",
-    "raidHelperClear": "Supprimer la clé",
-    "raidHelperConnected": "● Sync DKP Active",
-    "raidHelperDisconnected": "○ Non connecté",
     "guildAlreadyConnected": "Ce serveur Discord est déjà connecté à une autre organisation. Déconnectez-le d'abord avant de le lier ici.",
     "permanentInvite": "Lien d'invitation permanent",
     "permanentInviteDesc": "Partagez ce lien avec n'importe qui — ils peuvent rejoindre votre organisation en tant que membre.",

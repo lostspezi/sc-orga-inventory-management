@@ -10,14 +10,10 @@ import type {OrganizationTransactionView} from "@/lib/types/transaction";
 
 type InventoryItem = {
     inventoryItemId: string;
-    itemId: string;
     name: string;
     normalizedName: string;
-    description?: string;
     category?: string;
-    itemClass?: string;
-    grade?: string;
-    size?: string;
+    scWikiUuid?: string;
     buyPrice: number;
     sellPrice: number;
     quantity: number;
@@ -238,35 +234,7 @@ export default function InventorySearchPanel({
                                     >
                                         {item.category ?? t("uncategorized")}
                                     </p>
-                                    {(item.itemClass || item.grade || item.size) && (
-                                        <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                                            {item.itemClass && (
-                                                <span className="text-[10px]" style={{color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)"}}>
-                                                    {item.itemClass}
-                                                </span>
-                                            )}
-                                            {item.grade && (
-                                                <span className="text-[10px]" style={{color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)"}}>
-                                                    {t("grade")}&nbsp;{item.grade}
-                                                </span>
-                                            )}
-                                            {item.size && (
-                                                <span className="text-[10px]" style={{color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)"}}>
-                                                    {t("size")}&nbsp;{item.size}
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
                                 </div>
-
-                                {item.description && (
-                                    <p
-                                        className="mt-3 text-xs"
-                                        style={{color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)"}}
-                                    >
-                                        {item.description}
-                                    </p>
-                                )}
 
                                 <div className="mt-4 space-y-2">
                                     <InfoRow label={t("buyPrice")} value={String(item.buyPrice)}/>
@@ -386,7 +354,7 @@ function InfoRow({label, value}: { label: string; value: string }) {
                 className="text-[11px]"
                 style={{color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)"}}
             >
-                {value} DKP
+                {value} aUEC
             </span>
         </div>
     );

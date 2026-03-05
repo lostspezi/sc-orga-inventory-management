@@ -24,7 +24,10 @@ export type OrganizationInventoryItemDocument = {
     _id: ObjectId;
     organizationId: ObjectId;
     organizationSlug: string;
-    itemId: ObjectId;
+    name: string;
+    normalizedName: string;
+    category?: string;
+    scWikiUuid?: string;
 
     buyPrice: number;
     sellPrice: number;
@@ -45,14 +48,10 @@ export type OrganizationMemberView = {
 
 export type OrganizationInventoryItemView = {
     inventoryItemId: ObjectId;
-    itemId: ObjectId;
     name: string;
     normalizedName: string;
-    description?: string;
     category?: string;
-    itemClass?: string;
-    grade?: string;
-    size?: string;
+    scWikiUuid?: string;
     buyPrice: number;
     sellPrice: number;
     quantity: number;

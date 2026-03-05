@@ -1,6 +1,5 @@
 // app/api/sc-items/search/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { searchItemsByName } from "@/lib/repositories/item-repository";
 
 export type ScWikiItem = {
     uuid: string;
@@ -16,16 +15,12 @@ export type ScWikiItem = {
 };
 
 export type ItemSearchResult = {
-    source: "local" | "sc_wiki";
-    localId?: string;
+    source: "sc_wiki";
     scUuid?: string;
     name: string;
     category?: string;
     description?: string;
     manufacturer?: string;
-    itemClass?: string;
-    grade?: string;
-    size?: string;
 };
 
 async function fetchScWikiItems(query: string, limit = 10): Promise<ScWikiItem[]> {
@@ -92,50 +87,23 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ results: [] });
     }
 
-    // 1. Local DB
-    const localItems = await searchItemsByName(q);
-    const localResults: ItemSearchResult[] = localItems.map((item) => ({
-        source: "local",
-        localId: item._id.toString(),
-        name: item.name,
-        category: item.category,
-        description: item.description,
-    }));
-
-    const localNames = new Set(localItems.map((i) => i.normalizedName));
-
-    // 2. SC Wiki
-    let wikiResults: ItemSearchResult[] = [];
+    let results: ItemSearchResult[] = [];
     try {
-        const items = await fetchScWikiItems(q, 10);
-        wikiResults = items
-            .filter((item) => {
-                const normalized = item.name.trim().toLowerCase().replace(/\s+/g, " ");
-                if (localNames.has(normalized)) return false;
-                return !(excludeShopItems && isSoldInShops(item));
-
-            })
-            .slice(0, 8)
-            .map((item) => {
-                const dd = item.description_data ?? [];
-                const findVal = (n: string) => dd.find((e) => e.name === n)?.value;
-                return {
-                    source: "sc_wiki" as const,
-                    scUuid: item.uuid,
-                    name: item.name,
-                    category: item.type !== "UNDEFINED" ? item.type : undefined,
-                    description: item.description?.en_EN?.slice(0, 300),
-                    manufacturer: item.manufacturer?.name,
-                    itemClass: findVal("Class"),
-                    grade: findVal("Grade"),
-                    size: findVal("Size"),
-                };
-            });
+        const items = await fetchScWikiItems(q, 12);
+        results = items
+            .filter((item) => !(excludeShopItems && isSoldInShops(item)))
+            .slice(0, 12)
+            .map((item) => ({
+                source: "sc_wiki" as const,
+                scUuid: item.uuid,
+                name: item.name,
+                category: item.type !== "UNDEFINED" ? item.type : undefined,
+                description: item.description?.en_EN?.slice(0, 300),
+                manufacturer: item.manufacturer?.name,
+            }));
     } catch {
         // SC wiki unreachable
     }
 
-    return NextResponse.json({
-        results: [...localResults, ...wikiResults].slice(0, 12),
-    });
+    return NextResponse.json({ results });
 }

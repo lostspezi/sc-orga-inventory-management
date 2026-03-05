@@ -243,7 +243,6 @@
     "roleMember": "Mitglied",
     "roleAdmin": "Admin",
     "loadError": "Discord-Mitglieder konnten nicht geladen werden.",
-    "dkp": "DKP",
     "auec": "aUEC"
   },
   "inventory": {
@@ -414,13 +413,6 @@
     "disconnect": "Trennen",
     "addBot": "Bot zum Server hinzufügen",
     "channelSelected": "Ausgewählt: #{name}",
-    "raidHelper": "Raid Helper-Integration",
-    "raidHelperApiKeyLabel": "API-Schlüssel",
-    "raidHelperDesc": "Verbinde Raid Helper, um DKP-Wallets und automatische DKP-Synchronisierung beim Handelsabschluss zu aktivieren. Holen Sie sich Ihren Schlüssel über /apikey in Ihrem Discord-Server.",
-    "raidHelperSave": "API-Schlüssel speichern",
-    "raidHelperClear": "Schlüssel entfernen",
-    "raidHelperConnected": "● DKP-Sync aktiv",
-    "raidHelperDisconnected": "○ Nicht verbunden",
     "guildAlreadyConnected": "Dieser Discord-Server ist bereits mit einer anderen Organisation verbunden. Trenne ihn dort zuerst, bevor du ihn hier verknüpfst.",
     "permanentInvite": "Dauerhafter Einladungslink",
     "permanentInviteDesc": "Teile diesen Link mit allen — sie können deiner Organisation als Mitglied beitreten.",

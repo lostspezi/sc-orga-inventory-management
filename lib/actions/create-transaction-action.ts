@@ -7,13 +7,11 @@ import { getTranslations } from "next-intl/server";
 import { ObjectId } from "mongodb";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import { getOrganizationInventoryItemDocumentById } from "@/lib/repositories/organization-inventory-item-repository";
-import { getDb } from "@/lib/db";
 import {
     createOrganizationTransaction,
     setTransactionDiscordMessage,
 } from "@/lib/repositories/organization-transaction-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
-import type { ItemDocument } from "@/lib/types/item";
 import { sendTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 import { notifyMany } from "@/lib/notify";
 
@@ -109,10 +107,7 @@ export async function createTransactionAction(
         }
     }
 
-    const db = await getDb();
-    const itemDoc = await db.collection<ItemDocument>("items").findOne({ _id: invItem.itemId });
-    const itemName = itemDoc?.name ?? "Unknown Item";
-
+    const itemName = invItem.name;
     const pricePerUnit = direction === "member_to_org" ? invItem.sellPrice : invItem.buyPrice;
     const totalPrice = quantityRaw * pricePerUnit;
 
@@ -120,7 +115,7 @@ export async function createTransactionAction(
         organizationId: org._id,
         organizationSlug: org.slug,
         inventoryItemId: invItem._id,
-        itemId: invItem.itemId,
+        itemId: invItem._id,
         itemName,
         direction: direction as "member_to_org" | "org_to_member",
         initiatedBy: member.role === "member" ? "member" : "admin",

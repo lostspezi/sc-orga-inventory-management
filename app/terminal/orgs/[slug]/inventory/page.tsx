@@ -96,14 +96,10 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
 
     const serializedInventoryItems = inventoryItems.map((item) => ({
         inventoryItemId: item.inventoryItemId.toString(),
-        itemId: item.itemId.toString(),
         name: item.name,
         normalizedName: item.normalizedName,
-        description: item.description,
         category: item.category,
-        itemClass: item.itemClass,
-        grade: item.grade,
-        size: item.size,
+        scWikiUuid: item.scWikiUuid,
         minStock: item.minStock,
         maxStock: item.maxStock,
         buyPrice: item.buyPrice,

@@ -4,10 +4,8 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
-import { createItemInDb, getItemById } from "@/lib/repositories/item-repository";
 import { createOrganizationInventoryItemInDb } from "@/lib/repositories/organization-inventory-item-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
-import { ItemDocument } from "@/lib/types/item";
 
 export type CreateOrganizationInventoryItemActionState = {
     success: boolean;
@@ -52,18 +50,14 @@ export async function createOrganizationInventoryItemAction(
 
     const organizationSlug = String(formData.get("organizationSlug") ?? "").trim();
     const itemName = String(formData.get("itemName") ?? "").trim();
-    const existingItemId = String(formData.get("existingItemId") ?? "").trim();
-    const category = String(formData.get("category") ?? "").trim();
-    const description = String(formData.get("description") ?? "").trim();
-    const itemClass = String(formData.get("itemClass") ?? "").trim() || undefined;
-    const grade = String(formData.get("grade") ?? "").trim() || undefined;
-    const size = String(formData.get("size") ?? "").trim() || undefined;
+    const scWikiUuid = String(formData.get("scWikiUuid") ?? "").trim() || undefined;
+    const category = String(formData.get("category") ?? "").trim() || undefined;
 
     const buyPrice = parseNumber(formData.get("buyPrice"));
     const sellPrice = parseNumber(formData.get("sellPrice"));
     const quantity = parseNumber(formData.get("quantity"));
 
-    // Variants JSON (optional) – array of { name, type, description, manufacturer }
+    // Variants JSON (optional) – array of { name, type, uuid }
     const variantsJson = formData.get("variantsJson");
     const variants: VariantInput[] = variantsJson
         ? JSON.parse(String(variantsJson))
@@ -97,35 +91,19 @@ export async function createOrganizationInventoryItemAction(
     if (!actor) return { ...initialState, message: "You are not a member of this organization." };
     if (!["owner", "admin"].includes(actor.role)) return { ...initialState, message: "Only owners or admins can manage inventory." };
 
-    // --- Resolve base item ---
-    let baseItem: ItemDocument | null;
-
-    if (existingItemId) {
-        baseItem = await getItemById(existingItemId);
-        if (!baseItem) return { ...initialState, message: "Selected item could not be found." };
-    } else {
-        baseItem = await createItemInDb({ name: itemName, category, description, itemClass, grade, size });
-    }
-
     // --- Build list of items to add: base + variants ---
     type ItemToAdd = {
         name: string;
         category?: string;
-        description?: string;
-        existingId?: string;
+        scWikiUuid?: string;
     };
 
     const itemsToAdd: ItemToAdd[] = [
-        {
-            name: baseItem.name,
-            category: baseItem.category,
-            description: baseItem.description,
-            existingId: baseItem._id.toString(),
-        },
+        { name: itemName, category, scWikiUuid },
         ...variants.map((v) => ({
             name: v.name,
-            category: v.type ?? category,
-            description: v.description,
+            category: v.type || undefined,
+            scWikiUuid: v.uuid,
         })),
     ];
 
@@ -133,22 +111,12 @@ export async function createOrganizationInventoryItemAction(
     let skippedCount = 0;
 
     for (const itemInput of itemsToAdd) {
-        let item: ItemDocument;
-
-        if (itemInput.existingId) {
-            item = baseItem; // already resolved
-        } else {
-            item = await createItemInDb({
-                name: itemInput.name,
-                category: itemInput.category,
-                description: itemInput.description,
-            });
-        }
-
         const result = await createOrganizationInventoryItemInDb({
             organizationId: org._id,
             organizationSlug: org.slug,
-            itemId: item._id,
+            name: itemInput.name,
+            category: itemInput.category,
+            scWikiUuid: itemInput.scWikiUuid,
             buyPrice,
             sellPrice,
             quantity,
@@ -171,11 +139,10 @@ export async function createOrganizationInventoryItemAction(
             action: "inventory.item_added",
             entityType: "inventory_item",
             entityId: result.document._id.toString(),
-            message: `Item "${item.name}" was added to the organization inventory.`,
+            message: `Item "${itemInput.name}" was added to the organization inventory.`,
             metadata: {
                 inventoryItemId: result.document._id.toString(),
-                itemId: item._id.toString(),
-                itemName: item.name,
+                itemName: itemInput.name,
                 buyPrice,
                 sellPrice,
                 quantity,
@@ -198,7 +165,7 @@ export async function createOrganizationInventoryItemAction(
 
     return {
         success: true,
-        message: `"${baseItem.name}" added successfully.${variantNote}`,
+        message: `"${itemName}" added successfully.${variantNote}`,
         createdCount: addedCount,
     };
 }

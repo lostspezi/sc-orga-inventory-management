@@ -1,7 +1,6 @@
 import { ObjectId } from "mongodb";
 import { ImportRowInput, ImportRowResult } from "@/lib/types/import-job";
 import { OrganizationDocument } from "@/lib/types/organization";
-import { createItemInDb } from "@/lib/repositories/item-repository";
 import {
     createOrganizationInventoryItemInDb,
     updateOrganizationInventoryItemInDb,
@@ -119,22 +118,14 @@ export async function processImportJob(
                     continue;
                 }
 
-                const dd = match.description_data ?? [];
-                const findVal = (n: string) => dd.find((e) => e.name === n)?.value;
-
-                const item = await createItemInDb({
-                    name: match.name,
-                    category: match.type !== "UNDEFINED" ? match.type : undefined,
-                    description: match.description?.en_EN?.slice(0, 300),
-                    itemClass: findVal("Class"),
-                    grade: findVal("Grade"),
-                    size: findVal("Size"),
-                });
+                const category = match.type !== "UNDEFINED" ? match.type : undefined;
 
                 const createResult = await createOrganizationInventoryItemInDb({
                     organizationId: org._id,
                     organizationSlug: org.slug,
-                    itemId: item._id,
+                    name: match.name,
+                    category,
+                    scWikiUuid: match.uuid,
                     buyPrice: row.buyPrice ?? 0,
                     sellPrice: row.sellPrice ?? 0,
                     quantity: row.quantity ?? 0,
@@ -178,11 +169,10 @@ export async function processImportJob(
                         action: "inventory.item_added",
                         entityType: "inventory_item",
                         entityId: createResult.document._id.toString(),
-                        message: `Item "${item.name}" was imported via CSV bulk import.`,
+                        message: `Item "${match.name}" was imported via CSV bulk import.`,
                         metadata: {
                             inventoryItemId: createResult.document._id.toString(),
-                            itemId: item._id.toString(),
-                            itemName: item.name,
+                            itemName: match.name,
                             buyPrice: row.buyPrice ?? 0,
                             sellPrice: row.sellPrice ?? 0,
                             quantity: row.quantity ?? 0,

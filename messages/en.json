@@ -243,7 +243,6 @@
     "roleMember": "Member",
     "roleAdmin": "Admin",
     "loadError": "Could not load Discord members.",
-    "dkp": "DKP",
     "auec": "aUEC"
   },
   "inventory": {
@@ -414,13 +413,6 @@
     "disconnect": "Disconnect",
     "addBot": "Add Bot to Server",
     "channelSelected": "Selected: #{name}",
-    "raidHelper": "Raid Helper Integration",
-    "raidHelperApiKeyLabel": "API Key",
-    "raidHelperDesc": "Connect Raid Helper to enable DKP wallets and automatic DKP sync on trade completion. Get your key via /apikey in your Discord server.",
-    "raidHelperSave": "Save API Key",
-    "raidHelperClear": "Remove Key",
-    "raidHelperConnected": "● DKP Sync Active",
-    "raidHelperDisconnected": "○ Not connected",
     "guildAlreadyConnected": "This Discord server is already connected to another organization. Disconnect it there first before linking it here.",
     "permanentInvite": "Permanent Invite Link",
     "permanentInviteDesc": "Share this link with anyone — they can join your organization as a member.",

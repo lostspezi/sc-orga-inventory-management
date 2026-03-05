@@ -197,8 +197,8 @@ function TransactionRow({
                         style={{ color: "rgba(200,220,232,0.48)", fontFamily: "var(--font-mono)" }}
                     >
                         <span>Qty: {tx.quantity}</span>
-                        <span>{tx.pricePerUnit.toLocaleString()} DKP/unit</span>
-                        <span>Total: {tx.totalPrice.toLocaleString()} DKP</span>
+                        <span>{tx.pricePerUnit.toLocaleString()} aUEC/unit</span>
+                        <span>Total: {tx.totalPrice.toLocaleString()} aUEC</span>
                         <span>By: {tx.memberUsername}</span>
                         <span>{date}</span>
                     </div>

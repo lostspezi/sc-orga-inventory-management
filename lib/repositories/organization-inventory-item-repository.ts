@@ -1,8 +1,6 @@
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/db";
-import { OrganizationInventoryItemDocument } from "@/lib/types/organization";
-import { ItemDocument } from "@/lib/types/item";
-import { OrganizationInventoryItemView } from "@/lib/types/organization";
+import { OrganizationInventoryItemDocument, OrganizationInventoryItemView } from "@/lib/types/organization";
 
 export type PaginatedInventoryResult = {
     items: OrganizationInventoryItemView[];
@@ -16,29 +14,50 @@ function escapeRegex(s: string): string {
     return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function normalizeItemName(value: string) {
+    return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function toView(doc: OrganizationInventoryItemDocument): OrganizationInventoryItemView {
+    return {
+        inventoryItemId: doc._id,
+        name: doc.name,
+        normalizedName: doc.normalizedName,
+        category: doc.category,
+        scWikiUuid: doc.scWikiUuid,
+        buyPrice: doc.buyPrice,
+        sellPrice: doc.sellPrice,
+        quantity: doc.quantity,
+        minStock: doc.minStock,
+        maxStock: doc.maxStock,
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt,
+    };
+}
+
 const COLLECTION = "organization_inventory_items";
 
 export async function createOrganizationInventoryItemInDb(input: {
     organizationId: ObjectId;
     organizationSlug: string;
-    itemId: ObjectId;
+    name: string;
+    normalizedName?: string;
+    category?: string;
+    scWikiUuid?: string;
     buyPrice: number;
     sellPrice: number;
     quantity: number;
 }): Promise<{ created: boolean; alreadyExists: boolean; document?: OrganizationInventoryItemDocument }> {
     const db = await getDb();
+    const normalizedName = input.normalizedName ?? normalizeItemName(input.name);
 
     const existing = await db.collection<OrganizationInventoryItemDocument>(COLLECTION).findOne({
         organizationId: input.organizationId,
-        itemId: input.itemId,
+        normalizedName,
     });
 
     if (existing) {
-        return {
-            created: false,
-            alreadyExists: true,
-            document: existing,
-        };
+        return { created: false, alreadyExists: true, document: existing };
     }
 
     const now = new Date();
@@ -46,7 +65,10 @@ export async function createOrganizationInventoryItemInDb(input: {
     const doc: Omit<OrganizationInventoryItemDocument, "_id"> = {
         organizationId: input.organizationId,
         organizationSlug: input.organizationSlug,
-        itemId: input.itemId,
+        name: input.name,
+        normalizedName,
+        category: input.category,
+        scWikiUuid: input.scWikiUuid,
         buyPrice: input.buyPrice,
         sellPrice: input.sellPrice,
         quantity: input.quantity,
@@ -59,10 +81,7 @@ export async function createOrganizationInventoryItemInDb(input: {
     return {
         created: true,
         alreadyExists: false,
-        document: {
-            _id: result.insertedId,
-            ...doc,
-        },
+        document: { _id: result.insertedId, ...doc },
     };
 }
 
@@ -71,53 +90,13 @@ export async function getOrganizationInventoryItemViewsByOrganizationId(
 ): Promise<OrganizationInventoryItemView[]> {
     const db = await getDb();
 
-    const inventoryItems = await db
+    const docs = await db
         .collection<OrganizationInventoryItemDocument>(COLLECTION)
         .find({ organizationId })
         .sort({ createdAt: -1 })
         .toArray();
 
-    if (!inventoryItems.length) {
-        return [];
-    }
-
-    const itemIds = inventoryItems.map((entry) => entry.itemId);
-
-    const items = await db
-        .collection<ItemDocument>("items")
-        .find({ _id: { $in: itemIds } })
-        .toArray();
-
-    const itemById = new Map(items.map((item) => [item._id.toString(), item]));
-
-    return inventoryItems
-        .map<OrganizationInventoryItemView | null>((entry) => {
-            const item = itemById.get(entry.itemId.toString());
-
-            if (!item) {
-                return null;
-            }
-
-            return {
-                inventoryItemId: entry._id,
-                itemId: item._id,
-                name: item.name,
-                normalizedName: item.normalizedName,
-                description: item.description,
-                category: item.category,
-                itemClass: item.itemClass,
-                grade: item.grade,
-                size: item.size,
-                buyPrice: entry.buyPrice,
-                sellPrice: entry.sellPrice,
-                quantity: entry.quantity,
-                minStock: entry.minStock,
-                maxStock: entry.maxStock,
-                createdAt: entry.createdAt,
-                updatedAt: entry.updatedAt,
-            };
-        })
-        .filter((entry): entry is OrganizationInventoryItemView => entry !== null);
+    return docs.map(toView);
 }
 
 export async function deleteOrganizationInventoryItemInDb(
@@ -205,36 +184,13 @@ export async function getOrganizationInventoryItemViewById(
 
     const db = await getDb();
 
-    const entry = await db
+    const doc = await db
         .collection<OrganizationInventoryItemDocument>(COLLECTION)
         .findOne({ _id: new ObjectId(inventoryItemId) });
 
-    if (!entry) return null;
+    if (!doc) return null;
 
-    const item = await db
-        .collection<ItemDocument>("items")
-        .findOne({ _id: entry.itemId });
-
-    if (!item) return null;
-
-    return {
-        inventoryItemId: entry._id,
-        itemId: item._id,
-        name: item.name,
-        normalizedName: item.normalizedName,
-        description: item.description,
-        category: item.category,
-        itemClass: item.itemClass,
-        grade: item.grade,
-        size: item.size,
-        buyPrice: entry.buyPrice,
-        sellPrice: entry.sellPrice,
-        quantity: entry.quantity,
-        minStock: entry.minStock,
-        maxStock: entry.maxStock,
-        createdAt: entry.createdAt,
-        updatedAt: entry.updatedAt,
-    };
+    return toView(doc);
 }
 
 export async function getOrganizationInventoryItemViewsPaginated(
@@ -245,47 +201,29 @@ export async function getOrganizationInventoryItemViewsPaginated(
     const { page, pageSize, search, category } = options;
     const offset = (page - 1) * pageSize;
 
-    const postLookupMatch: Record<string, unknown> = {};
+    const match: Record<string, unknown> = { organizationId };
+
     if (search) {
-        const re = new RegExp(escapeRegex(search), "i");
-        postLookupMatch.$or = [
-            { "itemDoc.name": re },
-            { "itemDoc.description": re },
-        ];
+        match.name = new RegExp(escapeRegex(search), "i");
     }
     if (category) {
-        postLookupMatch["itemDoc.category"] = new RegExp(`^${escapeRegex(category)}$`, "i");
+        match.category = new RegExp(`^${escapeRegex(category)}$`, "i");
     }
 
     const pipeline: object[] = [
-        { $match: { organizationId } },
+        { $match: match },
+        { $sort: { createdAt: -1 } },
         {
-            $lookup: {
-                from: "items",
-                localField: "itemId",
-                foreignField: "_id",
-                as: "itemDoc",
+            $facet: {
+                metadata: [{ $count: "total" }],
+                data: [{ $skip: offset }, { $limit: pageSize }],
             },
         },
-        { $unwind: { path: "$itemDoc", preserveNullAndEmptyArrays: false } },
     ];
-
-    if (Object.keys(postLookupMatch).length > 0) {
-        pipeline.push({ $match: postLookupMatch });
-    }
-
-    pipeline.push({ $sort: { createdAt: -1 } });
-
-    pipeline.push({
-        $facet: {
-            metadata: [{ $count: "total" }],
-            data: [{ $skip: offset }, { $limit: pageSize }],
-        },
-    });
 
     type FacetResult = {
         metadata: { total: number }[];
-        data: (OrganizationInventoryItemDocument & { itemDoc: ItemDocument })[];
+        data: OrganizationInventoryItemDocument[];
     };
 
     const [result] = await db
@@ -296,24 +234,7 @@ export async function getOrganizationInventoryItemViewsPaginated(
     const totalCount = result?.metadata[0]?.total ?? 0;
     const totalPages = totalCount === 0 ? 1 : Math.ceil(totalCount / pageSize);
 
-    const items: OrganizationInventoryItemView[] = (result?.data ?? []).map((row) => ({
-        inventoryItemId: row._id,
-        itemId: row.itemDoc._id,
-        name: row.itemDoc.name,
-        normalizedName: row.itemDoc.normalizedName,
-        description: row.itemDoc.description,
-        category: row.itemDoc.category,
-        itemClass: row.itemDoc.itemClass,
-        grade: row.itemDoc.grade,
-        size: row.itemDoc.size,
-        buyPrice: row.buyPrice,
-        sellPrice: row.sellPrice,
-        quantity: row.quantity,
-        minStock: row.minStock,
-        maxStock: row.maxStock,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-    }));
+    const items = (result?.data ?? []).map(toView);
 
     return { items, totalCount, totalPages, page, pageSize };
 }
@@ -326,18 +247,8 @@ export async function getDistinctInventoryCategories(
     const result = await db
         .collection<OrganizationInventoryItemDocument>(COLLECTION)
         .aggregate<{ _id: string }>([
-            { $match: { organizationId } },
-            {
-                $lookup: {
-                    from: "items",
-                    localField: "itemId",
-                    foreignField: "_id",
-                    as: "itemDoc",
-                },
-            },
-            { $unwind: "$itemDoc" },
-            { $match: { "itemDoc.category": { $exists: true, $ne: null } } },
-            { $group: { _id: "$itemDoc.category" } },
+            { $match: { organizationId, category: { $exists: true, $ne: null } } },
+            { $group: { _id: "$category" } },
             { $sort: { _id: 1 } },
         ])
         .toArray();

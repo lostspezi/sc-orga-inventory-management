@@ -23,11 +23,15 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
     const [state, formAction, isPending] = useActionState(createOrganizationInventoryItemAction, initialState);
     const [selection, setSelection] = useState<SelectedItemWithVariants | null>(null);
     const [excludeShopItems, setExcludeShopItems] = useState(false);
+    const [resetKey, setResetKey] = useState(0);
 
     useEffect(() => {
         if (state.success) {
             formRef.current?.reset();
-            startTransition(() => setSelection(null));
+            startTransition(() => {
+                setSelection(null);
+                setResetKey((k) => k + 1);
+            });
         }
     }, [state.success]);
 
@@ -37,17 +41,8 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
 
         const formData = new FormData(e.currentTarget);
         formData.set("itemName", selection.item.name);
-
-        if (selection.item.source === "local" && selection.item.localId) {
-            formData.set("existingItemId", selection.item.localId);
-        } else {
-            formData.delete("existingItemId");
-            if (selection.item.category) formData.set("category", selection.item.category);
-            if (selection.item.description) formData.set("description", selection.item.description);
-            if (selection.item.itemClass) formData.set("itemClass", selection.item.itemClass);
-            if (selection.item.grade) formData.set("grade", selection.item.grade);
-            if (selection.item.size) formData.set("size", selection.item.size);
-        }
+        if (selection.item.scUuid) formData.set("scWikiUuid", selection.item.scUuid);
+        if (selection.item.category) formData.set("category", selection.item.category);
 
         if (selection.selectedVariants.length > 0) {
             formData.set(
@@ -56,8 +51,7 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
                     selection.selectedVariants.map((v) => ({
                         name: v.name,
                         type: v.type,
-                        description: v.description,
-                        manufacturer: v.manufacturer,
+                        uuid: v.uuid,
                     }))
                 )
             );
@@ -123,6 +117,7 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
                     {t("itemName")}
                 </label>
                 <ScItemAutocomplete
+                    key={resetKey}
                     onSelectAction={setSelection}
                     disabled={isPending}
                     excludeShopItems={excludeShopItems}
@@ -132,22 +127,6 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
                 )}
             </div>
 
-            {selection?.item.source === "sc_wiki" && (
-                <>
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}>
-                            {t("category")} <span style={{ color: "rgba(200,220,232,0.25)" }}>(optional)</span>
-                        </label>
-                        <input type="text" name="category" defaultValue={selection.item.category ?? ""} key={selection.item.scUuid ?? "cat"} placeholder={t("categoryHint")} className="sc-input w-full" disabled={isPending} />
-                    </div>
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}>
-                            {t("itemDescription")} <span style={{ color: "rgba(200,220,232,0.25)" }}>(optional)</span>
-                        </label>
-                        <textarea name="description" defaultValue={selection.item.description ?? ""} key={selection.item.scUuid ?? "desc"} rows={3} className="sc-input w-full resize-none" disabled={isPending} />
-                    </div>
-                </>
-            )}
 
             <div className="grid grid-cols-3 gap-3">
                 {(["buyPrice", "sellPrice", "quantity"] as const).map((field) => (

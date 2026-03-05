@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-    Search, Database, Globe, Loader2, X,
+    Search, Globe, Loader2, X,
     Layers, ChevronDown, ChevronUp, Check
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -120,14 +120,7 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
         setSelected(item);
         setQuery(item.name);
         setOpen(false);
-
-        if (item.source === "sc_wiki") {
-            fetchSiblings(item, item.name);
-        } else {
-            setSiblings([]);
-            setBaseName("");
-            onSelectAction({ item, importAllVariants: false, variants: [], selectedVariants: [] });
-        }
+        fetchSiblings(item, item.name);
     }
 
     function handleToggleAll(checked: boolean) {
@@ -194,19 +187,19 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
                 <div
                     className="flex items-center gap-2 rounded px-2 py-1 text-[10px] w-fit"
                     style={{
-                        background: selected.source === "local" ? "rgba(74,222,128,0.08)" : "rgba(79,195,220,0.08)",
-                        border: `1px solid ${selected.source === "local" ? "rgba(74,222,128,0.2)" : "rgba(79,195,220,0.2)"}`,
-                        color: selected.source === "local" ? "rgba(74,222,128,0.8)" : "rgba(79,195,220,0.8)",
+                        background: "rgba(79,195,220,0.08)",
+                        border: "1px solid rgba(79,195,220,0.2)",
+                        color: "rgba(79,195,220,0.8)",
                         fontFamily: "var(--font-mono)",
                     }}
                 >
-                    {selected.source === "local" ? <Database size={10} /> : <Globe size={10} />}
-                    {selected.source === "local" ? t("fromLocalDb") : t("fromWiki")}
+                    <Globe size={10} />
+                    {t("fromWiki")}
                 </div>
             )}
 
             {/* Variants section */}
-            {selected?.source === "sc_wiki" && (
+            {selected && (
                 <div className="rounded-lg border p-3 space-y-2" style={{ borderColor: "rgba(79,195,220,0.12)", background: "rgba(7,18,28,0.35)" }}>
                     {siblingsLoading ? (
                         <div className="flex items-center gap-2">
@@ -325,7 +318,7 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
                 <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border shadow-xl" style={{ borderColor: "rgba(79,195,220,0.18)", background: "rgba(7,14,24,0.98)", backdropFilter: "blur(12px)" }}>
                     {results.map((item, i) => (
                         <button
-                            key={item.source === "local" ? item.localId : item.scUuid}
+                            key={item.scUuid ?? item.name}
                             type="button"
                             onClick={() => handleSelect(item)}
                             className="flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors"
@@ -333,10 +326,8 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
                             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(79,195,220,0.06)"; }}
                             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                         >
-                            <div className="mt-0.5 shrink-0 rounded p-1" style={{ background: item.source === "local" ? "rgba(74,222,128,0.08)" : "rgba(79,195,220,0.08)" }}>
-                                {item.source === "local"
-                                    ? <Database size={11} style={{ color: "rgba(74,222,128,0.7)" }} />
-                                    : <Globe size={11} style={{ color: "rgba(79,195,220,0.7)" }} />}
+                            <div className="mt-0.5 shrink-0 rounded p-1" style={{ background: "rgba(79,195,220,0.08)" }}>
+                                <Globe size={11} style={{ color: "rgba(79,195,220,0.7)" }} />
                             </div>
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
