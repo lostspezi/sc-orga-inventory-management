@@ -464,7 +464,7 @@
     "billingProTitle": "Plan PRO actif",
     "billingFreeTitle": "Passer au PRO",
     "billingProDesc": "Toutes les fonctionnalités PRO sont débloquées pour cette organisation.",
-    "billingFreeDesc": "Débloquez l'import/export CSV, la synchronisation Google Sheets et plus pour 0,99 €/mois.",
+    "billingFreeDesc": "Débloquez l’import/export CSV, la synchronisation Google Sheets et plus pour 4,99 €/mois.",
     "billingRenewsOn": "Se renouvelle le",
     "billingCancelsOn": "Se termine le",
     "billingCancelAtPeriodEnd": "Annulation planifiée",
@@ -559,7 +559,9 @@
       "pill4": "Suivi de stock automatique",
       "pill5": "Accès basé sur les rôles",
       "pill6": "Journal d'audit complet",
-      "pill7": "Import CSV en masse"
+      "pill7": "Import CSV en masse",
+      "pill8": "Commerce de fret",
+      "pill9": "Caisse aUEC"
     },
     "howItWorks": {
       "label": "Comment ça marche",
@@ -611,7 +613,19 @@
       "csvImportDesc": "Remplissez tout votre inventaire en une seule fois. Chargez un tableau avec les noms d'articles et des valeurs optionnelles de prix et de stock — chaque nom est recherché automatiquement dans le Wiki Star Citizen pour récupérer la catégorie, la classe, la qualité et la taille. Traitement asynchrone avec suivi de progression en direct, rapport de résultats par ligne et fichier de reprise téléchargeable pour les erreurs.",
       "csvImportTag1": "Recherche Wiki SC",
       "csvImportTag2": "Asynchrone",
-      "csvImportTag3": "Historique d'import"
+      "csvImportTag3": "Historique d'import",
+      "cargoTitle": "Onglet Fret",
+      "cargoDesc": "Module dédié au commerce de marchandises en vrac. Les membres publient des demandes d’achat/vente de fret en aUEC. Le stock s’ajuste en SCU à la clôture des échanges.",
+      "cargoTag1": "Quantités SCU",
+      "cargoTag2": "Prix en aUEC",
+      "auecTitle": "Caisse aUEC",
+      "auecDesc": "Échangez des aUEC entre l’organisation et ses membres. Les admins fixent le solde et les taux d’achat/vente ; les membres soumettent des demandes qui suivent le workflow standard d’approbation.",
+      "auecTag1": "Portefeuille org",
+      "auecTag2": "Échange aUEC",
+      "inviteTitle": "Liens d’invitation permanents",
+      "inviteDesc": "Partagez un lien permanent unique pour permettre à n’importe qui de rejoindre votre org. Sans expiration — régénérez ou révoquez-le à tout moment depuis les paramètres.",
+      "inviteTag1": "Lien partageable",
+      "inviteTag2": "Révocation en 1 clic"
     },
     "discordSection": {
       "label": "Intégration Discord",
@@ -642,6 +656,32 @@
     "footer": {
       "disclaimer": "L'accès non autorisé est une violation du code UEE §18.7 — v0.1.0",
       "legalButton": "Mentions légales"
+    },
+    "pricing": {
+      "label": "Tarifs",
+      "freeTitle": "Gratuit",
+      "freeSubtitle": "Gratuit pour toujours",
+      "freeDesc": "Tout ce qu’il faut pour gérer une org de trading sérieuse — sans carte bancaire.",
+      "proTitle": "PRO",
+      "proPrice": "4,99 €",
+      "proPer": "/ mois",
+      "proDesc": "Automatisation avancée pour les orgs à haut volume.",
+      "proNote": "Annulable à tout moment · Un abonnement par organisation",
+      "getStarted": "Commencer gratuitement",
+      "upgrade": "Passer à PRO",
+      "freeFeature1": "Tableau de bord en direct & graphiques KPI",
+      "freeFeature2": "Gestion complète de l’inventaire",
+      "freeFeature3": "Workflows d’achat & vente",
+      "freeFeature4": "Bot Discord avec commandes slash",
+      "freeFeature5": "Caisse aUEC",
+      "freeFeature6": "Commerce via l’onglet Fret",
+      "freeFeature7": "Gestion des membres & rôles",
+      "freeFeature8": "Liens d’invitation permanents",
+      "freeFeature9": "Journal d’audit & notifications",
+      "proFeature1": "Tout ce qui est inclus dans Gratuit",
+      "proFeature2": "Import CSV en masse — jusqu’à 500 éléments",
+      "proFeature3": "Export CSV — inventaire complet",
+      "proFeature4": "Synchronisation Google Sheets — auto toutes les 10 min"
     }
   },
   "csvImport": {

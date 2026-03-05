@@ -464,7 +464,7 @@
     "billingProTitle": "PRO-Plan aktiv",
     "billingFreeTitle": "Auf PRO upgraden",
     "billingProDesc": "Alle PRO-Funktionen sind für diese Organisation freigeschaltet.",
-    "billingFreeDesc": "Schalte CSV-Import/Export, Google-Sheets-Sync und mehr für 0,99 €/Monat frei.",
+    "billingFreeDesc": "Schalte CSV-Import/Export, Google-Sheets-Sync und mehr für 4,99 €/Monat frei.",
     "billingRenewsOn": "Verlängert sich am",
     "billingCancelsOn": "Endet am",
     "billingCancelAtPeriodEnd": "Kündigung geplant",
@@ -559,7 +559,9 @@
       "pill4": "Automatisches Lagertracking",
       "pill5": "Rollenbasierter Zugriff",
       "pill6": "Vollständiges Audit-Log",
-      "pill7": "CSV-Massenimport"
+      "pill7": "CSV-Massenimport",
+      "pill8": "Frachthandel",
+      "pill9": "aUEC-Kassenschalter"
     },
     "howItWorks": {
       "label": "So funktioniert es",
@@ -611,7 +613,19 @@
       "csvImportDesc": "Befülle dein gesamtes Lager auf einmal. Lade eine Tabelle mit Artikelnamen und optionalen Preis- und Bestandswerten hoch — jeder Name wird automatisch im Star Citizen Wiki nachgeschlagen, um Kategorie, Klasse, Qualität und Größe zu ermitteln. Asynchrone Verarbeitung mit Live-Fortschrittsverfolgung, Ergebnisanzeige pro Zeile und einer herunterladbaren Wiederholungsdatei für fehlgeschlagene Einträge.",
       "csvImportTag1": "SC-Wiki-Suche",
       "csvImportTag2": "Asynchron",
-      "csvImportTag3": "Import-Verlauf"
+      "csvImportTag3": "Import-Verlauf",
+      "cargoTitle": "Fracht-Tab",
+      "cargoDesc": "Dediziertes Handelsmodul für große Warenlieferungen. Mitglieder stellen Fracht-Kauf-/Verkaufsanfragen in aUEC. Der Lagerbestand passt sich in SCU an, wenn Trades abgeschlossen werden.",
+      "cargoTag1": "SCU-Mengen",
+      "cargoTag2": "aUEC-Preise",
+      "auecTitle": "aUEC-Kassenschalter",
+      "auecDesc": "Tausche echte aUEC zwischen der Org und ihren Mitgliedern. Administratoren legen das Guthaben und die Kauf-/Verkaufskurse fest; Mitglieder stellen Anträge, die den Standard-Genehmigungs-Workflow durchlaufen.",
+      "auecTag1": "Org-Kasse",
+      "auecTag2": "aUEC-Tausch",
+      "inviteTitle": "Permanente Einladungslinks",
+      "inviteDesc": "Teile einen einzigen permanenten Link, damit jeder deiner Org beitreten kann. Kein Ablaufdatum, keine Einzeltokens — regeneriere oder widerrufe ihn jederzeit in den Einstellungen.",
+      "inviteTag1": "Teilbarer Link",
+      "inviteTag2": "Ein-Klick-Widerruf"
     },
     "discordSection": {
       "label": "Discord-Integration",
@@ -642,6 +656,32 @@
     "footer": {
       "disclaimer": "Unbefugter Zugriff verstößt gegen UEE-Code §18.7 — v0.1.0",
       "legalButton": "Impressum"
+    },
+    "pricing": {
+      "label": "Preise",
+      "freeTitle": "Kostenlos",
+      "freeSubtitle": "Für immer kostenlos",
+      "freeDesc": "Alles, was du für eine ernsthafte Handels-Org benötigst — keine Kreditkarte erforderlich.",
+      "proTitle": "PRO",
+      "proPrice": "4,99 €",
+      "proPer": "/ Monat",
+      "proDesc": "Erweiterte Automatisierung für Orgs mit hohem Volumen.",
+      "proNote": "Jederzeit kündbar · Ein Abonnement pro Organisation",
+      "getStarted": "Kostenlos starten",
+      "upgrade": "Auf PRO upgraden",
+      "freeFeature1": "Live-Dashboard & KPI-Charts",
+      "freeFeature2": "Vollständige Inventarverwaltung",
+      "freeFeature3": "Kauf- & Verkaufs-Workflows",
+      "freeFeature4": "Discord-Bot mit Slash-Commands",
+      "freeFeature5": "aUEC-Kassenschalter",
+      "freeFeature6": "Fracht-Tab-Handel",
+      "freeFeature7": "Mitgliederverwaltung & Rollen",
+      "freeFeature8": "Permanente Einladungslinks",
+      "freeFeature9": "Audit-Protokoll & Benachrichtigungen",
+      "proFeature1": "Alles aus Kostenlos",
+      "proFeature2": "CSV-Massenimport — bis zu 500 Einträge",
+      "proFeature3": "CSV-Export — vollständiges Inventar",
+      "proFeature4": "Google-Sheets-Sync — automatisch alle 10 Min."
     }
   },
   "csvImport": {
