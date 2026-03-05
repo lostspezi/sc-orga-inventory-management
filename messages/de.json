@@ -476,7 +476,10 @@
     "billingFeaturesTitle": "Was du mit PRO bekommst",
     "billingFeature1": "CSV-Massenimport — bis zu 500 Artikel auf einmal importieren",
     "billingFeature2": "CSV-Export — gesamtes Inventar als CSV exportieren",
-    "billingFeature3": "Google-Sheets-Sync — bidirektionaler Auto-Sync alle 10 Minuten"
+    "billingFeature3": "Google-Sheets-Sync — bidirektionaler Auto-Sync alle 10 Minuten",
+    "tabGeneral": "Allgemein",
+    "tabDiscord": "Discord",
+    "tabPro": "PRO"
   },
   "auec": {
     "eyebrow": "aUEC-Schalter",

@@ -476,7 +476,10 @@
     "billingFeaturesTitle": "Ce que vous obtenez avec PRO",
     "billingFeature1": "Import CSV en masse — importez jusqu'à 500 articles à la fois",
     "billingFeature2": "Export CSV — exportez votre inventaire complet en CSV",
-    "billingFeature3": "Synchronisation Google Sheets — auto-sync bidirectionnel toutes les 10 minutes"
+    "billingFeature3": "Synchronisation Google Sheets — auto-sync bidirectionnel toutes les 10 minutes",
+    "tabGeneral": "Général",
+    "tabDiscord": "Discord",
+    "tabPro": "PRO"
   },
   "auec": {
     "eyebrow": "Bureau de change aUEC",

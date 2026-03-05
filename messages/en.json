@@ -476,7 +476,10 @@
     "billingFeaturesTitle": "What you get with PRO",
     "billingFeature1": "CSV Bulk Import — import up to 500 items at once",
     "billingFeature2": "CSV Export — export your full inventory as CSV",
-    "billingFeature3": "Google Sheets Sync — bi-directional auto-sync every 10 minutes"
+    "billingFeature3": "Google Sheets Sync — bi-directional auto-sync every 10 minutes",
+    "tabGeneral": "General",
+    "tabDiscord": "Discord",
+    "tabPro": "PRO"
   },
   "auec": {
     "eyebrow": "aUEC Cash Desk",
