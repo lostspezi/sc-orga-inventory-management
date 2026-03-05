@@ -464,7 +464,7 @@
     "billingProTitle": "PRO Plan Active",
     "billingFreeTitle": "Upgrade to PRO",
     "billingProDesc": "All PRO features are unlocked for this organisation.",
-    "billingFreeDesc": "Unlock CSV Import/Export, Google Sheets sync, and more for €0.99/month.",
+    "billingFreeDesc": "Unlock CSV Import/Export, Google Sheets sync, and more for €4.99/month.",
     "billingRenewsOn": "Renews on",
     "billingCancelsOn": "Cancels on",
     "billingCancelAtPeriodEnd": "Cancellation scheduled",
@@ -559,7 +559,9 @@
       "pill4": "Auto Stock Tracking",
       "pill5": "Role-based Access",
       "pill6": "Full Audit Trail",
-      "pill7": "CSV Bulk Import"
+      "pill7": "CSV Bulk Import",
+      "pill8": "Cargo Trading",
+      "pill9": "aUEC Cash Desk"
     },
     "howItWorks": {
       "label": "How it works",
@@ -611,7 +613,19 @@
       "csvImportDesc": "Populate your entire inventory in one go. Upload a spreadsheet of item names with optional pricing and stock values — each name is looked up against the Star Citizen Wiki to pull in category, class, grade, and size automatically. Async processing with live progress tracking, per-row result reporting, and a downloadable retry file for any misses.",
       "csvImportTag1": "SC Wiki lookup",
       "csvImportTag2": "Async",
-      "csvImportTag3": "Import history"
+      "csvImportTag3": "Import history",
+      "cargoTitle": "Cargo Tab",
+      "cargoDesc": "Dedicated trading module for bulk commodity runs. Members post cargo sell/buy requests priced in aUEC. Stock adjusts in SCU as trades complete.",
+      "cargoTag1": "SCU quantities",
+      "cargoTag2": "aUEC pricing",
+      "auecTitle": "aUEC Cash Desk",
+      "auecDesc": "Exchange real aUEC between the org and its members. Org admins set the balance and buy/sell rates; members submit requests that go through the standard approve-and-confirm workflow.",
+      "auecTag1": "Org wallet",
+      "auecTag2": "aUEC exchange",
+      "inviteTitle": "Permanent Invite Links",
+      "inviteDesc": "Share a single permanent link to let anyone join your org. No expiry, no per-user tokens — regenerate or revoke it any time from Settings.",
+      "inviteTag1": "Shareable link",
+      "inviteTag2": "One-click revoke"
     },
     "discordSection": {
       "label": "Discord Integration",
@@ -642,6 +656,32 @@
     "footer": {
       "disclaimer": "Unauthorized access is a violation of UEE code §18.7 — v0.1.0",
       "legalButton": "Legal"
+    },
+    "pricing": {
+      "label": "Pricing",
+      "freeTitle": "Free",
+      "freeSubtitle": "Forever free",
+      "freeDesc": "Everything you need to run a serious trading org — no credit card required.",
+      "proTitle": "PRO",
+      "proPrice": "€4.99",
+      "proPer": "/ month",
+      "proDesc": "Advanced automation for high-volume orgs.",
+      "proNote": "Cancel anytime · One subscription per organisation",
+      "getStarted": "Get Started Free",
+      "upgrade": "Upgrade to PRO",
+      "freeFeature1": "Live dashboard & KPI charts",
+      "freeFeature2": "Full inventory management",
+      "freeFeature3": "Buy & Sell trade workflows",
+      "freeFeature4": "Discord bot with slash commands",
+      "freeFeature5": "aUEC Cash Desk",
+      "freeFeature6": "Cargo Tab trading",
+      "freeFeature7": "Member management & roles",
+      "freeFeature8": "Permanent invite links",
+      "freeFeature9": "Audit trail & notifications",
+      "proFeature1": "Everything in Free",
+      "proFeature2": "CSV Bulk Import — up to 500 items",
+      "proFeature3": "CSV Export — full inventory",
+      "proFeature4": "Google Sheets Sync — auto every 10 min"
     }
   },
   "csvImport": {

@@ -318,7 +318,7 @@ export default async function Home() {
 
                     {/* Feature pills */}
                     <div className="mb-10 flex flex-wrap justify-center gap-2" style={{ animation: "slide-in-up 0.6s 0.3s ease both" }}>
-                        {(["pill1", "pill2", "pill3", "pill4", "pill5", "pill6", "pill7"] as const).map((key) => (
+                        {(["pill1", "pill2", "pill3", "pill4", "pill5", "pill6", "pill7", "pill8", "pill9"] as const).map((key) => (
                             <span key={key} className="rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.12em]" style={{
                                 borderColor: "rgba(79,195,220,0.2)",
                                 color: "rgba(79,195,220,0.6)",
@@ -440,6 +440,118 @@ export default async function Home() {
                                 desc={t("features.csvImportDesc")}
                                 tags={[t("features.csvImportTag1"), t("features.csvImportTag2"), t("features.csvImportTag3")]}
                             />
+                            <FeatureCard
+                                delay="0.64s" accent="rgba(255,160,40"
+                                icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/><path d="M12 2v5M9 7h6"/></svg>}
+                                title={t("features.cargoTitle")}
+                                desc={t("features.cargoDesc")}
+                                tags={[t("features.cargoTag1"), t("features.cargoTag2")]}
+                            />
+                            <FeatureCard
+                                delay="0.72s" accent="rgba(87,242,135"
+                                icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/><path d="M8.5 8.5h.01M15.5 8.5h.01"/><path d="M9 15s1.5 2 3 2 3-2 3-2"/></svg>}
+                                title={t("features.auecTitle")}
+                                desc={t("features.auecDesc")}
+                                tags={[t("features.auecTag1"), t("features.auecTag2")]}
+                            />
+                            <FeatureCard
+                                delay="0.8s" accent="rgba(160,120,220"
+                                icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>}
+                                title={t("features.inviteTitle")}
+                                desc={t("features.inviteDesc")}
+                                tags={[t("features.inviteTag1"), t("features.inviteTag2")]}
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── PRICING ──────────────────────────────────────────── */}
+                <section className="px-6 pb-20 sm:px-10">
+                    <div className="mx-auto max-w-5xl">
+                        <Divider label={t("pricing.label")} />
+                        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+
+                            {/* Free */}
+                            <div className="relative overflow-hidden rounded-lg border p-7" style={{
+                                borderColor: "rgba(79,195,220,0.15)",
+                                background: "rgba(4,12,20,0.5)",
+                            }}>
+                                <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(79,195,220,0.3), transparent)" }} />
+                                <p className="mb-1 text-[10px] uppercase tracking-[0.3em]" style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}>
+                                    {t("pricing.freeSubtitle")}
+                                </p>
+                                <h3 className="mb-1 text-2xl font-black uppercase tracking-[0.1em]" style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}>
+                                    {t("pricing.freeTitle")}
+                                </h3>
+                                <p className="mb-5 text-[28px] font-black" style={{ color: "rgba(200,220,232,0.9)", fontFamily: "var(--font-display)" }}>
+                                    €0
+                                </p>
+                                <p className="mb-6 text-[12px] leading-relaxed" style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-ui)" }}>
+                                    {t("pricing.freeDesc")}
+                                </p>
+                                <ul className="mb-7 space-y-2.5">
+                                    {(["freeFeature1","freeFeature2","freeFeature3","freeFeature4","freeFeature5","freeFeature6","freeFeature7","freeFeature8","freeFeature9"] as const).map((k) => (
+                                        <li key={k} className="flex items-start gap-2.5 text-[12px]" style={{ color: "rgba(200,220,232,0.6)", fontFamily: "var(--font-mono)" }}>
+                                            <span style={{ color: "rgba(79,195,220,0.7)", flexShrink: 0, marginTop: 1 }}>✓</span>
+                                            {t(`pricing.${k}`)}
+                                        </li>
+                                    ))}
+                                </ul>
+                                {!userName && (
+                                    <a href="/login" className="sc-btn sc-btn-outline block w-full py-3 text-center text-xs">
+                                        {t("pricing.getStarted")}
+                                    </a>
+                                )}
+                            </div>
+
+                            {/* PRO */}
+                            <div className="relative overflow-hidden rounded-lg border p-7" style={{
+                                borderColor: "rgba(240,165,0,0.3)",
+                                background: "rgba(240,165,0,0.04)",
+                            }}>
+                                <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(240,165,0,0.6), transparent)" }} />
+                                <div className="absolute top-4 right-4 rounded-full border px-2.5 py-0.5 text-[9px] uppercase tracking-[0.2em]" style={{
+                                    borderColor: "rgba(240,165,0,0.35)",
+                                    color: "rgba(240,165,0,0.8)",
+                                    background: "rgba(240,165,0,0.07)",
+                                    fontFamily: "var(--font-mono)",
+                                }}>
+                                    PRO
+                                </div>
+                                <p className="mb-1 text-[10px] uppercase tracking-[0.3em]" style={{ color: "rgba(240,165,0,0.5)", fontFamily: "var(--font-mono)" }}>
+                                    {t("pricing.proDesc")}
+                                </p>
+                                <h3 className="mb-1 text-2xl font-black uppercase tracking-[0.1em]" style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}>
+                                    {t("pricing.proTitle")}
+                                </h3>
+                                <p className="mb-1 text-[28px] font-black" style={{ color: "rgba(240,165,0,0.95)", fontFamily: "var(--font-display)" }}>
+                                    {t("pricing.proPrice")}
+                                    <span className="ml-1 text-sm font-normal" style={{ color: "rgba(240,165,0,0.45)", fontFamily: "var(--font-mono)" }}>
+                                        {t("pricing.proPer")}
+                                    </span>
+                                </p>
+                                <p className="mb-6 text-[11px]" style={{ color: "rgba(240,165,0,0.35)", fontFamily: "var(--font-mono)" }}>
+                                    {t("pricing.proNote")}
+                                </p>
+                                <ul className="mb-7 space-y-2.5">
+                                    {(["proFeature1","proFeature2","proFeature3","proFeature4"] as const).map((k) => (
+                                        <li key={k} className="flex items-start gap-2.5 text-[12px]" style={{ color: "rgba(200,220,232,0.6)", fontFamily: "var(--font-mono)" }}>
+                                            <span style={{ color: "rgba(240,165,0,0.7)", flexShrink: 0, marginTop: 1 }}>✓</span>
+                                            {t(`pricing.${k}`)}
+                                        </li>
+                                    ))}
+                                </ul>
+                                {userName ? (
+                                    <a href="/terminal" className="sc-btn sc-btn-primary block w-full py-3 text-center text-xs">
+                                        {t("goToTerminal")}
+                                    </a>
+                                ) : (
+                                    <a href="/login" className="sc-btn sc-btn-primary block w-full py-3 text-center text-xs">
+                                        {t("pricing.upgrade")}
+                                    </a>
+                                )}
+                            </div>
+
                         </div>
                     </div>
                 </section>
