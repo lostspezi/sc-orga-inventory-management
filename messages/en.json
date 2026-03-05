@@ -266,6 +266,7 @@
     "saveItem": "Save Item",
     "saving": "Saving…",
     "filterOfficial": "Show only items that are not sold in in-game shops.",
+    "filterCommodities": "Commodities only (cargo items)",
     "searchItems": "Search Star Citizen items...",
     "fromLocalDb": "From local database",
     "fromWiki": "From Star Citizen Wiki",

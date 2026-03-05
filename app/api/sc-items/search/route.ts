@@ -12,6 +12,9 @@ export type ScWikiItem = {
     description_data: { name: string; value: string; type: string }[] | null;
     is_base_variant: boolean;
     uex_prices: { price_buy: number; price_sell: number; terminal_name: string }[];
+    resource_container?: {
+        capacity?: { unit_name?: string };
+    } | null;
 };
 
 export type ItemSearchResult = {
@@ -21,10 +24,12 @@ export type ItemSearchResult = {
     category?: string;
     description?: string;
     manufacturer?: string;
+    unit?: string;
 };
 
-async function fetchScWikiItems(query: string, limit = 10): Promise<ScWikiItem[]> {
-    const url = `https://api.star-citizen.wiki/api/items?filter[name]=${encodeURIComponent(query)}&page[size]=${limit}&locale=en_EN`;
+async function fetchScWikiItems(query: string, limit = 10, commoditiesOnly = false): Promise<ScWikiItem[]> {
+    let url = `https://api.star-citizen.wiki/api/items?filter[name]=${encodeURIComponent(query)}&page[size]=${limit}&locale=en_EN`;
+    if (commoditiesOnly) url += "&filter[type]=Cargo";
     const res = await fetch(url, {
         headers: { Accept: "application/json" },
         next: { revalidate: 300 },
@@ -55,6 +60,7 @@ export async function GET(request: NextRequest) {
     const q = request.nextUrl.searchParams.get("q")?.trim() ?? "";
     const siblingsFor = request.nextUrl.searchParams.get("siblingsFor")?.trim() ?? "";
     const excludeShopItems = request.nextUrl.searchParams.get("excludeShopItems") === "true";
+    const commoditiesOnly = request.nextUrl.searchParams.get("commoditiesOnly") === "true";
 
     if (siblingsFor) {
         const candidates = getBaseNameCandidates(siblingsFor);
@@ -62,7 +68,7 @@ export async function GET(request: NextRequest) {
         for (const baseName of candidates) {
             if (baseName.length < 3) continue;
 
-            const items = await fetchScWikiItems(baseName, 30);
+            const items = await fetchScWikiItems(baseName, 30, commoditiesOnly);
             if (items.length > 1) {
                 const siblings = items
                     .filter((item) => item.name !== siblingsFor)
@@ -89,7 +95,7 @@ export async function GET(request: NextRequest) {
 
     let results: ItemSearchResult[] = [];
     try {
-        const items = await fetchScWikiItems(q, 12);
+        const items = await fetchScWikiItems(q, 12, commoditiesOnly);
         results = items
             .filter((item) => !(excludeShopItems && isSoldInShops(item)))
             .slice(0, 12)
@@ -100,6 +106,7 @@ export async function GET(request: NextRequest) {
                 category: item.type !== "UNDEFINED" ? item.type : undefined,
                 description: item.description?.en_EN?.slice(0, 300),
                 manufacturer: item.manufacturer?.name,
+                unit: item.resource_container?.capacity?.unit_name ?? undefined,
             }));
     } catch {
         // SC wiki unreachable

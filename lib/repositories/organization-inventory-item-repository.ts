@@ -25,6 +25,7 @@ function toView(doc: OrganizationInventoryItemDocument): OrganizationInventoryIt
         normalizedName: doc.normalizedName,
         category: doc.category,
         scWikiUuid: doc.scWikiUuid,
+        unit: doc.unit,
         buyPrice: doc.buyPrice,
         sellPrice: doc.sellPrice,
         quantity: doc.quantity,
@@ -47,6 +48,9 @@ export async function createOrganizationInventoryItemInDb(input: {
     buyPrice: number;
     sellPrice: number;
     quantity: number;
+    minStock?: number;
+    maxStock?: number;
+    unit?: string;
 }): Promise<{ created: boolean; alreadyExists: boolean; document?: OrganizationInventoryItemDocument }> {
     const db = await getDb();
     const normalizedName = input.normalizedName ?? normalizeItemName(input.name);
@@ -72,6 +76,9 @@ export async function createOrganizationInventoryItemInDb(input: {
         buyPrice: input.buyPrice,
         sellPrice: input.sellPrice,
         quantity: input.quantity,
+        ...(input.minStock !== undefined && { minStock: input.minStock }),
+        ...(input.maxStock !== undefined && { maxStock: input.maxStock }),
+        ...(input.unit !== undefined && { unit: input.unit }),
         createdAt: now,
         updatedAt: now,
     };

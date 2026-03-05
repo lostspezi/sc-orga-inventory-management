@@ -14,6 +14,7 @@ type InventoryItem = {
     normalizedName: string;
     category?: string;
     scWikiUuid?: string;
+    unit?: string;
     buyPrice: number;
     sellPrice: number;
     quantity: number;
@@ -244,6 +245,7 @@ export default function InventorySearchPanel({
                                         value={item.quantity}
                                         outOfStock={t("outOfStock")}
                                         pieces={t("pieces", { count: item.quantity })}
+                                        unit={item.unit}
                                         minStock={item.minStock}
                                         maxStock={item.maxStock}
                                         labelLow={t("stockLow")}
@@ -322,6 +324,7 @@ export default function InventorySearchPanel({
                 item={selectedItem}
                 slug={slug}
                 transactions={selectedTransactions}
+                unit={selectedItem?.unit}
             />
 
             {txIntent && (
@@ -365,6 +368,7 @@ function QuantityRow({
     value,
     outOfStock,
     pieces,
+    unit,
     minStock,
     maxStock,
     labelLow,
@@ -374,6 +378,7 @@ function QuantityRow({
     value: number;
     outOfStock: string;
     pieces: string;
+    unit?: string;
     minStock?: number;
     maxStock?: number;
     labelLow: string;
@@ -419,7 +424,9 @@ function QuantityRow({
                     className="text-[11px]"
                     style={{color: "rgba(200,220,232,0.65)", fontFamily: "var(--font-mono)"}}
                 >
-                    {value > 0 ? pieces : outOfStock}
+                    {value > 0
+                        ? unit ? `${value} ${unit}` : pieces
+                        : outOfStock}
                 </span>
             </div>
         </div>

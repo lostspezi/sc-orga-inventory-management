@@ -52,10 +52,16 @@ export async function createOrganizationInventoryItemAction(
     const itemName = String(formData.get("itemName") ?? "").trim();
     const scWikiUuid = String(formData.get("scWikiUuid") ?? "").trim() || undefined;
     const category = String(formData.get("category") ?? "").trim() || undefined;
+    const unit = String(formData.get("unit") ?? "").trim() || undefined;
 
     const buyPrice = parseNumber(formData.get("buyPrice"));
     const sellPrice = parseNumber(formData.get("sellPrice"));
     const quantity = parseNumber(formData.get("quantity"));
+
+    const minStockRaw = formData.get("minStock");
+    const maxStockRaw = formData.get("maxStock");
+    const minStock = minStockRaw ? parseInt(String(minStockRaw), 10) : undefined;
+    const maxStock = maxStockRaw ? parseInt(String(maxStockRaw), 10) : undefined;
 
     // Variants JSON (optional) – array of { name, type, uuid }
     const variantsJson = formData.get("variantsJson");
@@ -120,6 +126,9 @@ export async function createOrganizationInventoryItemAction(
             buyPrice,
             sellPrice,
             quantity,
+            minStock,
+            maxStock,
+            unit,
         });
 
         if (result.alreadyExists) {

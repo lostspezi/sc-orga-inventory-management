@@ -27,9 +27,10 @@ type Props = {
     onSelectAction: (selection: SelectedItemWithVariants | null) => void;
     disabled?: boolean;
     excludeShopItems?: boolean;
+    commoditiesOnly?: boolean;
 };
 
-export default function ScItemAutocomplete({ onSelectAction, disabled, excludeShopItems = false }: Props) {
+export default function ScItemAutocomplete({ onSelectAction, disabled, excludeShopItems = false, commoditiesOnly = false }: Props) {
     const t = useTranslations("inventory");
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<ItemSearchResult[]>([]);
@@ -58,7 +59,7 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
         return () => document.removeEventListener("mousedown", handler);
     }, []);
 
-    // Re-trigger search when excludeShopItems changes, and we already have a query
+    // Re-trigger search when excludeShopItems/commoditiesOnly changes, and we already have a query
     useEffect(() => {
         if (selected || query.length < 2) return;
         if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -68,6 +69,7 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
             try {
                 const params = new URLSearchParams({ q: query });
                 if (excludeShopItems) params.set("excludeShopItems", "true");
+                if (commoditiesOnly) params.set("commoditiesOnly", "true");
                 const res = await fetch(`/api/sc-items/search?${params}`);
                 const json = await res.json();
                 setResults(json.results ?? []);
@@ -78,7 +80,7 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
                 setLoading(false);
             }
         }, 300);
-    }, [query, selected, excludeShopItems]);
+    }, [query, selected, excludeShopItems, commoditiesOnly]);
 
     function emitSelection(
         item: ItemSearchResult,
@@ -103,6 +105,7 @@ export default function ScItemAutocomplete({ onSelectAction, disabled, excludeSh
         try {
             const params = new URLSearchParams({ siblingsFor: itemName });
             if (excludeShopItems) params.set("excludeShopItems", "true");
+            if (commoditiesOnly) params.set("commoditiesOnly", "true");
             const res = await fetch(`/api/sc-items/search?${params}`);
             const json = await res.json();
             const fetched: SiblingVariant[] = json.siblings ?? [];

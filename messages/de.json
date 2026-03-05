@@ -266,6 +266,7 @@
     "saveItem": "Artikel speichern",
     "saving": "Speichert…",
     "filterOfficial": "Nur Artikel anzeigen, die nicht in Ingame-Shops verkauft werden.",
+    "filterCommodities": "Nur Rohstoffe (Frachtgüter)",
     "searchItems": "Star Citizen Artikel suchen...",
     "fromLocalDb": "Aus lokaler Datenbank",
     "fromWiki": "Aus dem Star Citizen Wiki",

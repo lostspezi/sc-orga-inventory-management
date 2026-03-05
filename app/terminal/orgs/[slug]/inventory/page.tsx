@@ -100,6 +100,7 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
         normalizedName: item.normalizedName,
         category: item.category,
         scWikiUuid: item.scWikiUuid,
+        unit: item.unit,
         minStock: item.minStock,
         maxStock: item.maxStock,
         buyPrice: item.buyPrice,

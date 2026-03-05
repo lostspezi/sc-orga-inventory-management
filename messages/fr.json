@@ -266,6 +266,7 @@
     "saveItem": "Enregistrer l'article",
     "saving": "Enregistrement…",
     "filterOfficial": "Afficher uniquement les articles non vendus dans les boutiques du jeu.",
+    "filterCommodities": "Marchandises uniquement (articles cargo)",
     "searchItems": "Rechercher des articles Star Citizen...",
     "fromLocalDb": "Depuis la base de données locale",
     "fromWiki": "Depuis le Wiki Star Citizen",

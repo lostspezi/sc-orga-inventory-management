@@ -28,6 +28,7 @@ export type OrganizationInventoryItemDocument = {
     normalizedName: string;
     category?: string;
     scWikiUuid?: string;
+    unit?: string;
 
     buyPrice: number;
     sellPrice: number;
@@ -52,6 +53,7 @@ export type OrganizationInventoryItemView = {
     normalizedName: string;
     category?: string;
     scWikiUuid?: string;
+    unit?: string;
     buyPrice: number;
     sellPrice: number;
     quantity: number;

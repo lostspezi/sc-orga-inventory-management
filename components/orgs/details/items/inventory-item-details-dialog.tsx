@@ -18,6 +18,7 @@ type Props = {
         inventoryItemId: string;
         name: string;
         category?: string;
+        unit?: string;
         buyPrice: number;
         sellPrice: number;
         quantity: number;
@@ -26,6 +27,7 @@ type Props = {
     } | null;
     slug: string;
     transactions?: OrganizationTransactionView[];
+    unit?: string;
 };
 
 const initialState = {
@@ -43,6 +45,7 @@ export default function InventoryItemDetailsDialog({
                                                        slug,
                                                        transactions = [],
                                                    }: Props) {
+    const unit = item?.unit;
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const router = useRouter();
     const t = useTranslations("inventory");
@@ -267,6 +270,7 @@ export default function InventoryItemDetailsDialog({
                                     id="quantity"
                                     name="quantity"
                                     label={t("stock")}
+                                    unit={unit}
                                     defaultValue={item.quantity}
                                     disabled={!canEdit || isPending}
                                     error={state.fieldErrors?.quantity}
@@ -276,6 +280,7 @@ export default function InventoryItemDetailsDialog({
                                     id="minStock"
                                     name="minStock"
                                     label={t("minStock")}
+                                    unit={unit}
                                     defaultValue={item.minStock}
                                     disabled={!canEdit || isPending}
                                 />
@@ -284,6 +289,7 @@ export default function InventoryItemDetailsDialog({
                                     id="maxStock"
                                     name="maxStock"
                                     label={t("maxStock")}
+                                    unit={unit}
                                     defaultValue={item.maxStock}
                                     disabled={!canEdit || isPending}
                                 />
@@ -368,6 +374,7 @@ function Field({
                    id,
                    name,
                    label,
+                   unit,
                    defaultValue,
                    disabled,
                    error,
@@ -375,6 +382,7 @@ function Field({
     id: string;
     name: string;
     label: string;
+    unit?: string;
     defaultValue: number;
     disabled: boolean;
     error?: string;
@@ -383,10 +391,15 @@ function Field({
         <div>
             <label
                 htmlFor={id}
-                className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
+                className="mb-1.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em]"
                 style={{color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)"}}
             >
                 {label}
+                {unit && (
+                    <span style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)", fontSize: 9 }}>
+                        {unit}
+                    </span>
+                )}
             </label>
             <input
                 id={id}
@@ -411,12 +424,14 @@ function OptionalField({
     id,
     name,
     label,
+    unit,
     defaultValue,
     disabled,
 }: {
     id: string;
     name: string;
     label: string;
+    unit?: string;
     defaultValue?: number;
     disabled: boolean;
 }) {
@@ -424,10 +439,15 @@ function OptionalField({
         <div>
             <label
                 htmlFor={id}
-                className="mb-1.5 block text-[10px] uppercase tracking-[0.22em]"
+                className="mb-1.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em]"
                 style={{color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)"}}
             >
                 {label}
+                {unit && (
+                    <span style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)", fontSize: 9 }}>
+                        {unit}
+                    </span>
+                )}
             </label>
             <input
                 id={id}
