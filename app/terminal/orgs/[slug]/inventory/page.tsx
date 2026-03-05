@@ -15,6 +15,7 @@ import CreateInventoryItemForm from "@/components/orgs/details/items/create-inve
 import HudAccordion from "@/components/ui/hud-accordion";
 import InventorySearchPanel from "@/components/orgs/details/items/inventory-search-panel";
 import CsvImportForm from "@/components/orgs/details/items/csv-import-form";
+import InventoryAdminTools from "@/components/orgs/details/items/inventory-admin-tools";
 import Link from "next/link";
 import ShowDeleteSuccessMessage from "@/components/orgs/details/items/show-delete-success-message";
 import InventoryTabNav from "@/components/orgs/details/items/inventory-tab-nav";
@@ -61,6 +62,19 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
         getTranslations("auec"),
         getTranslations("csvImport"),
     ]);
+
+    const inventoryToolsLabels = {
+        exportCsv: t("exportCsv"),
+        exportCsvDesc: t("exportCsvDesc"),
+        exportStarted: t("exportStarted"),
+        exportFailed: t("exportFailed"),
+        clearInventory: t("clearInventory"),
+        clearInventoryDesc: t("clearInventoryDesc"),
+        clearInventoryConfirmTitle: t("clearInventoryConfirmTitle"),
+        clearInventoryConfirmDesc: t("clearInventoryConfirmDesc"),
+        clearInventoryConfirm: t("clearInventoryConfirm"),
+        clearInventoryCancel: t("clearInventoryCancel"),
+    };
 
     // Stage 1: fetch paginated items + categories + auec in parallel
     const [paginatedResult, categories, auecTransactions] = await Promise.all([
@@ -204,6 +218,17 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                                             {tCsv("viewAllImports")} →
                                         </Link>
                                     </div>
+                                </HudAccordion>
+                                <HudAccordion
+                                    eyebrow={t("eyebrow")}
+                                    title={t("clearInventory")}
+                                    description={t("clearInventoryDesc")}
+                                >
+                                    <InventoryAdminTools
+                                        organizationSlug={org.slug}
+                                        labels={inventoryToolsLabels}
+                                        items={serializedInventoryItems}
+                                    />
                                 </HudAccordion>
                             </>
                         )}

@@ -113,9 +113,10 @@ export type OrganizationAuditLogDocument = {
         | "auec_transaction.rejected"
         | "auec_transaction.confirmed"
         | "auec_transaction.completed"
-        | "auec_transaction.cancelled";
+        | "auec_transaction.cancelled"
+        | "inventory.cleared";
 
-    entityType: "organization" | "member" | "item" | "inventory_item" | "transaction" | "auec_transaction";
+    entityType: "organization" | "member" | "item" | "inventory_item" | "inventory" | "transaction" | "auec_transaction";
     entityId?: string;
 
     message: string;

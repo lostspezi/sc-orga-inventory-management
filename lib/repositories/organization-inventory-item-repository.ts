@@ -92,6 +92,16 @@ export async function createOrganizationInventoryItemInDb(input: {
     };
 }
 
+export async function deleteAllOrganizationInventoryItemsInDb(
+    organizationId: ObjectId
+): Promise<number> {
+    const db = await getDb();
+    const result = await db
+        .collection<OrganizationInventoryItemDocument>(COLLECTION)
+        .deleteMany({ organizationId });
+    return result.deletedCount;
+}
+
 export async function getOrganizationInventoryItemViewsByOrganizationId(
     organizationId: ObjectId
 ): Promise<OrganizationInventoryItemView[]> {
