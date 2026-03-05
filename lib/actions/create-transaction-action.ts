@@ -7,17 +7,13 @@ import { getTranslations } from "next-intl/server";
 import { ObjectId } from "mongodb";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import { getOrganizationInventoryItemDocumentById } from "@/lib/repositories/organization-inventory-item-repository";
-import { getDb } from "@/lib/db";
 import {
     createOrganizationTransaction,
     setTransactionDiscordMessage,
 } from "@/lib/repositories/organization-transaction-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
-import type { ItemDocument } from "@/lib/types/item";
 import { sendTransactionEmbed } from "@/lib/discord/send-transaction-embed";
 import { notifyMany } from "@/lib/notify";
-import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
-import { getMemberDkp } from "@/lib/raid-helper/get-member-dkp";
 
 export type CreateTransactionActionState = {
     success: boolean;
@@ -111,32 +107,15 @@ export async function createTransactionAction(
         }
     }
 
-    const db = await getDb();
-    const itemDoc = await db.collection<ItemDocument>("items").findOne({ _id: invItem.itemId });
-    const itemName = itemDoc?.name ?? "Unknown Item";
-
+    const itemName = invItem.name;
     const pricePerUnit = direction === "member_to_org" ? invItem.sellPrice : invItem.buyPrice;
     const totalPrice = quantityRaw * pricePerUnit;
-
-    // For buy transactions, check the member has enough DKP
-    if (direction === "org_to_member" && org.raidHelperApiKey && org.discordGuildId) {
-        const discordId = await getDiscordUserId(session.user.id);
-        if (discordId) {
-            const currentDkp = await getMemberDkp(org.discordGuildId, discordId, org.raidHelperApiKey);
-            if (currentDkp !== null && totalPrice > currentDkp) {
-                return {
-                    ...initialState,
-                    message: `Insufficient DKP. Required: ${totalPrice.toLocaleString()}, available: ${currentDkp.toLocaleString()}.`,
-                };
-            }
-        }
-    }
 
     const transaction = await createOrganizationTransaction({
         organizationId: org._id,
         organizationSlug: org.slug,
         inventoryItemId: invItem._id,
-        itemId: invItem.itemId,
+        itemId: invItem._id,
         itemName,
         direction: direction as "member_to_org" | "org_to_member",
         initiatedBy: member.role === "member" ? "member" : "admin",
@@ -159,7 +138,7 @@ export async function createTransactionAction(
         action: "transaction.requested",
         entityType: "transaction",
         entityId: transaction._id,
-        message: `Transaction requested: ${direction === "member_to_org" ? "sell" : "buy"} ${quantityRaw}x "${itemName}" at ${pricePerUnit} DKP/unit.`,
+        message: `Transaction requested: ${direction === "member_to_org" ? "sell" : "buy"} ${quantityRaw}x "${itemName}" at ${pricePerUnit} aUEC/unit.`,
         metadata: { direction, quantity: quantityRaw, pricePerUnit: pricePerUnit, totalPrice },
     });
 

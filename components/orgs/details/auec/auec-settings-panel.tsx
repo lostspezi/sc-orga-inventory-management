@@ -8,10 +8,6 @@ import { updateAuecSettingsAction } from "@/lib/actions/update-auec-settings-act
 type Props = {
     organizationSlug: string;
     auecBalance?: number;
-    auecBuyPriceDkp?: number;
-    auecBuyPriceAuec?: number;
-    auecSellPriceDkp?: number;
-    auecSellPriceAuec?: number;
 };
 
 const initialState = { success: false, message: "" };
@@ -19,10 +15,6 @@ const initialState = { success: false, message: "" };
 export default function AuecSettingsPanel({
     organizationSlug,
     auecBalance,
-    auecBuyPriceDkp,
-    auecBuyPriceAuec,
-    auecSellPriceDkp,
-    auecSellPriceAuec,
 }: Props) {
     const t = useTranslations("auec");
     const router = useRouter();
@@ -86,110 +78,6 @@ export default function AuecSettingsPanel({
                     />
                 </div>
 
-                {/* Buy rate */}
-                <div>
-                    <p
-                        className="mb-2 text-[10px] uppercase tracking-[0.22em]"
-                        style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
-                    >
-                        {t("buyRate")}
-                    </p>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label
-                                htmlFor="auecBuyPriceDkp"
-                                className="mb-1 block text-[10px]"
-                                style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
-                            >
-                                {t("rateDkp")}
-                            </label>
-                            <input
-                                id="auecBuyPriceDkp"
-                                name="auecBuyPriceDkp"
-                                type="number"
-                                min="1"
-                                step="1"
-                                defaultValue={auecBuyPriceDkp ?? ""}
-                                disabled={isPending}
-                                className="sc-input w-full disabled:opacity-70"
-                                placeholder="100"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                htmlFor="auecBuyPriceAuec"
-                                className="mb-1 block text-[10px]"
-                                style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
-                            >
-                                {t("rateAuec")}
-                            </label>
-                            <input
-                                id="auecBuyPriceAuec"
-                                name="auecBuyPriceAuec"
-                                type="number"
-                                min="1"
-                                step="1"
-                                defaultValue={auecBuyPriceAuec ?? ""}
-                                disabled={isPending}
-                                className="sc-input w-full disabled:opacity-70"
-                                placeholder="250000"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Sell rate */}
-                <div>
-                    <p
-                        className="mb-2 text-[10px] uppercase tracking-[0.22em]"
-                        style={{ color: "rgba(79,195,220,0.55)", fontFamily: "var(--font-mono)" }}
-                    >
-                        {t("sellRate")}
-                    </p>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label
-                                htmlFor="auecSellPriceDkp"
-                                className="mb-1 block text-[10px]"
-                                style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
-                            >
-                                {t("rateDkp")}
-                            </label>
-                            <input
-                                id="auecSellPriceDkp"
-                                name="auecSellPriceDkp"
-                                type="number"
-                                min="1"
-                                step="1"
-                                defaultValue={auecSellPriceDkp ?? ""}
-                                disabled={isPending}
-                                className="sc-input w-full disabled:opacity-70"
-                                placeholder="25"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                htmlFor="auecSellPriceAuec"
-                                className="mb-1 block text-[10px]"
-                                style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
-                            >
-                                {t("rateAuec")}
-                            </label>
-                            <input
-                                id="auecSellPriceAuec"
-                                name="auecSellPriceAuec"
-                                type="number"
-                                min="1"
-                                step="1"
-                                defaultValue={auecSellPriceAuec ?? ""}
-                                disabled={isPending}
-                                className="sc-input w-full disabled:opacity-70"
-                                placeholder="250000"
-                            />
-                        </div>
-                    </div>
-                </div>
-
                 {state.message && (
                     <p
                         className="text-sm"
@@ -203,7 +91,7 @@ export default function AuecSettingsPanel({
                 )}
 
                 <button type="submit" className="sc-btn" disabled={isPending}>
-                    {isPending ? t("saving") : t("saveRates")}
+                    {isPending ? t("saving") : t("saveSettings")}
                 </button>
             </form>
         </div>

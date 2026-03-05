@@ -11,8 +11,8 @@ import {
 } from "@/lib/repositories/organization-transaction-repository";
 import { adjustOrganizationInventoryItemQuantity } from "@/lib/repositories/organization-inventory-item-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
-import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
-import { updateMemberDkp } from "@/lib/raid-helper/update-member-dkp";
+import { adjustUserAuecBalance } from "@/lib/repositories/user-repository";
+import { adjustOrgAuecBalance } from "@/lib/repositories/organization-repository";
 import { notifyMany } from "@/lib/notify";
 import { sendLowStockAlert } from "@/lib/discord/send-low-stock-alert";
 
@@ -221,33 +221,11 @@ export async function handleTransactionButton(interaction: ButtonInteraction): P
                 metadata: { delta, direction: tx.direction, quantity: tx.quantity },
             });
 
-            // Sync DKP with Raid Helper (non-blocking)
-            if (org.raidHelperApiKey && org.discordGuildId) {
-                const memberDiscordId = await getDiscordUserId(tx.memberId);
-                if (memberDiscordId) {
-                    const dkpOperation = tx.direction === "member_to_org" ? "add" : "subtract";
-                    const verb = tx.direction === "member_to_org" ? "Sell" : "Buy";
-                    const adminName = patch.adminConfirmedByUsername ?? tx.adminConfirmedByUsername ?? "Admin";
-                    const now = new Date();
-                    const ts = now.toLocaleDateString("en-GB", {
-                        day: "2-digit", month: "short", year: "numeric", timeZone: "UTC",
-                    }) + " " + now.toLocaleTimeString("en-GB", {
-                        hour: "2-digit", minute: "2-digit", timeZone: "UTC",
-                    }) + " UTC";
-                    const dkpDescription = `[SC Orga] ${verb} ${tx.quantity}x ${tx.itemName} | TxID: ${txId} | Trader: ${tx.memberUsername} | Admin: ${adminName} | ${ts}`;
-                    const dkpOk = await updateMemberDkp(
-                        org.discordGuildId,
-                        memberDiscordId,
-                        org.raidHelperApiKey,
-                        dkpOperation,
-                        tx.totalPrice,
-                        dkpDescription
-                    );
-                    if (!dkpOk) {
-                        console.error(`[DKP] Failed to update DKP for member ${tx.memberId} after completing transaction ${txId} via Discord`);
-                    }
-                }
-            }
+            // Adjust member aUEC balance
+            const auecDelta = tx.direction === "member_to_org" ? tx.totalPrice : -tx.totalPrice;
+            await adjustUserAuecBalance(tx.memberId, auecDelta);
+            // Adjust org aUEC pool (opposite direction)
+            await adjustOrgAuecBalance(org._id, -auecDelta);
 
             await refreshEmbed(interaction, txId);
             await interaction.followUp({ content: `Transaction completed: ${tx.itemName}. Inventory updated.`, flags: MessageFlagsBitField.Flags.Ephemeral });

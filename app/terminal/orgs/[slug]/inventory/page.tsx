@@ -15,13 +15,13 @@ import CreateInventoryItemForm from "@/components/orgs/details/items/create-inve
 import HudAccordion from "@/components/ui/hud-accordion";
 import InventorySearchPanel from "@/components/orgs/details/items/inventory-search-panel";
 import CsvImportForm from "@/components/orgs/details/items/csv-import-form";
+import InventoryAdminTools from "@/components/orgs/details/items/inventory-admin-tools";
 import Link from "next/link";
 import ShowDeleteSuccessMessage from "@/components/orgs/details/items/show-delete-success-message";
 import InventoryTabNav from "@/components/orgs/details/items/inventory-tab-nav";
 import AuecCashDesk from "@/components/orgs/details/auec/auec-cash-desk";
 import type {OrganizationTransactionView} from "@/lib/types/transaction";
-import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
-import { getMemberDkp } from "@/lib/raid-helper/get-member-dkp";
+import { getUserAuecBalance } from "@/lib/repositories/user-repository";
 import { ObjectId } from "mongodb";
 
 const PAGE_SIZE = 25;
@@ -63,6 +63,19 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
         getTranslations("csvImport"),
     ]);
 
+    const inventoryToolsLabels = {
+        exportCsv: t("exportCsv"),
+        exportCsvDesc: t("exportCsvDesc"),
+        exportStarted: t("exportStarted"),
+        exportFailed: t("exportFailed"),
+        clearInventory: t("clearInventory"),
+        clearInventoryDesc: t("clearInventoryDesc"),
+        clearInventoryConfirmTitle: t("clearInventoryConfirmTitle"),
+        clearInventoryConfirmDesc: t("clearInventoryConfirmDesc"),
+        clearInventoryConfirm: t("clearInventoryConfirm"),
+        clearInventoryCancel: t("clearInventoryCancel"),
+    };
+
     // Stage 1: fetch paginated items + categories + auec in parallel
     const [paginatedResult, categories, auecTransactions] = await Promise.all([
         activeTab === "items"
@@ -92,25 +105,16 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                 : await getTransactionsByMemberAndInventoryItemIds(org._id, session.user.id, pageItemIds)
             : [];
 
-    // DKP balance for buy direction on aUEC tab
-    let currentDkp: number | null = null;
-    if (activeTab === "auec" && org.raidHelperApiKey && org.discordGuildId) {
-        const discordId = await getDiscordUserId(session.user.id);
-        if (discordId) {
-            currentDkp = await getMemberDkp(org.discordGuildId, discordId, org.raidHelperApiKey);
-        }
-    }
+    // Member aUEC balance for the aUEC tab
+    const memberAuecBalance = activeTab === "auec" ? await getUserAuecBalance(session.user.id) : null;
 
     const serializedInventoryItems = inventoryItems.map((item) => ({
         inventoryItemId: item.inventoryItemId.toString(),
-        itemId: item.itemId.toString(),
         name: item.name,
         normalizedName: item.normalizedName,
-        description: item.description,
         category: item.category,
-        itemClass: item.itemClass,
-        grade: item.grade,
-        size: item.size,
+        scWikiUuid: item.scWikiUuid,
+        unit: item.unit,
         minStock: item.minStock,
         maxStock: item.maxStock,
         buyPrice: item.buyPrice,
@@ -215,6 +219,17 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                                         </Link>
                                     </div>
                                 </HudAccordion>
+                                <HudAccordion
+                                    eyebrow={t("eyebrow")}
+                                    title={t("clearInventory")}
+                                    description={t("clearInventoryDesc")}
+                                >
+                                    <InventoryAdminTools
+                                        organizationSlug={org.slug}
+                                        labels={inventoryToolsLabels}
+                                        items={serializedInventoryItems}
+                                    />
+                                </HudAccordion>
                             </>
                         )}
                         <InventorySearchPanel
@@ -234,12 +249,8 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                         currentUserId={session.user.id}
                         isAdminOrOwner={isAdminOrOwner}
                         auecBalance={org.auecBalance}
-                        auecBuyPriceDkp={org.auecBuyPriceDkp}
-                        auecBuyPriceAuec={org.auecBuyPriceAuec}
-                        auecSellPriceDkp={org.auecSellPriceDkp}
-                        auecSellPriceAuec={org.auecSellPriceAuec}
                         transactions={auecTransactions}
-                        currentDkp={currentDkp}
+                        memberAuecBalance={memberAuecBalance}
                     />
                 )}
             </div>

@@ -13,8 +13,6 @@ function toView(doc: AuecTransactionDocument): AuecTransactionView {
         memberUsername: doc.memberUsername,
         direction: doc.direction,
         auecAmount: doc.auecAmount,
-        dkpRate: doc.dkpRate,
-        totalDkp: doc.totalDkp,
         status: doc.status,
         note: doc.note,
         memberConfirmed: doc.memberConfirmed,

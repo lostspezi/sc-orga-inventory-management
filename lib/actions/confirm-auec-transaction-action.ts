@@ -12,8 +12,7 @@ import {
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
 import { updateAuecTransactionEmbed } from "@/lib/discord/send-auec-transaction-embed";
 import { notify, notifyMany } from "@/lib/notify";
-import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
-import { updateMemberDkp } from "@/lib/raid-helper/update-member-dkp";
+import { adjustUserAuecBalance } from "@/lib/repositories/user-repository";
 
 export async function confirmAuecTransactionAction(formData: FormData): Promise<void> {
     const session = await auth();
@@ -77,38 +76,12 @@ export async function confirmAuecTransactionAction(formData: FormData): Promise<
             entityType: "auec_transaction",
             entityId: transactionId,
             message: `aUEC transaction completed. Balance adjusted by ${delta > 0 ? "+" : ""}${delta.toLocaleString()} aUEC.`,
-            metadata: { delta, direction: tx.direction, auecAmount: tx.auecAmount, totalDkp: tx.totalDkp },
+            metadata: { delta, direction: tx.direction, auecAmount: tx.auecAmount },
         });
 
-        // Sync DKP with Raid Helper (non-blocking)
-        if (org.raidHelperApiKey && org.discordGuildId) {
-            const memberDiscordId = await getDiscordUserId(tx.memberId);
-            if (memberDiscordId) {
-                // member_to_org (sell) → member receives DKP → add
-                // org_to_member (buy) → member spends DKP → subtract
-                const dkpOperation = tx.direction === "member_to_org" ? "add" : "subtract";
-                const verb = tx.direction === "member_to_org" ? "Sell" : "Buy";
-                const adminName = patch.adminConfirmedByUsername ?? tx.adminConfirmedByUsername ?? "Admin";
-                const now = new Date();
-                const ts = now.toLocaleDateString("en-GB", {
-                    day: "2-digit", month: "short", year: "numeric", timeZone: "UTC",
-                }) + " " + now.toLocaleTimeString("en-GB", {
-                    hour: "2-digit", minute: "2-digit", timeZone: "UTC",
-                }) + " UTC";
-                const dkpDescription = `[SC Orga] ${verb} ${tx.auecAmount.toLocaleString()} aUEC | TxID: ${transactionId} | Trader: ${tx.memberUsername} | Admin: ${adminName} | ${ts}`;
-                const dkpOk = await updateMemberDkp(
-                    org.discordGuildId,
-                    memberDiscordId,
-                    org.raidHelperApiKey,
-                    dkpOperation,
-                    tx.totalDkp,
-                    dkpDescription
-                );
-                if (!dkpOk) {
-                    console.error(`[DKP] Failed to update DKP for member ${tx.memberId} after completing aUEC transaction ${transactionId}`);
-                }
-            }
-        }
+        // Adjust member aUEC balance (opposite of org)
+        const memberDelta = tx.direction === "member_to_org" ? -tx.auecAmount : tx.auecAmount;
+        await adjustUserAuecBalance(tx.memberId, memberDelta);
 
         await notify(
             tx.memberId,

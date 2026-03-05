@@ -52,7 +52,6 @@ function buildEmbed(tx: AuecTransactionView): EmbedBuilder {
         .addFields(
             { name: "Direction",     value: directionLabel,                               inline: false },
             { name: "aUEC Amount",   value: tx.auecAmount.toLocaleString(),               inline: true  },
-            { name: "Total DKP",     value: tx.totalDkp.toLocaleString(),                 inline: true  },
             { name: "Requested by",  value: tx.memberUsername,                            inline: true  },
             { name: "Status",        value: STATUS_LABELS[tx.status] ?? tx.status,        inline: false },
         )

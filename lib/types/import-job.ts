@@ -12,7 +12,7 @@ export type ImportRowInput = {
 export type ImportRowResult = {
     rowIndex: number;
     inputName: string;
-    status: "success" | "not_found" | "already_exists" | "error";
+    status: "success" | "updated" | "not_found" | "already_exists" | "error";
     resolvedName?: string;
     scUuid?: string;
     message?: string;

@@ -9,12 +9,9 @@ export type OrganizationDocument = {
     members: OrganizationMember[];
     discordGuildId?: string;
     discordTransactionChannelId?: string;
-    raidHelperApiKey?: string;
     auecBalance?: number;
-    auecBuyPriceDkp?: number;
-    auecBuyPriceAuec?: number;
-    auecSellPriceDkp?: number;
-    auecSellPriceAuec?: number;
+    googleSheetId?: string;
+    googleSheetLastSyncedAt?: Date;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -29,7 +26,11 @@ export type OrganizationInventoryItemDocument = {
     _id: ObjectId;
     organizationId: ObjectId;
     organizationSlug: string;
-    itemId: ObjectId;
+    name: string;
+    normalizedName: string;
+    category?: string;
+    scWikiUuid?: string;
+    unit?: string;
 
     buyPrice: number;
     sellPrice: number;
@@ -50,14 +51,11 @@ export type OrganizationMemberView = {
 
 export type OrganizationInventoryItemView = {
     inventoryItemId: ObjectId;
-    itemId: ObjectId;
     name: string;
     normalizedName: string;
-    description?: string;
     category?: string;
-    itemClass?: string;
-    grade?: string;
-    size?: string;
+    scWikiUuid?: string;
+    unit?: string;
     buyPrice: number;
     sellPrice: number;
     quantity: number;
@@ -76,12 +74,9 @@ export type OrganizationView = {
     members: OrganizationMemberView[];
     discordGuildId?: string;
     discordTransactionChannelId?: string;
-    raidHelperApiKey?: string;
     auecBalance?: number;
-    auecBuyPriceDkp?: number;
-    auecBuyPriceAuec?: number;
-    auecSellPriceDkp?: number;
-    auecSellPriceAuec?: number;
+    googleSheetId?: string;
+    googleSheetLastSyncedAt?: Date;
     createdAt: Date;
     updatedAt: Date;
 };
@@ -103,8 +98,6 @@ export type OrganizationAuditLogDocument = {
         | "member.role_changed"
         | "integration.discord_disconnected"
         | "integration.discord_connected"
-        | "integration.raidhelper_connected"
-        | "integration.raidhelper_disconnected"
         | "item.created"
         | "inventory.item_added"
         | "inventory.item_removed"
@@ -124,9 +117,12 @@ export type OrganizationAuditLogDocument = {
         | "auec_transaction.rejected"
         | "auec_transaction.confirmed"
         | "auec_transaction.completed"
-        | "auec_transaction.cancelled";
+        | "auec_transaction.cancelled"
+        | "inventory.cleared"
+        | "integration.google_sheet_connected"
+        | "integration.google_sheet_disconnected";
 
-    entityType: "organization" | "member" | "item" | "inventory_item" | "transaction" | "auec_transaction";
+    entityType: "organization" | "member" | "item" | "inventory_item" | "inventory" | "transaction" | "auec_transaction";
     entityId?: string;
 
     message: string;

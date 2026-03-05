@@ -9,12 +9,8 @@ type Props = {
     currentUserId: string;
     isAdminOrOwner: boolean;
     auecBalance?: number;
-    auecBuyPriceDkp?: number;
-    auecBuyPriceAuec?: number;
-    auecSellPriceDkp?: number;
-    auecSellPriceAuec?: number;
     transactions: AuecTransactionView[];
-    currentDkp?: number | null;
+    memberAuecBalance?: number | null;
 };
 
 export default async function AuecCashDesk({
@@ -22,16 +18,10 @@ export default async function AuecCashDesk({
     currentUserId,
     isAdminOrOwner,
     auecBalance,
-    auecBuyPriceDkp,
-    auecBuyPriceAuec,
-    auecSellPriceDkp,
-    auecSellPriceAuec,
     transactions,
-    currentDkp,
+    memberAuecBalance,
 }: Props) {
     const t = await getTranslations("auec");
-
-    const ratesConfigured = auecBuyPriceDkp && auecBuyPriceAuec && auecSellPriceDkp && auecSellPriceAuec;
 
     return (
         <div className="space-y-4">
@@ -60,53 +50,19 @@ export default async function AuecCashDesk({
                 </p>
             </div>
 
-            {/* Not configured warning for members */}
-            {!isAdminOrOwner && !ratesConfigured && (
-                <div
-                    className="rounded-lg border p-4"
-                    style={{
-                        borderColor: "rgba(240,165,0,0.2)",
-                        background: "rgba(240,165,0,0.04)",
-                    }}
-                >
-                    <p
-                        className="text-sm font-semibold"
-                        style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-mono)" }}
-                    >
-                        {t("notConfigured")}
-                    </p>
-                    <p
-                        className="mt-1 text-xs"
-                        style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
-                    >
-                        {t("notConfiguredDesc")}
-                    </p>
-                </div>
-            )}
-
             {/* Admin settings panel */}
             {isAdminOrOwner && (
                 <AuecSettingsPanel
                     organizationSlug={organizationSlug}
                     auecBalance={auecBalance}
-                    auecBuyPriceDkp={auecBuyPriceDkp}
-                    auecBuyPriceAuec={auecBuyPriceAuec}
-                    auecSellPriceDkp={auecSellPriceDkp}
-                    auecSellPriceAuec={auecSellPriceAuec}
                 />
             )}
 
-            {/* Transaction form (visible to all when rates are configured) */}
-            {ratesConfigured && (
-                <AuecTransactionForm
-                    organizationSlug={organizationSlug}
-                    auecBuyPriceDkp={auecBuyPriceDkp}
-                    auecBuyPriceAuec={auecBuyPriceAuec}
-                    auecSellPriceDkp={auecSellPriceDkp}
-                    auecSellPriceAuec={auecSellPriceAuec}
-                    currentDkp={currentDkp}
-                />
-            )}
+            {/* Transaction form (always visible) */}
+            <AuecTransactionForm
+                organizationSlug={organizationSlug}
+                memberAuecBalance={memberAuecBalance}
+            />
 
             {/* Transaction list */}
             <div>

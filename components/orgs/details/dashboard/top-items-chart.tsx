@@ -2,9 +2,9 @@ import { getTranslations } from "next-intl/server";
 import type { TopItem } from "@/lib/repositories/organization-transaction-repository";
 
 function formatRevenue(v: number): string {
-    if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M DKP`;
-    if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K DKP`;
-    return `${v.toLocaleString()} DKP`;
+    if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M aUEC`;
+    if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K aUEC`;
+    return `${v.toLocaleString()} aUEC`;
 }
 
 const BAR_COLORS = [

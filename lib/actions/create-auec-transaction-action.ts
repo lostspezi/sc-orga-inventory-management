@@ -11,8 +11,6 @@ import {
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
 import { sendAuecTransactionEmbed } from "@/lib/discord/send-auec-transaction-embed";
 import { notifyMany } from "@/lib/notify";
-import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
-import { getMemberDkp } from "@/lib/raid-helper/get-member-dkp";
 
 export type CreateAuecTransactionState = {
     success: boolean;
@@ -70,22 +68,6 @@ export async function createAuecTransactionAction(
         return { ...initialState, message: "You are not a member of this organization." };
     }
 
-    // Check rates are configured
-    if (direction === "org_to_member") {
-        if (!org.auecBuyPriceDkp || !org.auecBuyPriceAuec) {
-            return { ...initialState, message: "Buy rates are not configured for this organization." };
-        }
-    } else {
-        if (!org.auecSellPriceDkp || !org.auecSellPriceAuec) {
-            return { ...initialState, message: "Sell rates are not configured for this organization." };
-        }
-    }
-
-    const priceDkp = direction === "org_to_member" ? org.auecBuyPriceDkp! : org.auecSellPriceDkp!;
-    const priceAuec = direction === "org_to_member" ? org.auecBuyPriceAuec! : org.auecSellPriceAuec!;
-    const totalDkp = Math.round((auecAmount / priceAuec) * priceDkp);
-    const dkpRate = totalDkp / auecAmount;
-
     // Check org has enough aUEC balance for buy (org_to_member)
     if (direction === "org_to_member") {
         const balance = org.auecBalance ?? 0;
@@ -98,20 +80,6 @@ export async function createAuecTransactionAction(
         }
     }
 
-    // Check member has enough DKP for buy (org_to_member)
-    if (direction === "org_to_member" && org.raidHelperApiKey && org.discordGuildId) {
-        const discordId = await getDiscordUserId(session.user.id);
-        if (discordId) {
-            const currentDkp = await getMemberDkp(org.discordGuildId, discordId, org.raidHelperApiKey);
-            if (currentDkp !== null && totalDkp > currentDkp) {
-                return {
-                    ...initialState,
-                    message: `Insufficient DKP. Required: ${totalDkp.toLocaleString()}, available: ${currentDkp.toLocaleString()}.`,
-                };
-            }
-        }
-    }
-
     const tx = await createAuecTransaction({
         organizationId: org._id,
         organizationSlug: org.slug,
@@ -119,8 +87,6 @@ export async function createAuecTransactionAction(
         memberUsername: session.user.rsiHandle ?? session.user.name ?? "Unknown",
         direction: direction as "member_to_org" | "org_to_member",
         auecAmount,
-        dkpRate,
-        totalDkp,
         status: "requested",
         note,
         memberConfirmed: false,
@@ -135,8 +101,8 @@ export async function createAuecTransactionAction(
         action: "auec_transaction.requested",
         entityType: "auec_transaction",
         entityId: tx._id,
-        message: `aUEC transaction requested: ${direction === "member_to_org" ? "sell" : "buy"} ${auecAmount.toLocaleString()} aUEC for ${totalDkp.toLocaleString()} DKP.`,
-        metadata: { direction, auecAmount, totalDkp },
+        message: `aUEC transaction requested: ${direction === "member_to_org" ? "sell" : "buy"} ${auecAmount.toLocaleString()} aUEC.`,
+        metadata: { direction, auecAmount },
     });
 
     // Notify admins/owners

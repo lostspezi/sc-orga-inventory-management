@@ -5,7 +5,13 @@
       "Bash(node:*)",
       "Bash(xargs grep:*)",
       "Bash(find:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:docs.star-citizen.wiki)",
+      "WebFetch(domain:api.star-citizen.wiki)",
+      "Bash(curl:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

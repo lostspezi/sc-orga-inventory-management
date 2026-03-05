@@ -7,8 +7,8 @@ import { getOrganizationBySlug } from "@/lib/repositories/organization-repositor
 import {
     deleteOrganizationInventoryItemInDb,
 } from "@/lib/repositories/organization-inventory-item-repository";
-import { getItemById } from "@/lib/repositories/item-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
+import { triggerGoogleSheetSync } from "@/lib/google-sheets/trigger-sync";
 
 export type RemoveOrganizationInventoryItemActionState = {
     success: boolean;
@@ -74,8 +74,6 @@ export async function removeOrganizationInventoryItemAction(
         };
     }
 
-    const item = await getItemById(deletedEntry.itemId.toString());
-
     await createOrganizationAuditLog({
         organizationId: org._id,
         organizationSlug: org.slug,
@@ -84,15 +82,18 @@ export async function removeOrganizationInventoryItemAction(
         action: "inventory.item_removed" as never,
         entityType: "inventory_item",
         entityId: deletedEntry._id.toString(),
-        message: `Item "${item?.name ?? "Unknown Item"}" was removed from the organization inventory.`,
+        message: `Item "${deletedEntry.name}" was removed from the organization inventory.`,
         metadata: {
             inventoryItemId: deletedEntry._id.toString(),
-            itemId: deletedEntry.itemId.toString(),
-            itemName: item?.name ?? null,
+            itemName: deletedEntry.name,
         },
     });
 
     revalidatePath(`/terminal/orgs/${org.slug}/inventory`);
+
+    if (org.googleSheetId) {
+        triggerGoogleSheetSync(org._id, org.googleSheetId);
+    }
 
     return {
         success: true,

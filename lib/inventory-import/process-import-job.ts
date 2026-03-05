@@ -1,7 +1,6 @@
 import { ObjectId } from "mongodb";
 import { ImportRowInput, ImportRowResult } from "@/lib/types/import-job";
 import { OrganizationDocument } from "@/lib/types/organization";
-import { createItemInDb } from "@/lib/repositories/item-repository";
 import {
     createOrganizationInventoryItemInDb,
     updateOrganizationInventoryItemInDb,
@@ -15,6 +14,7 @@ import {
 import { notify } from "@/lib/notify";
 import { getDiscordUserId } from "@/lib/discord/get-discord-user-id";
 import { sendDiscordDm } from "@/lib/discord/send-discord-dm";
+import { triggerGoogleSheetSync } from "@/lib/google-sheets/trigger-sync";
 
 type ScWikiItem = {
     uuid: string;
@@ -119,54 +119,59 @@ export async function processImportJob(
                     continue;
                 }
 
-                const dd = match.description_data ?? [];
-                const findVal = (n: string) => dd.find((e) => e.name === n)?.value;
-
-                const item = await createItemInDb({
-                    name: match.name,
-                    category: match.type !== "UNDEFINED" ? match.type : undefined,
-                    description: match.description?.en_EN?.slice(0, 300),
-                    itemClass: findVal("Class"),
-                    grade: findVal("Grade"),
-                    size: findVal("Size"),
-                });
+                const category = match.type !== "UNDEFINED" ? match.type : undefined;
 
                 const createResult = await createOrganizationInventoryItemInDb({
                     organizationId: org._id,
                     organizationSlug: org.slug,
-                    itemId: item._id,
+                    name: match.name,
+                    category,
+                    scWikiUuid: match.uuid,
                     buyPrice: row.buyPrice ?? 0,
                     sellPrice: row.sellPrice ?? 0,
                     quantity: row.quantity ?? 0,
                 });
 
-                if (createResult.alreadyExists) {
-                    results.push({
-                        rowIndex: i,
-                        inputName: row.name,
-                        status: "already_exists",
-                        resolvedName: match.name,
-                        scUuid: match.uuid,
-                        message: "Item already exists in organization inventory.",
-                    });
+                if (createResult.alreadyExists && createResult.document) {
+                    const existing = createResult.document;
+                    const hasQuantityChange = row.quantity !== undefined && row.quantity !== existing.quantity;
+                    const hasMinStockChange = row.minStock !== undefined && row.minStock !== existing.minStock;
+                    const hasMaxStockChange = row.maxStock !== undefined && row.maxStock !== existing.maxStock;
+
+                    if (hasQuantityChange || hasMinStockChange || hasMaxStockChange) {
+                        await updateOrganizationInventoryItemInDb({
+                            inventoryItemId: existing._id.toString(),
+                            organizationId: org._id,
+                            buyPrice: existing.buyPrice,
+                            sellPrice: existing.sellPrice,
+                            quantity: row.quantity !== undefined ? row.quantity : existing.quantity,
+                            minStock: row.minStock !== undefined ? row.minStock : existing.minStock,
+                            maxStock: row.maxStock !== undefined ? row.maxStock : existing.maxStock,
+                        });
+                        results.push({
+                            rowIndex: i,
+                            inputName: row.name,
+                            status: "updated",
+                            resolvedName: existing.name,
+                            scUuid: existing.scWikiUuid,
+                            message: [
+                                hasQuantityChange ? `qty: ${existing.quantity} → ${row.quantity}` : null,
+                                hasMinStockChange ? `min: ${existing.minStock ?? "—"} → ${row.minStock}` : null,
+                                hasMaxStockChange ? `max: ${existing.maxStock ?? "—"} → ${row.maxStock}` : null,
+                            ].filter(Boolean).join(", "),
+                        });
+                    } else {
+                        results.push({
+                            rowIndex: i,
+                            inputName: row.name,
+                            status: "already_exists",
+                            resolvedName: existing.name,
+                            scUuid: existing.scWikiUuid,
+                            message: "No changes detected.",
+                        });
+                    }
                     await updateImportJobProgress(jobId, i + 1, results);
                     continue;
-                }
-
-                // Apply minStock/maxStock if provided
-                if (
-                    (row.minStock !== undefined || row.maxStock !== undefined) &&
-                    createResult.document
-                ) {
-                    await updateOrganizationInventoryItemInDb({
-                        inventoryItemId: createResult.document._id.toString(),
-                        organizationId: org._id,
-                        buyPrice: row.buyPrice ?? 0,
-                        sellPrice: row.sellPrice ?? 0,
-                        quantity: row.quantity ?? 0,
-                        minStock: row.minStock,
-                        maxStock: row.maxStock,
-                    });
                 }
 
                 if (createResult.document) {
@@ -178,11 +183,10 @@ export async function processImportJob(
                         action: "inventory.item_added",
                         entityType: "inventory_item",
                         entityId: createResult.document._id.toString(),
-                        message: `Item "${item.name}" was imported via CSV bulk import.`,
+                        message: `Item "${match.name}" was imported via CSV bulk import.`,
                         metadata: {
                             inventoryItemId: createResult.document._id.toString(),
-                            itemId: item._id.toString(),
-                            itemName: item.name,
+                            itemName: match.name,
                             buyPrice: row.buyPrice ?? 0,
                             sellPrice: row.sellPrice ?? 0,
                             quantity: row.quantity ?? 0,
@@ -219,12 +223,18 @@ export async function processImportJob(
 
     // Send notifications after completion
     const successCount = results.filter((r) => r.status === "success").length;
+    const updatedCount = results.filter((r) => r.status === "updated").length;
     const alreadyExistsCount = results.filter((r) => r.status === "already_exists").length;
     const failedCount = results.filter(
         (r) => r.status === "not_found" || r.status === "error"
     ).length;
 
-    const summary = `${successCount} imported, ${alreadyExistsCount} already existed, ${failedCount} failed.`;
+    // Always push final org state back to sheet after import (bi-directional sync)
+    if (org.googleSheetId) {
+        triggerGoogleSheetSync(org._id, org.googleSheetId);
+    }
+
+    const summary = `${successCount} imported, ${updatedCount} updated, ${alreadyExistsCount} already existed, ${failedCount} failed.`;
     const resultsLink = `/terminal/orgs/${org.slug}/inventory/import/${jobId.toString()}`;
 
     await notify(
@@ -240,7 +250,7 @@ export async function processImportJob(
         if (discordId) {
             await sendDiscordDm(
                 discordId,
-                `**CSV Import Complete** — ${org.name}\n✅ ${successCount} imported · ⏭️ ${alreadyExistsCount} already existed · ❌ ${failedCount} failed`
+                `**CSV Import Complete** — ${org.name}\n✅ ${successCount} imported · 🔄 ${updatedCount} updated · ⏭️ ${alreadyExistsCount} skipped · ❌ ${failedCount} failed`
             );
         }
     } catch {

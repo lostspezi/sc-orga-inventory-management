@@ -5,8 +5,8 @@ import { getOrganizationBySlug } from "@/lib/repositories/organization-repositor
 import { getActivePermanentInviteByOrgId } from "@/lib/repositories/organization-invite-repository";
 import OrgSettingsForm from "@/components/orgs/details/settings/org-settings-form";
 import DiscordServerCard from "@/components/orgs/details/settings/discord-server-card";
-import RaidHelperCard from "@/components/orgs/details/settings/raid-helper-card";
 import PermanentInviteCard from "@/components/orgs/details/settings/permanent-invite-card";
+import GoogleSheetCard from "@/components/orgs/details/settings/google-sheet-card";
 
 type Props = {
     params: Promise<{ slug: string }>;
@@ -96,14 +96,39 @@ export default async function OrgSettingsPage({ params, searchParams }: Props) {
                 installStatus={discordInstall}
             />
 
-            <RaidHelperCard
-                organizationSlug={org.slug}
-                hasApiKey={!!org.raidHelperApiKey}
-            />
-
             <PermanentInviteCard
                 organizationSlug={org.slug}
                 inviteUrl={inviteUrl}
+            />
+
+            <GoogleSheetCard
+                organizationSlug={org.slug}
+                googleSheetId={org.googleSheetId}
+                googleSheetLastSyncedAt={org.googleSheetLastSyncedAt?.toISOString()}
+                labels={{
+                    label: t("googleSheetLabel"),
+                    connectedStatus: t("connected"),
+                    notConnectedStatus: t("notConnected"),
+                    connectedTitle: t("googleSheetConnectedTitle"),
+                    notConnectedTitle: t("googleSheetNotConnectedTitle"),
+                    desc: t("googleSheetDesc"),
+                    urlPlaceholder: t("googleSheetUrlPlaceholder"),
+                    save: t("googleSheetSave"),
+                    disconnect: t("disconnect"),
+                    syncNow: t("googleSheetSyncNow"),
+                    lastSynced: t("googleSheetLastSynced"),
+                    never: t("googleSheetNever"),
+                    syncStarted: t("googleSheetSyncStarted"),
+                    syncPushed: t("googleSheetSyncPushed"),
+                    howItWorksTitle: t("googleSheetHowItWorksTitle"),
+                    howItWorksShare: t("googleSheetHowItWorksShare"),
+                    serviceAccountEmail: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ?? "",
+                    howItWorksSync: t("googleSheetHowItWorksSync"),
+                    howItWorksAuto: t("googleSheetHowItWorksAuto"),
+                    howItWorksFormat: t("googleSheetHowItWorksFormat"),
+                    syncError: t("googleSheetSyncError"),
+                    saveError: t("googleSheetSaveError"),
+                }}
             />
 
             <div
