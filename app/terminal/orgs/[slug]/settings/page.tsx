@@ -3,19 +3,22 @@ import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import { getActivePermanentInviteByOrgId } from "@/lib/repositories/organization-invite-repository";
+import { isProOrg } from "@/lib/billing/is-pro";
 import OrgSettingsForm from "@/components/orgs/details/settings/org-settings-form";
 import DiscordServerCard from "@/components/orgs/details/settings/discord-server-card";
 import PermanentInviteCard from "@/components/orgs/details/settings/permanent-invite-card";
 import GoogleSheetCard from "@/components/orgs/details/settings/google-sheet-card";
+import BillingCard from "@/components/orgs/details/settings/billing-card";
+import BillingSuccessAnimation from "@/components/orgs/details/settings/billing-success-animation";
 
 type Props = {
     params: Promise<{ slug: string }>;
-    searchParams: Promise<{ discordInstall?: string }>;
+    searchParams: Promise<{ discordInstall?: string; billing?: string }>;
 };
 
 export default async function OrgSettingsPage({ params, searchParams }: Props) {
     const { slug } = await params;
-    const { discordInstall } = await searchParams;
+    const { discordInstall, billing } = await searchParams;
 
     const session = await auth();
 
@@ -69,6 +72,7 @@ export default async function OrgSettingsPage({ params, searchParams }: Props) {
 
     return (
         <div className="space-y-4">
+            {billing === "success" && <BillingSuccessAnimation />}
             <div>
                 <p
                     className="text-[10px] uppercase tracking-[0.25em]"
@@ -101,7 +105,7 @@ export default async function OrgSettingsPage({ params, searchParams }: Props) {
                 inviteUrl={inviteUrl}
             />
 
-            <GoogleSheetCard
+            {isProOrg(org) && <GoogleSheetCard
                 organizationSlug={org.slug}
                 googleSheetId={org.googleSheetId}
                 googleSheetLastSyncedAt={org.googleSheetLastSyncedAt?.toISOString()}
@@ -128,6 +132,41 @@ export default async function OrgSettingsPage({ params, searchParams }: Props) {
                     howItWorksFormat: t("googleSheetHowItWorksFormat"),
                     syncError: t("googleSheetSyncError"),
                     saveError: t("googleSheetSaveError"),
+                }}
+            />}
+
+            <BillingCard
+                organizationSlug={org.slug}
+                billing={{
+                    isPro: isProOrg(org),
+                    status: org.subscription?.status,
+                    currentPeriodEnd: org.subscription?.currentPeriodEnd?.toISOString(),
+                    cancelAtPeriodEnd: org.subscription?.cancelAtPeriodEnd,
+                    proOverride: org.proOverride?.enabled,
+                }}
+                isAdminOrOwner={true}
+                labels={{
+                    label: t("billingLabel"),
+                    freeStatus: t("billingFreeStatus"),
+                    proStatus: t("billingProStatus"),
+                    proTitle: t("billingProTitle"),
+                    freeTitle: t("billingFreeTitle"),
+                    proDesc: t("billingProDesc"),
+                    freeDesc: t("billingFreeDesc"),
+                    renewsOn: t("billingRenewsOn"),
+                    cancelsOn: t("billingCancelsOn"),
+                    cancelAtPeriodEnd: t("billingCancelAtPeriodEnd"),
+                    manageBtn: t("billingManageBtn"),
+                    upgradeBtn: t("billingUpgradeBtn"),
+                    proOverrideNote: t("billingProOverrideNote"),
+                    errorCheckout: t("billingErrorCheckout"),
+                    errorPortal: t("billingErrorPortal"),
+                    featuresTitle: t("billingFeaturesTitle"),
+                    features: [
+                        t("billingFeature1"),
+                        t("billingFeature2"),
+                        t("billingFeature3"),
+                    ],
                 }}
             />
 

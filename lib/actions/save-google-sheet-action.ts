@@ -7,6 +7,7 @@ import {
     clearOrgGoogleSheetId,
 } from "@/lib/repositories/organization-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
+import { isProOrg } from "@/lib/billing/is-pro";
 import { revalidatePath } from "next/cache";
 
 function extractSheetId(input: string): string {
@@ -28,6 +29,10 @@ export async function saveGoogleSheetAction(
     const member = org.members.find((m) => m.userId === session.user!.id);
     if (!member || (member.role !== "owner" && member.role !== "admin")) {
         return { success: false, error: "Insufficient permissions." };
+    }
+
+    if (!isProOrg(org)) {
+        return { success: false, error: "PRO_REQUIRED" };
     }
 
     const raw = (formData.get("sheetUrl") as string | null)?.trim() ?? "";

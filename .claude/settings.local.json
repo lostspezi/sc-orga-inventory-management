@@ -11,7 +11,8 @@
       "WebFetch(domain:api.star-citizen.wiki)",
       "Bash(curl:*)",
       "WebSearch",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(npm install:*)"
     ]
   }
 }

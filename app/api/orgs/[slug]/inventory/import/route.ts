@@ -4,6 +4,7 @@ import { getOrganizationBySlug } from "@/lib/repositories/organization-repositor
 import { createImportJob } from "@/lib/repositories/import-job-repository";
 import { processImportJob } from "@/lib/inventory-import/process-import-job";
 import { ImportRowInput } from "@/lib/types/import-job";
+import { isProOrg } from "@/lib/billing/is-pro";
 
 export async function POST(
     req: NextRequest,
@@ -24,6 +25,10 @@ export async function POST(
     const actor = org.members.find((m) => m.userId === session.user!.id);
     if (!actor || !["owner", "admin"].includes(actor.role)) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    if (!isProOrg(org)) {
+        return NextResponse.json({ error: "PRO_REQUIRED" }, { status: 402 });
     }
 
     let rows: ImportRowInput[];
