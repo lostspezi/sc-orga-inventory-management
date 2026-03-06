@@ -39,7 +39,8 @@
     "overview": "Aperçu",
     "organizations": "Organisations",
     "discordServers": "Serveurs Discord",
-    "news": "Actualités"
+    "news": "Actualités",
+    "legal": "Juridique"
   },
   "terminal": {
     "adminPanel": "Panneau Admin",
@@ -73,7 +74,11 @@
     "auecBalanceSave": "Enregistrer le solde",
     "dangerZone": "Zone de danger",
     "deleteAccount": "Supprimer le compte",
-    "deleteDescription": "Supprime définitivement votre compte, toutes les organisations que vous possédez, et vous retire de toutes les autres organisations."
+    "deleteDescription": "Supprime définitivement votre compte, toutes les organisations que vous possédez, et vous retire de toutes les autres organisations.",
+    "dataPrivacyTitle": "Données & Confidentialité",
+    "exportDataButton": "Exporter mes données",
+    "exportDataDesc": "Télécharger un fichier JSON avec toutes les données personnelles que nous détenons sur vous (RGPD Art. 20).",
+    "exportDataDownloading": "Téléchargement…"
   },
   "adminOverview": {
     "eyebrow": "Super Admin",
@@ -482,7 +487,17 @@
     "tabDiscord": "Discord",
     "tabPro": "PRO",
     "billingFeature4": "Rapports hebdomadaires — rapport PDF généré automatiquement chaque lundi",
-    "billingFeature5": "Rôle Discord exclusif — obtenez le rôle PRO sur notre Discord pour des salons exclusifs et un support plus rapide"
+    "billingFeature5": "Rôle Discord exclusif — obtenez le rôle PRO sur notre Discord pour des salons exclusifs et un support plus rapide",
+    "checkoutDialogTitle": "S'abonner au PRO",
+    "checkoutDialogPriceLabel": "4,99 € / mois",
+    "checkoutDialogPriceDetails": "TVA incluse le cas échéant · Renouvellement mensuel automatique",
+    "checkoutDialogCancelNote": "Résiliez à tout moment dans Paramètres → Facturation",
+    "checkoutDialogWithdrawalNotice": "Vous disposez d'un droit légal de rétractation de 14 jours. En vous abonnant, vous demandez un accès immédiat aux fonctionnalités PRO.",
+    "checkoutDialogCheckboxTerms": "J'ai lu et j'accepte les Conditions Générales d'Utilisation et la Politique de confidentialité.",
+    "checkoutDialogCheckboxWithdrawal": "Je demande expressément que l'exécution du service commence immédiatement après le paiement. Je reconnais renoncer ainsi à mon droit de rétractation de 14 jours.",
+    "checkoutDialogCtaButton": "S'abonner maintenant — 4,99 €/mois",
+    "checkoutDialogCancelButton": "Annuler",
+    "checkoutDialogLoadingButton": "Redirection vers le paiement…"
   },
   "auec": {
     "eyebrow": "Bureau de change aUEC",
@@ -661,7 +676,11 @@
     },
     "footer": {
       "disclaimer": "L'accès non autorisé est une violation du code UEE §18.7 — v0.1.0",
-      "legalButton": "Mentions légales"
+      "legalButton": "Mentions légales",
+      "privacyLink": "Politique de confidentialité",
+      "termsLink": "CGU",
+      "imprintLink": "Mentions légales",
+      "cookiesLink": "Cookies"
     },
     "pricing": {
       "label": "Tarifs",

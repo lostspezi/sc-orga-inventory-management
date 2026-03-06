@@ -39,7 +39,8 @@
     "overview": "Übersicht",
     "organizations": "Organisationen",
     "discordServers": "Discord-Server",
-    "news": "Neuigkeiten"
+    "news": "Neuigkeiten",
+    "legal": "Rechtliches"
   },
   "terminal": {
     "adminPanel": "Admin-Panel",
@@ -73,7 +74,11 @@
     "auecBalanceSave": "Guthaben speichern",
     "dangerZone": "Gefahrenzone",
     "deleteAccount": "Konto löschen",
-    "deleteDescription": "Löscht dauerhaft dein Konto, alle eigenen Organisationen und entfernt dich aus allen anderen."
+    "deleteDescription": "Löscht dauerhaft dein Konto, alle eigenen Organisationen und entfernt dich aus allen anderen.",
+    "dataPrivacyTitle": "Daten & Datenschutz",
+    "exportDataButton": "Meine Daten exportieren",
+    "exportDataDesc": "Lade eine JSON-Datei mit allen personenbezogenen Daten herunter, die wir über dich gespeichert haben (DSGVO Art. 20).",
+    "exportDataDownloading": "Wird heruntergeladen…"
   },
   "adminOverview": {
     "eyebrow": "Super Admin",
@@ -482,7 +487,17 @@
     "tabDiscord": "Discord",
     "tabPro": "PRO",
     "billingFeature4": "Wöchentliche Berichte — automatisch generierter PDF-Bericht jeden Montag",
-    "billingFeature5": "Exklusive Discord-Rolle — erhalte die PRO-Rolle auf unserem Discord für exklusive Kanäle und schnelleren Support"
+    "billingFeature5": "Exklusive Discord-Rolle — erhalte die PRO-Rolle auf unserem Discord für exklusive Kanäle und schnelleren Support",
+    "checkoutDialogTitle": "PRO abonnieren",
+    "checkoutDialogPriceLabel": "4,99 € / Monat",
+    "checkoutDialogPriceDetails": "Ggf. zzgl. MwSt. · Verlängert sich monatlich automatisch",
+    "checkoutDialogCancelNote": "Jederzeit kündbar unter Einstellungen → Abrechnung",
+    "checkoutDialogWithdrawalNotice": "Sie haben das gesetzliche Recht, innerhalb von 14 Tagen von diesem Vertrag zurückzutreten. Mit dem Abonnement beantragen Sie den sofortigen Zugang zu den PRO-Funktionen.",
+    "checkoutDialogCheckboxTerms": "Ich habe die Allgemeinen Geschäftsbedingungen und die Datenschutzerklärung gelesen und stimme ihnen zu.",
+    "checkoutDialogCheckboxWithdrawal": "Ich verlange ausdrücklich, dass mit der Ausführung der Dienstleistung sofort nach Zahlung begonnen wird. Ich nehme zur Kenntnis, dass ich damit mein 14-tägiges Widerrufsrecht verliere.",
+    "checkoutDialogCtaButton": "Jetzt abonnieren — 4,99 €/Monat",
+    "checkoutDialogCancelButton": "Abbrechen",
+    "checkoutDialogLoadingButton": "Weiterleitung zur Zahlung…"
   },
   "auec": {
     "eyebrow": "aUEC-Schalter",
@@ -661,7 +676,11 @@
     },
     "footer": {
       "disclaimer": "Unbefugter Zugriff verstößt gegen UEE-Code §18.7 — v0.1.0",
-      "legalButton": "Impressum"
+      "legalButton": "Impressum",
+      "privacyLink": "Datenschutzerklärung",
+      "termsLink": "AGB",
+      "imprintLink": "Impressum",
+      "cookiesLink": "Cookies"
     },
     "pricing": {
       "label": "Preise",

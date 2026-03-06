@@ -5,6 +5,7 @@ import { getOrganizationViewsByUserId } from "@/lib/repositories/organization-re
 import { getUserAuecBalance } from "@/lib/repositories/user-repository";
 import LeaveOrgButton from "@/components/settings/leave-org-button";
 import DeleteAccountButton from "@/components/settings/delete-account-button";
+import DataExportButton from "@/components/settings/data-export-button";
 import RsiHandleForm from "@/components/settings/rsi-handle-form";
 import AuecBalanceForm from "@/components/settings/auec-balance-form";
 import { getTranslations } from "next-intl/server";
@@ -267,6 +268,24 @@ export default async function SettingsPage({
                             })}
                         </ul>
                     )}
+                </section>
+
+                {/* Data & Privacy */}
+                <section
+                    className="hud-panel p-5 sm:p-6"
+                    style={{ background: "rgba(8,16,24,0.45)" }}
+                >
+                    <p
+                        className="mb-4 text-[10px] uppercase tracking-[0.25em]"
+                        style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
+                    >
+                        {t("dataPrivacyTitle")}
+                    </p>
+                    <DataExportButton
+                        exportLabel={t("exportDataButton")}
+                        downloadingLabel={t("exportDataDownloading")}
+                        desc={t("exportDataDesc")}
+                    />
                 </section>
 
                 {/* Danger zone */}

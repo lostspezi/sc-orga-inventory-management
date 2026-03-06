@@ -8,6 +8,7 @@ type UserDocument = {
     image?: string | null;
     rsiHandle?: string | null;
     auecBalance?: number;
+    legalAcceptedVersion?: string | null;
 };
 
 export async function getUserById(userId: string): Promise<UserDocument | null> {
@@ -63,6 +64,27 @@ export async function adjustUserAuecBalance(userId: string, delta: number): Prom
         { _id: new ObjectId(userId) },
         { $inc: { auecBalance: delta } },
         { upsert: false }
+    );
+}
+
+export async function getUserLegalAcceptedVersion(userId: string): Promise<string | null> {
+    if (!ObjectId.isValid(userId)) return null;
+
+    const db = await getDb();
+    const doc = await db.collection<UserDocument>("users").findOne(
+        { _id: new ObjectId(userId) },
+        { projection: { legalAcceptedVersion: 1 } }
+    );
+    return doc?.legalAcceptedVersion ?? null;
+}
+
+export async function setUserLegalAcceptedVersion(userId: string, version: string): Promise<void> {
+    if (!ObjectId.isValid(userId)) return;
+
+    const db = await getDb();
+    await db.collection<UserDocument>("users").updateOne(
+        { _id: new ObjectId(userId) },
+        { $set: { legalAcceptedVersion: version } }
     );
 }
 

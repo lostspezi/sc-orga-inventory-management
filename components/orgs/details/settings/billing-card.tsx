@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { CreditCard, FileText, Zap } from "lucide-react";
 import type { OrgBillingView } from "@/lib/types/organization";
+import CheckoutConsentDialog, { type CheckoutDialogLabels } from "./checkout-consent-dialog";
 
 type Props = {
     organizationSlug: string;
@@ -27,6 +28,7 @@ type Props = {
         errorPortal: string;
         featuresTitle: string;
         features: string[];
+        checkoutDialog: CheckoutDialogLabels;
     };
 };
 
@@ -38,29 +40,13 @@ function formatDate(iso: string): string {
 
 export default function BillingCard({ organizationSlug, billing, isAdminOrOwner, labels }: Props) {
     const isPro = billing.isPro;
-    const [error, setError] = useState<string | null>(null);
-    const [checkoutPending, startCheckout] = useTransition();
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     const borderColor = isPro ? "rgba(87,242,135,0.18)" : "rgba(79,195,220,0.18)";
     const bg = isPro ? "rgba(6,20,14,0.18)" : "rgba(6,14,20,0.18)";
     const accentColor = isPro ? "rgba(87,242,135,0.85)" : "rgba(79,195,220,0.85)";
     const accentBorder = isPro ? "rgba(87,242,135,0.2)" : "rgba(79,195,220,0.2)";
     const accentBg = isPro ? "rgba(87,242,135,0.06)" : "rgba(79,195,220,0.06)";
-
-    function handleUpgrade() {
-        setError(null);
-        startCheckout(async () => {
-            const res = await fetch(`/api/orgs/${organizationSlug}/billing/checkout`, {
-                method: "POST",
-            });
-            if (!res.ok) {
-                setError(labels.errorCheckout);
-                return;
-            }
-            const { url } = await res.json() as { url: string };
-            if (url) window.location.href = url;
-        });
-    }
 
     return (
         <div
@@ -157,12 +143,6 @@ export default function BillingCard({ organizationSlug, billing, isAdminOrOwner,
                 </div>
             )}
 
-            {error && (
-                <p className="mt-3 text-xs" style={{ color: "rgba(240,100,100,0.85)", fontFamily: "var(--font-mono)" }}>
-                    {error}
-                </p>
-            )}
-
             {isAdminOrOwner && !billing.proOverride && (
                 <div className="mt-4 flex flex-wrap justify-end gap-2">
                     {billing.status && (
@@ -181,9 +161,8 @@ export default function BillingCard({ organizationSlug, billing, isAdminOrOwner,
                     )}
                     {!isPro && (
                         <button
-                            onClick={handleUpgrade}
-                            disabled={checkoutPending}
-                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs uppercase tracking-[0.12em] transition-colors disabled:opacity-50"
+                            onClick={() => setDialogOpen(true)}
+                            className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs uppercase tracking-[0.12em] transition-colors"
                             style={{
                                 borderColor: "rgba(87,242,135,0.35)",
                                 color: "rgba(87,242,135,0.85)",
@@ -191,10 +170,18 @@ export default function BillingCard({ organizationSlug, billing, isAdminOrOwner,
                             }}
                         >
                             <Zap size={12} />
-                            {checkoutPending ? "..." : labels.upgradeBtn}
+                            {labels.upgradeBtn}
                         </button>
                     )}
                 </div>
+            )}
+
+            {dialogOpen && (
+                <CheckoutConsentDialog
+                    organizationSlug={organizationSlug}
+                    onClose={() => setDialogOpen(false)}
+                    labels={labels.checkoutDialog}
+                />
             )}
         </div>
     );

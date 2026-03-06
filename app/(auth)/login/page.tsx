@@ -1,6 +1,7 @@
 import SignIn from "@/components/sign-in";
 import {auth} from "@/auth";
 import {redirect} from "next/navigation";
+import LegalFooter from "@/components/ui/legal-footer";
 
 export const metadata = {
     title: "Login",
@@ -20,7 +21,8 @@ export default async function LoginPage({ searchParams }: Props) {
     }
 
     return (
-        <main className="flex min-h-screen items-center justify-center px-4 py-16">
+        <main className="flex min-h-screen flex-col px-4">
+            <div className="flex flex-1 items-center justify-center py-16">
             <div className="w-full max-w-md" style={{ animation: "slide-in-up 0.7s ease forwards" }}>
 
                 {/* ── Logo / header block ── */}
@@ -191,6 +193,9 @@ export default async function LoginPage({ searchParams }: Props) {
                     Unauthorized access is a violation of UEE code §18.7
                 </p>
             </div>
+            </div>
+
+            <LegalFooter from="login" />
         </main>
     );
 }
