@@ -2,6 +2,11 @@ import SignIn from "@/components/sign-in";
 import {auth} from "@/auth";
 import {redirect} from "next/navigation";
 
+export const metadata = {
+    title: "Login",
+    robots: { index: false, follow: false },
+};
+
 type Props = {
     searchParams: Promise<{ callbackUrl?: string }>;
 };

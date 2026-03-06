@@ -17,7 +17,8 @@
       "Bash(python3:*)",
       "Bash(cmd:*)",
       "Bash(node_modules/.bin/tsc:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(ls:*)"
     ]
   }
 }

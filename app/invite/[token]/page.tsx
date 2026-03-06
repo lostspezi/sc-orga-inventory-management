@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { notFound } from "next/navigation";
+
+export async function generateMetadata(): Promise<Metadata> {
+    return {
+        title: "You're Invited",
+        robots: { index: false, follow: false },
+    };
+}
 import { addMemberToOrganizationInDb, getOrganizationBySlug } from "@/lib/repositories/organization-repository";
 import {
     expireOrganizationInvite,

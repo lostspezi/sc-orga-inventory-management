@@ -5,6 +5,18 @@ import LanguageSwitcher from "@/components/ui/language-switcher";
 import UserDropdown from "@/components/terminal/user-dropdown";
 import HomeLegalButton from "@/components/home/legal-button";
 
+export const metadata = {
+    title: "SC Orga Manager — Star Citizen Organization Inventory",
+    description:
+        "The free command hub for Star Citizen organizations. Track inventory, manage trades, sync to Google Sheets, and automate weekly reports. Free plan available.",
+    openGraph: {
+        title: "SC Orga Manager — Star Citizen Organization Inventory",
+        description:
+            "Track inventory, manage trades, sync to Google Sheets, and automate weekly PDF reports for your Star Citizen org.",
+        url: "/",
+    },
+};
+
 // ─── Background ───────────────────────────────────────────────────────────────
 
 const STARS = [

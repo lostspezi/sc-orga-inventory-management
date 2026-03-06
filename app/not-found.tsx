@@ -1,6 +1,11 @@
 import Link from "next/link";
 import {auth} from "@/auth";
 
+export const metadata = {
+    title: "Page Not Found",
+    robots: { index: false, follow: false },
+};
+
 export default async function NotFound() {
     const session = await auth();
 
