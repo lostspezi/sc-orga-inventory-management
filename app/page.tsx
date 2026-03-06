@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { getTranslations } from "next-intl/server";
 import LanguageSwitcher from "@/components/ui/language-switcher";
 import UserDropdown from "@/components/terminal/user-dropdown";
-import HomeLegalButton from "@/components/home/legal-button";
+import CookieNotice from "@/components/consent/cookie-notice";
 
 export const metadata = {
     title: "SC Orga Manager — Star Citizen Organization Inventory",
@@ -694,13 +694,30 @@ export default async function Home() {
                 </section>
 
                 {/* ── FOOTER ───────────────────────────────────────────── */}
-                <footer className="flex items-center justify-center gap-6 px-8 py-4" style={{ borderTop: "1px solid rgba(79,195,220,0.08)" }}>
+                <footer className="flex flex-wrap items-center justify-center gap-4 px-8 py-4" style={{ borderTop: "1px solid rgba(79,195,220,0.08)" }}>
                     <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "rgba(79,195,220,0.18)", fontFamily: "var(--font-mono)" }}>
                         {t("footer.disclaimer")}
                     </span>
                     <span style={{ color: "rgba(79,195,220,0.1)" }}>|</span>
-                    <HomeLegalButton label={t("footer.legalButton")} />
+                    <nav className="flex items-center gap-4">
+                        {(["privacyLink", "termsLink", "imprintLink", "cookiesLink"] as const).map((key, i, arr) => {
+                            const hrefs = ["/legal/privacy", "/legal/terms", "/legal/imprint", "/legal/cookies"];
+                            return (
+                                <span key={key} className="flex items-center gap-4">
+                                    <Link
+                                        href={hrefs[i]}
+                                        className="text-[10px] uppercase tracking-[0.2em] transition-colors hover:text-cyan-400"
+                                        style={{ color: "rgba(79,195,220,0.3)", fontFamily: "var(--font-mono)" }}
+                                    >
+                                        {t(`footer.${key}`)}
+                                    </Link>
+                                    {i < arr.length - 1 && <span style={{ color: "rgba(79,195,220,0.1)" }}>·</span>}
+                                </span>
+                            );
+                        })}
+                    </nav>
                 </footer>
+                <CookieNotice />
             </div>
         </div>
     );

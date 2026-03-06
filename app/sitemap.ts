@@ -18,5 +18,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.3,
         },
         // /invite/[token] intentionally omitted — tokens are private invite links
+        {
+            url: `${appUrl}/legal/privacy`,
+            lastModified: now,
+            changeFrequency: "yearly",
+            priority: 0.2,
+        },
+        {
+            url: `${appUrl}/legal/terms`,
+            lastModified: now,
+            changeFrequency: "yearly",
+            priority: 0.2,
+        },
+        {
+            url: `${appUrl}/legal/imprint`,
+            lastModified: now,
+            changeFrequency: "yearly",
+            priority: 0.2,
+        },
+        {
+            url: `${appUrl}/legal/cookies`,
+            lastModified: now,
+            changeFrequency: "yearly",
+            priority: 0.2,
+        },
     ];
 }

@@ -2,6 +2,10 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import TerminalHeader from "@/components/terminal/terminal-header";
 import TerminalBackground from "@/components/terminal/terminal-background";
+import LegalAcceptGate from "@/components/consent/legal-accept-gate";
+import LegalFooter from "@/components/ui/legal-footer";
+import { getOrCreateLegalSettings } from "@/lib/repositories/legal-settings-repository";
+import { getUserLegalAcceptedVersion } from "@/lib/repositories/user-repository";
 
 export const metadata = {
     robots: { index: false, follow: false },
@@ -18,6 +22,13 @@ export default async function TerminalLayout({ children }: Props) {
         redirect("/login");
     }
 
+    const [legalSettings, acceptedVersion] = await Promise.all([
+        getOrCreateLegalSettings(),
+        getUserLegalAcceptedVersion(session.user.id),
+    ]);
+
+    const needsLegalAccept = acceptedVersion !== legalSettings.currentVersion;
+
     return (
         <div className="relative min-h-screen overflow-hidden" style={{ background: "var(--background)" }}>
             <TerminalBackground />
@@ -32,7 +43,16 @@ export default async function TerminalLayout({ children }: Props) {
                 <div className="px-4 py-4 sm:px-6">
                     {children}
                 </div>
+
+                <LegalFooter from="terminal" />
             </div>
+
+            {needsLegalAccept && (
+                <LegalAcceptGate
+                    currentVersion={legalSettings.currentVersion}
+                    changeNote={legalSettings.changeNote}
+                />
+            )}
         </div>
     );
 }

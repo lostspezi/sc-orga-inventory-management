@@ -197,6 +197,19 @@ export default async function OrgSettingsPage({ params, searchParams }: Props) {
                                 t("billingFeature4"),
                                 t("billingFeature5"),
                             ],
+                            checkoutDialog: {
+                                title: t("checkoutDialogTitle"),
+                                priceLabel: t("checkoutDialogPriceLabel"),
+                                priceDetails: t("checkoutDialogPriceDetails"),
+                                cancelNote: t("checkoutDialogCancelNote"),
+                                withdrawalNotice: t("checkoutDialogWithdrawalNotice"),
+                                checkboxTerms: t("checkoutDialogCheckboxTerms"),
+                                checkboxWithdrawal: t("checkoutDialogCheckboxWithdrawal"),
+                                ctaButton: t("checkoutDialogCtaButton"),
+                                cancelButton: t("checkoutDialogCancelButton"),
+                                loadingButton: t("checkoutDialogLoadingButton"),
+                                errorCheckout: t("billingErrorCheckout"),
+                            },
                         }}
                     />
 

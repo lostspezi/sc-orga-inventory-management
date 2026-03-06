@@ -151,6 +151,7 @@ export type OrganizationAuditLogDocument = {
         | "inventory.cleared"
         | "integration.google_sheet_connected"
         | "integration.google_sheet_disconnected"
+        | "billing.checkout_initiated"
         | "billing.subscribed"
         | "billing.canceled"
         | "billing.payment_failed"

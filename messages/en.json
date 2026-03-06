@@ -39,7 +39,8 @@
     "overview": "Overview",
     "organizations": "Organizations",
     "discordServers": "Discord Servers",
-    "news": "News"
+    "news": "News",
+    "legal": "Legal"
   },
   "terminal": {
     "adminPanel": "Admin Panel",
@@ -73,7 +74,11 @@
     "auecBalanceSave": "Save Balance",
     "dangerZone": "Danger Zone",
     "deleteAccount": "Delete Account",
-    "deleteDescription": "Permanently deletes your account, all owned organizations, and removes you from all other organizations."
+    "deleteDescription": "Permanently deletes your account, all owned organizations, and removes you from all other organizations.",
+    "dataPrivacyTitle": "Data & Privacy",
+    "exportDataButton": "Export my data",
+    "exportDataDesc": "Download a JSON file with all personal data we hold about you (GDPR Art. 20).",
+    "exportDataDownloading": "Downloading…"
   },
   "adminOverview": {
     "eyebrow": "Super Admin",
@@ -482,7 +487,17 @@
     "tabDiscord": "Discord",
     "tabPro": "PRO",
     "billingFeature4": "Weekly Reporting — auto-generated PDF report every Monday",
-    "billingFeature5": "Exclusive Discord Role — get the PRO role on our Discord for exclusive channels and faster support"
+    "billingFeature5": "Exclusive Discord Role — get the PRO role on our Discord for exclusive channels and faster support",
+    "checkoutDialogTitle": "Subscribe to PRO",
+    "checkoutDialogPriceLabel": "€4.99 / month",
+    "checkoutDialogPriceDetails": "Incl. VAT where applicable · Auto-renews monthly",
+    "checkoutDialogCancelNote": "Cancel anytime in Settings → Billing",
+    "checkoutDialogWithdrawalNotice": "You have a statutory right to withdraw from this contract within 14 days. By subscribing, you request immediate access to PRO features.",
+    "checkoutDialogCheckboxTerms": "I have read and agree to the Terms & Conditions and Privacy Policy.",
+    "checkoutDialogCheckboxWithdrawal": "I expressly request that the service begins immediately upon payment. I acknowledge that I thereby waive my 14-day right of withdrawal.",
+    "checkoutDialogCtaButton": "Subscribe now — €4.99/mo",
+    "checkoutDialogCancelButton": "Cancel",
+    "checkoutDialogLoadingButton": "Redirecting to payment…"
   },
   "auec": {
     "eyebrow": "aUEC Cash Desk",
@@ -661,7 +676,11 @@
     },
     "footer": {
       "disclaimer": "Unauthorized access is a violation of UEE code §18.7 — v0.1.0",
-      "legalButton": "Legal"
+      "legalButton": "Legal",
+      "privacyLink": "Privacy Policy",
+      "termsLink": "Terms",
+      "imprintLink": "Imprint",
+      "cookiesLink": "Cookies"
     },
     "pricing": {
       "label": "Pricing",
