@@ -481,7 +481,8 @@
     "tabGeneral": "Général",
     "tabDiscord": "Discord",
     "tabPro": "PRO",
-    "billingFeature4": "Rapports hebdomadaires — rapport PDF généré automatiquement chaque lundi"
+    "billingFeature4": "Rapports hebdomadaires — rapport PDF généré automatiquement chaque lundi",
+    "billingFeature5": "Rôle Discord exclusif — obtenez le rôle PRO sur notre Discord pour des salons exclusifs et un support plus rapide"
   },
   "auec": {
     "eyebrow": "Bureau de change aUEC",
@@ -565,7 +566,6 @@
       "pill5": "Accès basé sur les rôles",
       "pill6": "Journal d'audit complet",
       "pill7": "Import CSV en masse",
-      "pill8": "Commerce de fret",
       "pill9": "Caisse aUEC"
     },
     "howItWorks": {
@@ -618,11 +618,7 @@
       "csvImportDesc": "Remplissez tout votre inventaire en une seule fois. Chargez un tableau avec les noms d'articles et des valeurs optionnelles de prix et de stock — chaque nom est recherché automatiquement dans le Wiki Star Citizen pour récupérer la catégorie, la classe, la qualité et la taille. Traitement asynchrone avec suivi de progression en direct, rapport de résultats par ligne et fichier de reprise téléchargeable pour les erreurs.",
       "csvImportTag1": "Recherche Wiki SC",
       "csvImportTag2": "Asynchrone",
-      "csvImportTag3": "Historique d'import",
-      "cargoTitle": "Onglet Fret",
-      "cargoDesc": "Module dédié au commerce de marchandises en vrac. Les membres publient des demandes d’achat/vente de fret en aUEC. Le stock s’ajuste en SCU à la clôture des échanges.",
-      "cargoTag1": "Quantités SCU",
-      "cargoTag2": "Prix en aUEC",
+      "csvImportTag3": "Historique d’import",
       "auecTitle": "Caisse aUEC",
       "auecDesc": "Échangez des aUEC entre l’organisation et ses membres. Les admins fixent le solde et les taux d’achat/vente ; les membres soumettent des demandes qui suivent le workflow standard d’approbation.",
       "auecTag1": "Portefeuille org",
@@ -684,7 +680,6 @@
       "freeFeature3": "Workflows d’achat & vente",
       "freeFeature4": "Bot Discord avec commandes slash",
       "freeFeature5": "Caisse aUEC",
-      "freeFeature6": "Commerce via l’onglet Fret",
       "freeFeature7": "Gestion des membres & rôles",
       "freeFeature8": "Liens d’invitation permanents",
       "freeFeature9": "Journal d’audit & notifications",
@@ -692,7 +687,8 @@
       "proFeature2": "Import CSV en masse — jusqu’à 500 éléments",
       "proFeature3": "Export CSV — inventaire complet",
       "proFeature4": "Synchronisation Google Sheets — auto toutes les 10 min",
-      "proFeature5": "Rapports hebdomadaires — PDF auto chaque lundi"
+      "proFeature5": "Rapports hebdomadaires — PDF auto chaque lundi",
+      "proFeature6": "Rôle Discord exclusif — rôle PRO, salons exclusifs & support prioritaire"
     }
   },
   "csvImport": {
@@ -821,6 +817,8 @@
       "q2Li1": "<h>Import CSV en masse</h> — importez des centaines d'articles d'inventaire à la fois depuis un tableur.",
       "q2Li2": "<h>Export CSV</h> — exportez votre inventaire actuel vers un fichier CSV.",
       "q2Li3": "<h>Synchronisation Google Sheets</h> — poussez automatiquement votre inventaire vers un Google Sheet à chaque modification.",
+      "q2Li4": "<h>Rapports hebdomadaires</h> — rapport PDF généré automatiquement chaque lundi.",
+      "q2Li5": "<h>Rôle Discord exclusif</h> — obtenez le rôle PRO sur notre serveur Discord pour des salons exclusifs et un support plus rapide.",
       "q3": "Comment passer au plan PRO ?",
       "q3Body": "Allez dans <h>Paramètres</h> et trouvez la carte <h>Facturation</h> en bas. Cliquez sur <c>Passer au PRO</c>. Vous serez redirigé vers Stripe Checkout pour saisir vos coordonnées de paiement. Après paiement, vous revenez à la page Paramètres avec le PRO immédiatement actif.",
       "q4": "Comment gérer mon abonnement ou consulter mes factures ?",

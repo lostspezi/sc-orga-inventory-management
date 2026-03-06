@@ -481,7 +481,8 @@
     "tabGeneral": "Allgemein",
     "tabDiscord": "Discord",
     "tabPro": "PRO",
-    "billingFeature4": "Wöchentliche Berichte — automatisch generierter PDF-Bericht jeden Montag"
+    "billingFeature4": "Wöchentliche Berichte — automatisch generierter PDF-Bericht jeden Montag",
+    "billingFeature5": "Exklusive Discord-Rolle — erhalte die PRO-Rolle auf unserem Discord für exklusive Kanäle und schnelleren Support"
   },
   "auec": {
     "eyebrow": "aUEC-Schalter",
@@ -565,7 +566,6 @@
       "pill5": "Rollenbasierter Zugriff",
       "pill6": "Vollständiges Audit-Log",
       "pill7": "CSV-Massenimport",
-      "pill8": "Frachthandel",
       "pill9": "aUEC-Kassenschalter"
     },
     "howItWorks": {
@@ -619,10 +619,6 @@
       "csvImportTag1": "SC-Wiki-Suche",
       "csvImportTag2": "Asynchron",
       "csvImportTag3": "Import-Verlauf",
-      "cargoTitle": "Fracht-Tab",
-      "cargoDesc": "Dediziertes Handelsmodul für große Warenlieferungen. Mitglieder stellen Fracht-Kauf-/Verkaufsanfragen in aUEC. Der Lagerbestand passt sich in SCU an, wenn Trades abgeschlossen werden.",
-      "cargoTag1": "SCU-Mengen",
-      "cargoTag2": "aUEC-Preise",
       "auecTitle": "aUEC-Kassenschalter",
       "auecDesc": "Tausche echte aUEC zwischen der Org und ihren Mitgliedern. Administratoren legen das Guthaben und die Kauf-/Verkaufskurse fest; Mitglieder stellen Anträge, die den Standard-Genehmigungs-Workflow durchlaufen.",
       "auecTag1": "Org-Kasse",
@@ -684,7 +680,6 @@
       "freeFeature3": "Kauf- & Verkaufs-Workflows",
       "freeFeature4": "Discord-Bot mit Slash-Commands",
       "freeFeature5": "aUEC-Kassenschalter",
-      "freeFeature6": "Fracht-Tab-Handel",
       "freeFeature7": "Mitgliederverwaltung & Rollen",
       "freeFeature8": "Permanente Einladungslinks",
       "freeFeature9": "Audit-Protokoll & Benachrichtigungen",
@@ -692,7 +687,8 @@
       "proFeature2": "CSV-Massenimport — bis zu 500 Einträge",
       "proFeature3": "CSV-Export — vollständiges Inventar",
       "proFeature4": "Google-Sheets-Sync — automatisch alle 10 Min.",
-      "proFeature5": "Wöchentliche Berichte — auto PDF jeden Montag"
+      "proFeature5": "Wöchentliche Berichte — auto PDF jeden Montag",
+      "proFeature6": "Exklusive Discord-Rolle — PRO-Rolle, exklusive Kanäle & schnellerer Support"
     }
   },
   "csvImport": {
@@ -821,6 +817,8 @@
       "q2Li1": "<h>CSV-Massenimport</h> — importiere hunderte von Inventarartikeln auf einmal aus einer Tabelle.",
       "q2Li2": "<h>CSV-Export</h> — exportiere dein aktuelles Inventar als CSV-Datei.",
       "q2Li3": "<h>Google-Sheets-Synchronisierung</h> — pushe dein Inventar automatisch in ein Google Sheet, wenn es sich ändert.",
+      "q2Li4": "<h>Wöchentliche Berichte</h> — automatisch generierter PDF-Bericht jeden Montag.",
+      "q2Li5": "<h>Exklusive Discord-Rolle</h> — erhalte die PRO-Rolle auf unserem Discord-Server für exklusive Kanäle und schnelleren Support.",
       "q3": "Wie upgrade ich auf PRO?",
       "q3Body": "Gehe zu <h>Einstellungen</h> und suche die <h>Abrechnung</h>-Karte unten. Klicke auf <c>Auf PRO upgraden</c>. Du wirst zu Stripe Checkout weitergeleitet. Nach der Zahlung kehrt du zur Einstellungsseite zurück und PRO ist sofort aktiv.",
       "q4": "Wie verwalte ich mein Abonnement oder sehe meine Rechnungen?",

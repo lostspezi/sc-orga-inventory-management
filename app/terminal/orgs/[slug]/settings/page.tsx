@@ -195,6 +195,7 @@ export default async function OrgSettingsPage({ params, searchParams }: Props) {
                                 t("billingFeature2"),
                                 t("billingFeature3"),
                                 t("billingFeature4"),
+                                t("billingFeature5"),
                             ],
                         }}
                     />

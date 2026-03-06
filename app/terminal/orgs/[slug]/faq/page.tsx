@@ -288,6 +288,8 @@ export default async function FaqPage() {
                         <li>{t.rich("proSection.q2Li1", rich)}</li>
                         <li>{t.rich("proSection.q2Li2", rich)}</li>
                         <li>{t.rich("proSection.q2Li3", rich)}</li>
+                        <li>{t.rich("proSection.q2Li4", rich)}</li>
+                        <li>{t.rich("proSection.q2Li5", rich)}</li>
                     </ul>
                 </Q>
                 <Q q={t("proSection.q3")}>

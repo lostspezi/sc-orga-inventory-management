@@ -318,7 +318,7 @@ export default async function Home() {
 
                     {/* Feature pills */}
                     <div className="mb-10 flex flex-wrap justify-center gap-2" style={{ animation: "slide-in-up 0.6s 0.3s ease both" }}>
-                        {(["pill1", "pill2", "pill3", "pill4", "pill5", "pill6", "pill7", "pill8", "pill9"] as const).map((key) => (
+                        {(["pill1", "pill2", "pill3", "pill4", "pill5", "pill6", "pill7", "pill9"] as const).map((key) => (
                             <span key={key} className="rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.12em]" style={{
                                 borderColor: "rgba(79,195,220,0.2)",
                                 color: "rgba(79,195,220,0.6)",
@@ -441,13 +441,6 @@ export default async function Home() {
                                 tags={[t("features.csvImportTag1"), t("features.csvImportTag2"), t("features.csvImportTag3")]}
                             />
                             <FeatureCard
-                                delay="0.64s" accent="rgba(255,160,40"
-                                icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/><path d="M12 2v5M9 7h6"/></svg>}
-                                title={t("features.cargoTitle")}
-                                desc={t("features.cargoDesc")}
-                                tags={[t("features.cargoTag1"), t("features.cargoTag2")]}
-                            />
-                            <FeatureCard
                                 delay="0.72s" accent="rgba(87,242,135"
                                 icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/><path d="M8.5 8.5h.01M15.5 8.5h.01"/><path d="M9 15s1.5 2 3 2 3-2 3-2"/></svg>}
                                 title={t("features.auecTitle")}
@@ -497,7 +490,7 @@ export default async function Home() {
                                     {t("pricing.freeDesc")}
                                 </p>
                                 <ul className="mb-7 space-y-2.5">
-                                    {(["freeFeature1","freeFeature2","freeFeature3","freeFeature4","freeFeature5","freeFeature6","freeFeature7","freeFeature8","freeFeature9"] as const).map((k) => (
+                                    {(["freeFeature1","freeFeature2","freeFeature3","freeFeature4","freeFeature5","freeFeature7","freeFeature8","freeFeature9"] as const).map((k) => (
                                         <li key={k} className="flex items-start gap-2.5 text-[12px]" style={{ color: "rgba(200,220,232,0.6)", fontFamily: "var(--font-mono)" }}>
                                             <span style={{ color: "rgba(79,195,220,0.7)", flexShrink: 0, marginTop: 1 }}>✓</span>
                                             {t(`pricing.${k}`)}
@@ -541,7 +534,7 @@ export default async function Home() {
                                     {t("pricing.proNote")}
                                 </p>
                                 <ul className="mb-7 space-y-2.5">
-                                    {(["proFeature1","proFeature2","proFeature3","proFeature4","proFeature5"] as const).map((k) => (
+                                    {(["proFeature1","proFeature2","proFeature3","proFeature4","proFeature5","proFeature6"] as const).map((k) => (
                                         <li key={k} className="flex items-start gap-2.5 text-[12px]" style={{ color: "rgba(200,220,232,0.6)", fontFamily: "var(--font-mono)" }}>
                                             <span style={{ color: "rgba(240,165,0,0.7)", flexShrink: 0, marginTop: 1 }}>✓</span>
                                             {t(`pricing.${k}`)}
