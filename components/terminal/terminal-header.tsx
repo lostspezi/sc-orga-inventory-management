@@ -2,7 +2,6 @@ import Link from "next/link";
 import UserDropdown from "@/components/terminal/user-dropdown";
 import TerminalNav from "@/components/terminal/terminal-nav";
 import NotificationBell from "@/components/terminal/notification-bell";
-import LanguageSwitcher from "@/components/ui/language-switcher";
 import { getTranslations } from "next-intl/server";
 import { getOrCreateSocialSettings, toSocialSettingsView } from "@/lib/repositories/social-settings-repository";
 
@@ -51,7 +50,6 @@ export default async function TerminalHeader({ rsiHandle, discordName, userImage
 
                 {/* Right side */}
                 <div className="flex items-center gap-2">
-                    <LanguageSwitcher />
                     {social.discord && (
                         <Link
                             href={social.discord}

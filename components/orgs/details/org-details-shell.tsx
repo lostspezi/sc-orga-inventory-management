@@ -2,6 +2,7 @@ import { ExternalLink } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import OrgDetailsSidebar from "@/components/orgs/details/org-details-sidebar";
 import OrgDetailsMobileNav from "@/components/orgs/details/org-details-mobile-nav";
+import OrgMobileContextBar from "@/components/orgs/details/org-mobile-context-bar";
 import {OrganizationRole} from "@/components/orgs/details/org-details-nav";
 import React from "react";
 import OrgBreadcrumbs from "@/components/orgs/details/org-breadcrumbs";
@@ -23,7 +24,7 @@ export default async function OrgDetailsShell({ slug, orgName, orgRsiUrl, childr
             <div className="mx-auto w-full max-w-7xl space-y-4">
                 {/* Header */}
                 <header
-                    className="hud-panel corner-tr corner-bl relative p-5 sm:p-6"
+                    className="hud-panel corner-tr corner-bl relative p-3 sm:p-6"
                     style={{ animation: "slide-in-up 0.45s ease forwards" }}
                 >
                     <div
@@ -72,12 +73,15 @@ export default async function OrgDetailsShell({ slug, orgName, orgRsiUrl, childr
                 {/* Mobile nav */}
                 <OrgDetailsMobileNav slug={slug} currentRole={currentRole} isPro={isPro} />
 
+                {/* Mobile context bar */}
+                <OrgMobileContextBar slug={slug} orgName={orgName} />
+
                 {/* Content grid */}
-                <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
                     <OrgDetailsSidebar slug={slug} currentRole={currentRole} isPro={isPro} />
 
                     <section
-                        className="hud-panel corner-tr corner-bl relative p-4 sm:p-5"
+                        className="hud-panel corner-tr corner-bl relative min-w-0 overflow-hidden p-4 sm:p-5"
                         style={{ background: "rgba(8,16,24,0.55)", animation: "slide-in-up 0.5s ease forwards" }}
                     >
                         <div

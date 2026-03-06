@@ -10,14 +10,18 @@ const BTN = 52;            // FAB diameter px
 const GAP = 8;             // min distance from screen edge
 const DRAG_THRESHOLD = 5;  // px moved before treating as a drag
 const POS_KEY = "org-fab-pos";
+const SEEN_KEY = "org-fab-seen";
 
 type Props = { slug: string; currentRole: OrganizationRole; isPro?: boolean };
 
 // Inline clamp used outside a component for lazy state initializer
 function clampPos(x: number, y: number) {
+    const sab = parseInt(
+        getComputedStyle(document.documentElement).getPropertyValue("--sab") || "0"
+    ) || 0;
     return {
         x: Math.max(GAP, Math.min(x, window.innerWidth - BTN - GAP)),
-        y: Math.max(GAP, Math.min(y, window.innerHeight - BTN - GAP)),
+        y: Math.max(GAP, Math.min(y, window.innerHeight - BTN - GAP - sab)),
     };
 }
 
@@ -47,6 +51,11 @@ export default function OrgDetailsMobileNav({ slug, currentRole, isPro = false }
 
     const [dragging, setDragging] = useState(false);
     const drag = useRef({ active: false, moved: false, ox: 0, oy: 0, px: 0, py: 0 });
+
+    const [showPulse, setShowPulse] = useState(() => {
+        if (typeof window === "undefined") return false;
+        return !localStorage.getItem(SEEN_KEY);
+    });
 
     const applyPos = useCallback((x: number, y: number) => {
         const p = clampPos(x, y);
@@ -99,6 +108,9 @@ export default function OrgDetailsMobileNav({ slug, currentRole, isPro = false }
             setDragging(false);
             localStorage.setItem(POS_KEY, JSON.stringify(posRef.current));
         } else {
+            // Mark FAB as seen on first tap to stop the pulse animation
+            localStorage.setItem(SEEN_KEY, "1");
+            setShowPulse(false);
             // Toggle: open on the current pathname, or close if already open here
             setOpenedAt((prev) => (prev === pathname ? null : pathname));
         }
@@ -221,6 +233,15 @@ export default function OrgDetailsMobileNav({ slug, currentRole, isPro = false }
                     transition: dragging ? "none" : "border-color 0.15s, background 0.15s, color 0.15s",
                 }}
             >
+                {showPulse && (
+                    <span
+                        className="animate-ping absolute inset-0 rounded-full"
+                        style={{
+                            border: "2px solid var(--accent-primary)",
+                            pointerEvents: "none",
+                        }}
+                    />
+                )}
                 {open ? <X size={20} /> : (ActiveIcon ? <ActiveIcon size={20} /> : <Menu size={20} />)}
             </button>
         </div>

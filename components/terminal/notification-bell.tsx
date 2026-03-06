@@ -127,7 +127,7 @@ export default function NotificationBell() {
             {/* Dropdown */}
             {open && (
                 <div
-                    className="absolute right-0 top-full z-50 mt-1.5 w-80 rounded-xl border shadow-2xl"
+                    className="fixed right-2 top-[3.75rem] z-50 w-[min(20rem,calc(100vw-1rem))] rounded-xl border shadow-2xl sm:absolute sm:right-0 sm:top-full sm:mt-1.5"
                     style={{
                         borderColor: "rgba(79,195,220,0.18)",
                         background: "rgba(6,12,18,0.97)",
@@ -158,14 +158,8 @@ export default function NotificationBell() {
                             <button
                                 type="button"
                                 onClick={markAllRead}
-                                className="cursor-pointer text-[10px] uppercase tracking-[0.15em] transition-colors"
-                                style={{ color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)" }}
-                                onMouseEnter={(e) => {
-                                    (e.currentTarget as HTMLElement).style.color = "rgba(79,195,220,0.85)";
-                                }}
-                                onMouseLeave={(e) => {
-                                    (e.currentTarget as HTMLElement).style.color = "rgba(79,195,220,0.5)";
-                                }}
+                                className="cursor-pointer text-[10px] uppercase tracking-[0.15em] transition-colors text-[rgba(79,195,220,0.5)] hover:text-[rgba(79,195,220,0.85)]"
+                                style={{ fontFamily: "var(--font-mono)" }}
                             >
                                 {t("markAllRead")}
                             </button>
@@ -261,19 +255,8 @@ export default function NotificationBell() {
                         <Link
                             href="/terminal/notifications"
                             onClick={() => setOpen(false)}
-                            className="block rounded-lg px-3 py-2 text-center text-[11px] uppercase tracking-[0.2em] transition-colors"
-                            style={{ color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)" }}
-                            onMouseEnter={(e) => {
-                                (e.currentTarget as HTMLElement).style.background =
-                                    "rgba(79,195,220,0.07)";
-                                (e.currentTarget as HTMLElement).style.color =
-                                    "rgba(79,195,220,0.85)";
-                            }}
-                            onMouseLeave={(e) => {
-                                (e.currentTarget as HTMLElement).style.background = "transparent";
-                                (e.currentTarget as HTMLElement).style.color =
-                                    "rgba(79,195,220,0.5)";
-                            }}
+                            className="block rounded-lg px-3 py-2 text-center text-[11px] uppercase tracking-[0.2em] transition-colors text-[rgba(79,195,220,0.5)] hover:bg-[rgba(79,195,220,0.07)] hover:text-[rgba(79,195,220,0.85)]"
+                            style={{ fontFamily: "var(--font-mono)" }}
                         >
                             {t("viewAll")}
                         </Link>

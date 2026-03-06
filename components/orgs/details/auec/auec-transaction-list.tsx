@@ -161,7 +161,7 @@ export default function AuecTransactionList({ transactions, currentUserId, isAdm
                             </div>
 
                             {/* Action buttons */}
-                            <div className="flex shrink-0 flex-wrap gap-2">
+                            <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:flex-wrap">
                                 {canApproveReject && (
                                     <>
                                         <form action={respondToAuecTransactionAction}>

@@ -21,7 +21,7 @@ export default function ToastContainer({
     if (toasts.length === 0) return null;
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+        <div className="fixed bottom-6 right-2 z-50 flex flex-col gap-2 sm:right-6">
             {toasts.map((toast) => {
                 const tx = toast.transaction;
                 const cfg = STATUS_CONFIG[tx.status] ?? STATUS_CONFIG.cancelled;
@@ -30,7 +30,7 @@ export default function ToastContainer({
                 return (
                     <div
                         key={toast.id}
-                        className="w-72 overflow-hidden rounded-lg border"
+                        className="w-[min(18rem,calc(100vw-1rem))] overflow-hidden rounded-lg border"
                         style={{
                             background: "rgba(4,12,20,0.97)",
                             borderColor: cfg.borderColor,

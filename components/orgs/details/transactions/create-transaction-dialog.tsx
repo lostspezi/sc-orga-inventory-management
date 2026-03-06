@@ -126,7 +126,7 @@ export default function CreateTransactionDialog({
                 boxShadow: "0 0 40px rgba(0,0,0,0.45)",
             }}
         >
-            <div className="relative p-5 sm:p-6">
+            <div className="relative max-h-[90dvh] overflow-y-auto p-5 sm:p-6">
                 <div
                     className="absolute left-6 right-6 top-0 h-px"
                     style={{ background: "linear-gradient(90deg, transparent, var(--accent-primary), transparent)" }}

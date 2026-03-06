@@ -13,15 +13,15 @@ type KpiCardProps = {
 function KpiCard({ icon, label, value, sub, color }: KpiCardProps) {
     return (
         <div
-            className="rounded-lg border p-4"
+            className="rounded-lg border p-3 sm:p-4"
             style={{
                 borderColor: `${color.replace("1)", "0.15)")}`,
                 background: `${color.replace("1)", "0.04)")}`,
             }}
         >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-2 sm:gap-3">
                 <div
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border sm:h-9 sm:w-9"
                     style={{
                         borderColor: `${color.replace("1)", "0.2)")}`,
                         color: `${color.replace("1)", "0.85)")}`,
@@ -38,7 +38,7 @@ function KpiCard({ icon, label, value, sub, color }: KpiCardProps) {
                         {label}
                     </p>
                     <p
-                        className="mt-0.5 text-xl font-semibold tracking-[0.04em]"
+                        className="mt-0.5 text-base font-semibold tracking-[0.04em] sm:text-xl"
                         style={{ color: `${color.replace("1)", "0.9)")}`, fontFamily: "var(--font-display)" }}
                     >
                         {value}

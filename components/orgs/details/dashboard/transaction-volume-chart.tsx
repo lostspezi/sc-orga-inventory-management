@@ -79,10 +79,10 @@ export default async function TransactionVolumeChart({ data }: { data: DailyStat
                 </div>
             </div>
 
+            <div className="overflow-x-auto">
             <svg
                 viewBox={`0 0 ${W} ${H}`}
-                className="w-full"
-                style={{ overflow: "visible" }}
+                style={{ overflow: "visible", minWidth: "460px", display: "block", width: "100%" }}
             >
                 {/* Y grid lines */}
                 {yTicks.map(({ fraction, value, y }) => (
@@ -168,6 +168,7 @@ export default async function TransactionVolumeChart({ data }: { data: DailyStat
                     </text>
                 ))}
             </svg>
+            </div>
         </div>
     );
 }

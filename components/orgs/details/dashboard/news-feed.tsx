@@ -41,13 +41,13 @@ export default function NewsFeed({ posts }: Props) {
                 >
                     {t("updates")}
                 </p>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-3">
                     {posts.map((post) => (
                         <button
                             key={post._id.toString()}
                             type="button"
                             onClick={() => open(post)}
-                            className="hud-panel cursor-pointer p-4 text-left transition-colors hover:brightness-125"
+                            className="hud-panel w-[min(16rem,80vw)] shrink-0 cursor-pointer p-4 text-left transition-colors hover:brightness-125 sm:w-auto"
                             style={{ background: "rgba(8,16,24,0.45)" }}
                         >
                             <p
@@ -75,7 +75,7 @@ export default function NewsFeed({ posts }: Props) {
 
             <dialog
                 ref={dialogRef}
-                className="fixed left-1/2 top-1/2 m-0 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border p-0 backdrop:bg-black/70"
+                className="fixed left-1/2 top-1/2 m-0 w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border p-0 backdrop:bg-black/70"
                 style={{
                     borderColor: "rgba(79,195,220,0.2)",
                     background: "rgba(6,12,18,0.97)",
@@ -83,7 +83,7 @@ export default function NewsFeed({ posts }: Props) {
                 }}
             >
                 {activePost && (
-                    <div className="relative p-5 sm:p-6">
+                    <div className="relative max-h-[90dvh] overflow-y-auto p-5 sm:p-6">
                         <div
                             className="absolute left-6 right-6 top-0 h-px"
                             style={{
