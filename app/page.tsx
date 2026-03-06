@@ -4,18 +4,33 @@ import { getTranslations } from "next-intl/server";
 import LanguageSwitcher from "@/components/ui/language-switcher";
 import UserDropdown from "@/components/terminal/user-dropdown";
 import CookieNotice from "@/components/consent/cookie-notice";
+import { getOrCreateSocialSettings, toSocialSettingsView } from "@/lib/repositories/social-settings-repository";
+import { SocialIconBar, DiscordCtaButton } from "@/components/ui/social-icons";
 
-export const metadata = {
-    title: "SC Orga Manager — Star Citizen Organization Inventory",
-    description:
-        "The free command hub for Star Citizen organizations. Track inventory, manage trades, sync to Google Sheets, and automate weekly reports. Free plan available.",
-    openGraph: {
+export async function generateMetadata() {
+    const socialDoc = await getOrCreateSocialSettings();
+    const social = toSocialSettingsView(socialDoc);
+
+    const twitterHandle = social.twitter
+        ? social.twitter.match(/(?:twitter|x)\.com\/@?([^/?#]+)/)?.[1]
+        : undefined;
+
+    return {
         title: "SC Orga Manager — Star Citizen Organization Inventory",
         description:
-            "Track inventory, manage trades, sync to Google Sheets, and automate weekly PDF reports for your Star Citizen org.",
-        url: "/",
-    },
-};
+            "The free command hub for Star Citizen organizations. Track inventory, manage trades, sync to Google Sheets, and automate weekly reports. Free plan available.",
+        openGraph: {
+            title: "SC Orga Manager — Star Citizen Organization Inventory",
+            description:
+                "Track inventory, manage trades, sync to Google Sheets, and automate weekly PDF reports for your Star Citizen org.",
+            url: "/",
+        },
+        twitter: {
+            card: "summary_large_image" as const,
+            ...(twitterHandle ? { site: `@${twitterHandle}`, creator: `@${twitterHandle}` } : {}),
+        },
+    };
+}
 
 // ─── Background ───────────────────────────────────────────────────────────────
 
@@ -231,10 +246,12 @@ function MockDashboard() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function Home() {
-    const [t, session] = await Promise.all([
+    const [t, session, socialDoc] = await Promise.all([
         getTranslations("home"),
         auth(),
+        getOrCreateSocialSettings(),
     ]);
+    const social = toSocialSettingsView(socialDoc);
 
     const rsiHandle = session?.user?.rsiHandle ?? null;
     const discordName = session?.user?.name ?? null;
@@ -342,7 +359,7 @@ export default async function Home() {
                         ))}
                     </div>
 
-                    <div style={{ animation: "slide-in-up 0.6s 0.35s ease both" }}>
+                    <div className="flex flex-wrap items-center justify-center gap-4" style={{ animation: "slide-in-up 0.6s 0.35s ease both" }}>
                         {userName ? (
                             <Link href="/terminal" className="sc-btn sc-btn-primary inline-flex items-center gap-3 px-10 py-4 text-sm animate-pulse-glow">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -358,6 +375,7 @@ export default async function Home() {
                                 {t("accessTerminal")}
                             </Link>
                         )}
+                        <DiscordCtaButton url={social.discord} label={t("joinDiscord")} />
                     </div>
                 </section>
 
@@ -675,47 +693,56 @@ export default async function Home() {
                         <p className="mb-8 text-sm leading-relaxed" style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-ui)" }}>
                             {t("cta.desc")}
                         </p>
-                        {userName ? (
-                            <Link href="/terminal" className="sc-btn sc-btn-primary inline-flex items-center gap-3 px-10 py-4 text-sm">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M14 12H3" />
-                                </svg>
-                                {t("goToTerminal")}
-                            </Link>
-                        ) : (
-                            <Link href="/login" className="sc-btn sc-btn-primary inline-flex items-center gap-3 px-10 py-4 text-sm">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M14 12H3" />
-                                </svg>
-                                {t("cta.button")}
-                            </Link>
-                        )}
+                        <div className="flex flex-wrap items-center justify-center gap-4">
+                            {userName ? (
+                                <Link href="/terminal" className="sc-btn sc-btn-primary inline-flex items-center gap-3 px-10 py-4 text-sm">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M14 12H3" />
+                                    </svg>
+                                    {t("goToTerminal")}
+                                </Link>
+                            ) : (
+                                <Link href="/login" className="sc-btn sc-btn-primary inline-flex items-center gap-3 px-10 py-4 text-sm">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M14 12H3" />
+                                    </svg>
+                                    {t("cta.button")}
+                                </Link>
+                            )}
+                            <DiscordCtaButton url={social.discord} label={t("joinDiscord")} />
+                        </div>
                     </div>
                 </section>
 
                 {/* ── FOOTER ───────────────────────────────────────────── */}
-                <footer className="flex flex-wrap items-center justify-center gap-4 px-8 py-4" style={{ borderTop: "1px solid rgba(79,195,220,0.08)" }}>
-                    <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "rgba(79,195,220,0.18)", fontFamily: "var(--font-mono)" }}>
-                        {t("footer.disclaimer")}
-                    </span>
-                    <span style={{ color: "rgba(79,195,220,0.1)" }}>|</span>
-                    <nav className="flex items-center gap-4">
-                        {(["privacyLink", "termsLink", "imprintLink", "cookiesLink"] as const).map((key, i, arr) => {
-                            const hrefs = ["/legal/privacy", "/legal/terms", "/legal/imprint", "/legal/cookies"];
-                            return (
-                                <span key={key} className="flex items-center gap-4">
-                                    <Link
-                                        href={hrefs[i]}
-                                        className="text-[10px] uppercase tracking-[0.2em] transition-colors hover:text-cyan-400"
-                                        style={{ color: "rgba(79,195,220,0.3)", fontFamily: "var(--font-mono)" }}
-                                    >
-                                        {t(`footer.${key}`)}
-                                    </Link>
-                                    {i < arr.length - 1 && <span style={{ color: "rgba(79,195,220,0.1)" }}>·</span>}
-                                </span>
-                            );
-                        })}
-                    </nav>
+                <footer
+                    className="flex flex-wrap items-center justify-between gap-4 px-8 py-4"
+                    style={{ borderTop: "1px solid rgba(79,195,220,0.08)" }}
+                >
+                    <div className="flex flex-wrap items-center gap-3">
+                        <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: "rgba(79,195,220,0.18)", fontFamily: "var(--font-mono)" }}>
+                            {t("footer.disclaimer")}
+                        </span>
+                        <span style={{ color: "rgba(79,195,220,0.1)" }}>|</span>
+                        <nav className="flex flex-wrap items-center gap-3">
+                            {(["privacyLink", "termsLink", "imprintLink", "cookiesLink"] as const).map((key, i, arr) => {
+                                const hrefs = ["/legal/privacy", "/legal/terms", "/legal/imprint", "/legal/cookies"];
+                                return (
+                                    <span key={key} className="flex items-center gap-3">
+                                        <Link
+                                            href={hrefs[i]}
+                                            className="text-[10px] uppercase tracking-[0.2em] transition-colors hover:text-cyan-400"
+                                            style={{ color: "rgba(79,195,220,0.3)", fontFamily: "var(--font-mono)" }}
+                                        >
+                                            {t(`footer.${key}`)}
+                                        </Link>
+                                        {i < arr.length - 1 && <span style={{ color: "rgba(79,195,220,0.1)" }}>·</span>}
+                                    </span>
+                                );
+                            })}
+                        </nav>
+                    </div>
+                    <SocialIconBar social={social} />
                 </footer>
                 <CookieNotice />
             </div>

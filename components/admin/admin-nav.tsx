@@ -14,6 +14,7 @@ export default function AdminNav() {
         { label: t("discordServers"), href: "/terminal/admin/discord-servers" },
         { label: t("news"), href: "/terminal/admin/news" },
         { label: t("legal"), href: "/terminal/admin/legal" },
+        { label: t("social"), href: "/terminal/admin/social" },
     ];
 
     return (

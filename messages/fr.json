@@ -40,7 +40,8 @@
     "organizations": "Organisations",
     "discordServers": "Serveurs Discord",
     "news": "Actualités",
-    "legal": "Juridique"
+    "legal": "Juridique",
+    "social": "Social"
   },
   "terminal": {
     "adminPanel": "Panneau Admin",
@@ -568,6 +569,7 @@
     "systemsOnline": "Systèmes en ligne",
     "accessTerminal": "Accéder au Terminal",
     "goToTerminal": "Aller au Terminal",
+    "joinDiscord": "Rejoindre Discord",
     "hero": {
       "eyebrow": "Empire Uni de la Terre — Commerce d'Org",
       "title1": "Centre de",
