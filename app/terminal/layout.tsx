@@ -3,6 +3,10 @@ import { redirect } from "next/navigation";
 import TerminalHeader from "@/components/terminal/terminal-header";
 import TerminalBackground from "@/components/terminal/terminal-background";
 
+export const metadata = {
+    robots: { index: false, follow: false },
+};
+
 type Props = {
     children: React.ReactNode;
 };
