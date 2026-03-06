@@ -481,7 +481,8 @@
     "tabGeneral": "General",
     "tabDiscord": "Discord",
     "tabPro": "PRO",
-    "billingFeature4": "Weekly Reporting — auto-generated PDF report every Monday"
+    "billingFeature4": "Weekly Reporting — auto-generated PDF report every Monday",
+    "billingFeature5": "Exclusive Discord Role — get the PRO role on our Discord for exclusive channels and faster support"
   },
   "auec": {
     "eyebrow": "aUEC Cash Desk",
@@ -565,7 +566,6 @@
       "pill5": "Role-based Access",
       "pill6": "Full Audit Trail",
       "pill7": "CSV Bulk Import",
-      "pill8": "Cargo Trading",
       "pill9": "aUEC Cash Desk"
     },
     "howItWorks": {
@@ -619,10 +619,6 @@
       "csvImportTag1": "SC Wiki lookup",
       "csvImportTag2": "Async",
       "csvImportTag3": "Import history",
-      "cargoTitle": "Cargo Tab",
-      "cargoDesc": "Dedicated trading module for bulk commodity runs. Members post cargo sell/buy requests priced in aUEC. Stock adjusts in SCU as trades complete.",
-      "cargoTag1": "SCU quantities",
-      "cargoTag2": "aUEC pricing",
       "auecTitle": "aUEC Cash Desk",
       "auecDesc": "Exchange real aUEC between the org and its members. Org admins set the balance and buy/sell rates; members submit requests that go through the standard approve-and-confirm workflow.",
       "auecTag1": "Org wallet",
@@ -684,7 +680,6 @@
       "freeFeature3": "Buy & Sell trade workflows",
       "freeFeature4": "Discord bot with slash commands",
       "freeFeature5": "aUEC Cash Desk",
-      "freeFeature6": "Cargo Tab trading",
       "freeFeature7": "Member management & roles",
       "freeFeature8": "Permanent invite links",
       "freeFeature9": "Audit trail & notifications",
@@ -692,7 +687,8 @@
       "proFeature2": "CSV Bulk Import — up to 500 items",
       "proFeature3": "CSV Export — full inventory",
       "proFeature4": "Google Sheets Sync — auto every 10 min",
-      "proFeature5": "Weekly Reports — auto PDF every Monday"
+      "proFeature5": "Weekly Reports — auto PDF every Monday",
+      "proFeature6": "Exclusive Discord Role — PRO role, exclusive channels & faster support"
     }
   },
   "csvImport": {
@@ -821,6 +817,8 @@
       "q2Li1": "<h>Bulk CSV Import</h> — import hundreds of inventory items at once from a spreadsheet.",
       "q2Li2": "<h>CSV Export</h> — export your current inventory to a CSV file.",
       "q2Li3": "<h>Google Sheets Sync</h> — automatically push your inventory to a Google Sheet whenever it changes.",
+      "q2Li4": "<h>Weekly Reports</h> — auto-generated PDF report every Monday.",
+      "q2Li5": "<h>Exclusive Discord Role</h> — get the PRO role on our Discord server for exclusive channels and faster support.",
       "q3": "How do I upgrade to PRO?",
       "q3Body": "Go to <h>Settings</h> and find the <h>Billing</h> card at the bottom. Click <c>Upgrade to PRO</c>. You will be redirected to Stripe Checkout to enter your payment details. After payment you are returned to the Settings page with PRO instantly active.",
       "q4": "How do I manage my subscription or view invoices?",

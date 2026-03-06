@@ -6,6 +6,9 @@ import {
     setOrgSubscription,
 } from "@/lib/repositories/organization-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
+import { getUserById } from "@/lib/repositories/user-repository";
+import { sendEmail, type EmailAttachment } from "@/lib/email/send-email";
+import { renderProWelcomeEmail } from "@/lib/email/templates/pro-welcome";
 import type Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -101,9 +104,93 @@ export async function POST(req: NextRequest) {
                 break;
             }
 
+            case "invoice.payment_succeeded": {
+                const invoice = event.data.object as Stripe.Invoice;
+
+                // In API 2026-02-25.clover, subscription moved to invoice.parent.subscription_details.subscription
+                const subRef = invoice.parent?.subscription_details?.subscription;
+                const invoiceSubId = typeof subRef === "string" ? subRef : subRef?.id;
+                if (!invoiceSubId) break;
+
+                // Only send welcome email on the first invoice (new subscription)
+                if (invoice.billing_reason !== "subscription_create") break;
+
+                const invoiceOrg = await getOrgByStripeSubscriptionId(invoiceSubId);
+                if (!invoiceOrg) break;
+
+                // Find org owner to send email to
+                const ownerMember = invoiceOrg.members.find((m) => m.role === "owner");
+                if (!ownerMember) break;
+
+                const ownerUser = await getUserById(ownerMember.userId);
+                if (!ownerUser?.email) break;
+
+                const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://sc-orga.app";
+                const billingSettingsUrl = `${appUrl}/terminal/orgs/${invoiceOrg.slug}/settings?tab=pro`;
+
+                const periodEndTs = invoice.period_end ?? null;
+
+                // Fetch Stripe-generated PDF invoice as attachment
+                const attachments: EmailAttachment[] = [];
+                if (invoice.invoice_pdf) {
+                    try {
+                        const pdfRes = await fetch(invoice.invoice_pdf);
+                        if (pdfRes.ok) {
+                            const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
+                            const filename = invoice.number
+                                ? `Invoice-${invoice.number}.pdf`
+                                : "Invoice.pdf";
+                            attachments.push({ filename, content: pdfBuffer, contentType: "application/pdf" });
+                        }
+                    } catch (pdfErr) {
+                        console.error("[stripe webhook] failed to fetch invoice PDF:", pdfErr);
+                    }
+                }
+
+                const { html, text } = renderProWelcomeEmail({
+                    orgName: invoiceOrg.name,
+                    ownerName: ownerUser.name ?? ownerUser.email,
+                    invoiceNumber: invoice.number ?? undefined,
+                    invoiceDate: invoice.created
+                        ? new Date(invoice.created * 1000).toLocaleDateString("en-US", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                          })
+                        : undefined,
+                    amount: invoice.amount_paid != null ? String(invoice.amount_paid) : undefined,
+                    currency: invoice.currency ?? undefined,
+                    invoiceUrl: invoice.hosted_invoice_url ?? undefined,
+                    periodEnd: periodEndTs
+                        ? new Date(periodEndTs * 1000).toLocaleDateString("en-US", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                          })
+                        : undefined,
+                    appUrl,
+                    billingSettingsUrl,
+                });
+
+                try {
+                    await sendEmail({
+                        to: ownerUser.email,
+                        subject: `Welcome to SC Orga Manager PRO – ${invoiceOrg.name}`,
+                        html,
+                        text,
+                        attachments,
+                    });
+                } catch (emailErr) {
+                    // Email errors must not fail the webhook response
+                    console.error("[stripe webhook] failed to send PRO welcome email:", emailErr);
+                }
+                break;
+            }
+
             case "invoice.payment_failed": {
                 const invoice = event.data.object as Stripe.Invoice;
-                const subId = (invoice as Stripe.Invoice & { subscription?: string }).subscription;
+                const failedSubRef = invoice.parent?.subscription_details?.subscription;
+                const subId = typeof failedSubRef === "string" ? failedSubRef : failedSubRef?.id;
                 if (!subId) break;
 
                 const org = await getOrgByStripeSubscriptionId(subId);
