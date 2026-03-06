@@ -40,7 +40,8 @@
     "organizations": "Organizations",
     "discordServers": "Discord Servers",
     "news": "News",
-    "legal": "Legal"
+    "legal": "Legal",
+    "social": "Social"
   },
   "terminal": {
     "adminPanel": "Admin Panel",
@@ -568,6 +569,7 @@
     "systemsOnline": "Systems Online",
     "accessTerminal": "Access Terminal",
     "goToTerminal": "Go to Terminal",
+    "joinDiscord": "Join Discord",
     "hero": {
       "eyebrow": "United Empire of Earth — Org Commerce",
       "title1": "Trade Command",

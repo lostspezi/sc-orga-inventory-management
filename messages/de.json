@@ -40,7 +40,8 @@
     "organizations": "Organisationen",
     "discordServers": "Discord-Server",
     "news": "Neuigkeiten",
-    "legal": "Rechtliches"
+    "legal": "Rechtliches",
+    "social": "Social"
   },
   "terminal": {
     "adminPanel": "Admin-Panel",
@@ -568,6 +569,7 @@
     "systemsOnline": "Systeme Online",
     "accessTerminal": "Terminal aufrufen",
     "goToTerminal": "Zum Terminal",
+    "joinDiscord": "Discord beitreten",
     "hero": {
       "eyebrow": "Vereintes Erdreich — Org-Handel",
       "title1": "Handels-Kommando-",
