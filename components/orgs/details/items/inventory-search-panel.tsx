@@ -153,8 +153,8 @@ export default function InventorySearchPanel({
                     <select
                         value={categoryValue}
                         onChange={(e) => handleCategoryChange(e.target.value)}
-                        className="sc-input"
-                        style={{ fontFamily: "var(--font-mono)", minWidth: 160 }}
+                        className="sc-input min-w-0 sm:min-w-[160px]"
+                        style={{ fontFamily: "var(--font-mono)" }}
                     >
                         <option value="">{t("categoryAll")}</option>
                         {categories.map((cat) => (

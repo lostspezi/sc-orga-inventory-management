@@ -14,7 +14,7 @@ export default function TerminalNav() {
     ];
 
     return (
-        <nav className="flex items-center gap-1">
+        <nav className="hidden sm:flex items-center gap-1">
             {links.map(({ label, href }) => {
                 const isActive =
                     href === "/"

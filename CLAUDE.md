@@ -21,6 +21,9 @@ No test suite is configured.
 - **NextAuth v5 beta** with Discord OAuth and `@auth/mongodb-adapter` (database sessions)
 - **discord.js v14** — bot runs inside the Next.js process using global singletons
 - **Tailwind CSS v4**
+- **Stripe** — subscription billing for PRO orgs
+- **@react-pdf/renderer** — server-side PDF generation (no headless browser)
+- **node-cron** — scheduled tasks (weekly reports) started alongside the Discord bot
 
 ## Architecture
 
@@ -29,24 +32,30 @@ No test suite is configured.
 ```
 app/
   page.tsx             # Public landing page (server component, auth-aware nav)
-  login/               # Discord OAuth login page
+  (auth)/login/        # Discord OAuth login page
+  (legal)/legal/       # Public legal pages: privacy, terms, imprint, cookies
+  invite/[token]/      # Permanent invite link acceptance
   terminal/            # Authenticated app shell
-    layout.tsx         # Auth gate + TerminalHeader + TerminalBackground
+    layout.tsx         # Auth gate + legal-version gate + TerminalHeader + TerminalBackground
     page.tsx           # Org list (home)
     notifications/     # User notification inbox
     settings/          # Account settings
     admin/             # Super-admin area
       layout.tsx       # Super-admin gate + AdminNav tabs
       page.tsx         # KPI dashboard
-      organizations/   # Org management table
+      organizations/   # Org management table (with PRO override toggle)
       discord-servers/ # Bot server management
       news/            # App-wide news/updates management
+      legal/           # Legal document date management + version publishing
+      social/          # Social links management (footer icons)
     orgs/[slug]/
-      layout.tsx       # Org membership gate — fetches org, checks member, passes role
-      page.tsx / members/ / inventory/ / transactions/ / logs/ / settings/ / faq/
+      layout.tsx       # Org membership gate — fetches org, checks member, passes role + isPro
+      page.tsx / members/ / inventory/ / transactions/ / logs/ / settings/ / faq/ / reports/
       inventory/
         imports/       # Import history list (all past CSV jobs)
         import/[jobId] # Live results page for a specific import job (polls every 2s)
+      settings/
+        billing/       # Stripe subscription management + invoice history (admin/owner only)
   api/
     auth/[...nextauth]/           # NextAuth handler
     discord/install/callback/     # OAuth2 callback for bot install flow
@@ -55,19 +64,28 @@ app/
       events/          # SSE endpoint — streams unread count + new notifications (polls every 5s)
       mark-read/       # POST — mark one notification as read
       mark-all-read/   # POST — mark all notifications as read
-    rsi/ / orgs/exists/ / sc-items/ / items/ / discord/guild-members/search/
-    orgs/[slug]/members/dkp/      # GET — returns calling user's DKP balance from Raid Helper
-    orgs/[slug]/inventory/import/ # POST — start a CSV bulk import job (fire-and-forget)
-    orgs/[slug]/inventory/import/[jobId]/ # GET — poll job status
+    orgs/[slug]/inventory/import/         # POST — start CSV import job (fire-and-forget)
+    orgs/[slug]/inventory/import/[jobId]/ # GET — poll import job status
+    orgs/[slug]/inventory/export/         # POST — start CSV export job (fire-and-forget)
+    orgs/[slug]/inventory/export/[jobId]/ # GET — poll export job / download CSV
+    orgs/[slug]/reports/                  # GET list, POST create
+    orgs/[slug]/reports/[reportId]/       # GET single
+    orgs/[slug]/reports/[reportId]/download/   # GET — stream PDF from GridFS
+    orgs/[slug]/reports/[reportId]/regenerate/ # POST — re-run report pipeline
+    orgs/[slug]/billing/checkout/  # POST — create Stripe checkout session
+    orgs/[slug]/billing/portal/    # POST — create Stripe customer portal session
+    orgs/[slug]/billing/cancel/    # POST — cancel subscription at period end
+    admin/orgs/[orgId]/pro-override/ # POST — super-admin toggle PRO without Stripe
+    stripe/webhooks/               # POST — Stripe webhook (subscription lifecycle + emails)
+    user/export/                   # GET — GDPR data export for calling user
+    rsi/ / orgs/exists/ / sc-items/ / discord/guild-members/search/ / discord/guild-channels/
 ```
 
 ### Database access pattern
 
 All MongoDB access goes through `lib/db.ts` → `getDb()`. Repository files in `lib/repositories/` own all queries — pages and actions never call `getDb()` directly. The MongoDB client is cached on `global._mongoClient` in development to survive hot reloads.
 
-Collections: `users`, `accounts`, `sessions` (NextAuth), `organizations`, `organization_audit_logs`, `organization_inventory_items`, `organization_transactions`, `organization_invites`, `organization_auec_transactions`, `app_news`, `notifications`, `organization_import_jobs`.
-
-The `organizations` collection has an optional `raidHelperApiKey` field (stored encrypted at rest by MongoDB, never exposed client-side). The `organization_transactions` collection has an optional `adminConfirmedByUsername` field written when an admin/owner presses confirm — persists their display name so it's available in the Raid Helper DKP description even if the member confirms last.
+Collections: `users`, `accounts`, `sessions` (NextAuth), `organizations`, `organization_audit_logs`, `organization_inventory_items`, `organization_transactions`, `organization_invites`, `organization_auec_transactions`, `organization_import_jobs`, `organization_export_jobs`, `organization_reports`, `report_pdfs` (GridFS), `app_news`, `notifications`, `app_legal_settings`, `app_social_settings`.
 
 ### Server actions
 
@@ -83,6 +101,34 @@ One file per action in `lib/actions/`. All actions:
 Roles (`"owner" | "admin" | "member"`) are stored as `org.members[].role`. There is no separate roles collection. Permission checks are done inline in each action/layout by finding the current user's member entry.
 
 **Super-admin** is a parallel identity checked via `lib/is-super-admin.ts`: it looks up the user's Discord `providerAccountId` from the `accounts` collection and compares it to `SUPER_ADMIN_DISCORD_USER_ID` in env. There is no super-admin concept in the DB.
+
+### PRO / Billing
+
+Orgs can subscribe to a PRO plan via Stripe. PRO gates the Reporting feature and may gate future features.
+
+**PRO check:** `isProOrg(org)` from `lib/billing/is-pro.ts` — returns `true` if `org.proOverride?.enabled` OR subscription status is `"active"` / `"trialing"` and `currentPeriodEnd > now`.
+
+**Org document fields** (`lib/types/organization.ts`):
+```ts
+subscription?: OrgSubscription;  // set/updated by Stripe webhook
+proOverride?: OrgProOverride;    // super-admin manual override
+```
+
+**Stripe webhook** (`app/api/stripe/webhooks/route.ts`) handles:
+- `customer.subscription.created` / `updated` → calls `setOrgSubscription()`, sends PRO welcome email on creation
+- `customer.subscription.deleted` → clears subscription
+- `invoice.payment_succeeded` → sends invoice email
+
+**Billing page** (`app/terminal/orgs/[slug]/settings/billing/page.tsx`): admin/owner only; fetches live subscription + invoices from Stripe; renders `BillingManagePage` client component. i18n namespace: `billing`.
+
+**API routes:**
+- `POST .../billing/checkout` — creates Stripe checkout session, redirects to Stripe-hosted page
+- `POST .../billing/portal` — creates Stripe customer portal session for self-service management
+- `POST .../billing/cancel` — cancels subscription at period end
+
+**Admin PRO override** (`app/api/admin/orgs/[orgId]/pro-override/`): super-admin can toggle PRO without Stripe (for testing / gifting). Stored as `org.proOverride`.
+
+Key files: `lib/stripe.ts` (singleton client), `lib/billing/is-pro.ts`, `lib/billing/require-pro.ts`.
 
 ### Notification system
 
@@ -116,81 +162,45 @@ Orgs support a single shareable permanent invite link, managed from the Settings
 - **Repository helpers:** `getActivePermanentInviteByOrgId` / `revokeActivePermanentInvitesByOrgId` in `organization-invite-repository.ts`
 - **Settings page** fetches the active invite and passes `inviteUrl` (built from `NEXT_PUBLIC_APP_URL + /invite/ + permanentRawToken`) to the card
 
-### Raid Helper DKP integration
-
-Orgs can connect a Raid Helper API key (stored as `org.raidHelperApiKey`) to enable DKP wallet sync. When connected:
-- **Transaction prices** are locked to inventory values (`invItem.sellPrice` / `invItem.buyPrice`) — users cannot set their own price.
-- **Create transaction dialog** fetches the calling user's DKP balance from `/api/orgs/[slug]/members/dkp` and blocks submission if the total cost exceeds their balance (buy direction only).
-- **On transaction completion** (both parties confirmed), DKP is automatically synced via Raid Helper PATCH:
-  - `member_to_org` (sell) → `operation: "add"`
-  - `org_to_member` (buy) → `operation: "subtract"`
-  - This happens in both `lib/actions/confirm-transaction-action.ts` (web) and `lib/discord/bot/slash-handlers/handle-transaction-button.ts` (Discord buttons).
-- **Members page** shows each member's current DKP balance (fetched in parallel per member via Raid Helper GET, cached 60 s with `next: { revalidate: 60 }`).
-- **Settings page** has a Raid Helper card (`components/orgs/details/settings/raid-helper-card.tsx`) to save/clear the API key.
-
-Raid Helper API base: `https://raid-helper.dev/api/v2/servers/{guildId}/entities/{entityId}/dkp`
-- `GET` → `{ result: [{ name, id, dkp }] }` — fetch balance; entityId = Discord user ID or guild ID (all members)
-- `PATCH` body: `{ operation: "add"|"subtract", value: string, description: string }` — update balance
-
-Key files:
-- `lib/raid-helper/get-member-dkp.ts` — GET with `next: { revalidate: 60 }`; returns `number | null`, never throws
-- `lib/raid-helper/update-member-dkp.ts` — PATCH; returns `boolean`, never throws (logs error on failure)
-- `lib/actions/save-raid-helper-api-key-action.ts` — admin/owner action to save or clear the API key
-
-DKP description format sent to Raid Helper on completion (item trades):
-```
-[SC Orga] Sell 50x Laranite | TxID: <transactionId> | Trader: <memberUsername> | Admin: <adminName> | 01 Mar 2026 14:30 UTC
-```
-DKP description format for aUEC trades:
-```
-[SC Orga] Sell 250000 aUEC | TxID: <transactionId> | Trader: <memberUsername> | Admin: <adminName> | 01 Mar 2026 14:30 UTC
-```
-The admin name is stored on the transaction as `adminConfirmedByUsername` when the admin confirms (so it's available even if the member confirms last).
-
 ### aUEC Cash Desk
 
-Members can exchange aUEC (in-game currency) with the org at configured rates. The inventory page has tab navigation — "Items" (`?tab=items`) and "aUEC" (`?tab=auec`) — defaulting to items.
+Members can exchange aUEC (in-game currency) with the org. The inventory page has tab navigation — "Items" (`?tab=items`) and "aUEC" (`?tab=auec`) — defaulting to items.
 
-**Org document fields** (`lib/types/organization.ts`):
-```ts
-auecBalance?: number;       // org's current aUEC pool
-auecBuyPriceDkp?: number;  // DKP cost per buy bundle (org → member)
-auecBuyPriceAuec?: number; // aUEC per buy bundle
-auecSellPriceDkp?: number; // DKP reward per sell bundle (member → org)
-auecSellPriceAuec?: number;// aUEC per sell bundle
-```
-Rate formula: `totalDkp = Math.round((auecAmount / priceAuec) * priceDkp)`
+Member aUEC balances are stored globally on `users.auecBalance` (not per-org). Org pool is `organizations.auecBalance`.
+
+**Relevant org document field:** `auecBalance?: number` — org's current aUEC pool.
 
 **Collection:** `organization_auec_transactions`
 - Type: `lib/types/auec-transaction.ts` — `AuecTransactionDocument` / `AuecTransactionView`
 - Repository: `lib/repositories/organization-auec-transaction-repository.ts`
 
 **Actions:**
-- `lib/actions/update-auec-settings-action.ts` — admin sets balance + rates; uses `updateOrgAuecSettings` ($set) from org repo
-- `lib/actions/create-auec-transaction-action.ts` — member submits request; validates rates configured, org balance (buy), DKP (buy)
-- `lib/actions/respond-to-auec-transaction-action.ts` — admin approve/reject; simple `(formData) => void` signature (used directly as `form action={}`)
-- `lib/actions/confirm-auec-transaction-action.ts` — dual confirm; on completion calls `adjustOrgAuecBalance` ($inc) and Raid Helper DKP sync
+- `lib/actions/update-auec-settings-action.ts` — admin sets org aUEC balance
+- `lib/actions/create-auec-transaction-action.ts` — member submits request; validates org balance (buy direction)
+- `lib/actions/respond-to-auec-transaction-action.ts` — admin approve/reject; `(formData) => void` (used directly as `form action={}`)
+- `lib/actions/confirm-auec-transaction-action.ts` — dual confirm; on completion calls `adjustUserAuecBalance` + `adjustOrgAuecBalance`
 - `lib/actions/cancel-auec-transaction-action.ts` — cancel requested/approved
 
-**Repository helpers** (in `organization-repository.ts`):
-- `updateOrgAuecSettings(orgId, patch)` — $set on auec fields
-- `adjustOrgAuecBalance(orgId, delta)` — $inc on `auecBalance`
+**User aUEC balance helpers** (`lib/repositories/user-repository.ts`): `getUserAuecBalance`, `setUserAuecBalance`, `adjustUserAuecBalance`, `getUsersByIds`.
+
+On item transaction completion: `adjustUserAuecBalance(memberId, ±totalPrice)` + `adjustOrgAuecBalance(org._id, ∓totalPrice)`.
+On aUEC transaction completion: `adjustUserAuecBalance(memberId, ∓auecAmount)` + `adjustOrgAuecBalance(org._id, ±auecAmount)`.
 
 **Discord:**
-- `lib/discord/send-auec-transaction-embed.ts` — `AUEC_TX_BUTTON_PREFIX = "auec_"`, `makeAuecTxButtonId`, `parseAuecTxButtonId`, `buildAuecTransactionMessagePayload`, `sendAuecTransactionEmbed`, `updateAuecTransactionEmbed`
-- `lib/discord/bot/slash-handlers/handle-auec-transaction-button.ts` — handles approve/reject/confirm/cancel from Discord; on complete calls `adjustOrgAuecBalance` + Raid Helper sync
+- `lib/discord/send-auec-transaction-embed.ts` — `AUEC_TX_BUTTON_PREFIX = "auec_"`, button ID helpers, embed builders
+- `lib/discord/bot/slash-handlers/handle-auec-transaction-button.ts` — handles approve/reject/confirm/cancel from Discord
 - `lib/discord/bot/commands/interaction-create.ts` — routes `auec_*` prefix to `handleAuecTransactionButton` (checked before `tx_` prefix)
 
 **UI components** (`components/orgs/details/`):
-- `items/inventory-tab-nav.tsx` — client component; receives `tabItemsLabel`/`tabAuecLabel` as props from server (no `useTranslations`)
-- `auec/auec-cash-desk.tsx` — async server component; renders balance display, settings panel (admin only), transaction form (when configured), transaction list
-- `auec/auec-settings-panel.tsx` — client; admin sets balance + buy/sell rates via `useActionState`
-- `auec/auec-transaction-form.tsx` — client; direction toggle, amount input, live DKP calculation, DKP balance check
+- `items/inventory-tab-nav.tsx` — client component; receives tab labels as props from server (no `useTranslations`)
+- `auec/auec-cash-desk.tsx` — async server component; renders balance display, settings panel (admin only), transaction form, transaction list
+- `auec/auec-settings-panel.tsx` — client; admin sets org balance via `useActionState`
+- `auec/auec-transaction-form.tsx` — client; direction toggle, amount input, member aUEC balance display (informational only)
 - `auec/auec-transaction-list.tsx` — client; rows with approve/reject/confirm/cancel forms using `form action={serverAction}` pattern
 
-**Inventory page** (`app/terminal/orgs/[slug]/inventory/page.tsx`): reads `?tab` searchParam; conditionally fetches inventory items or aUEC transactions; fetches member DKP on aUEC tab if Raid Helper connected; passes `tabItemsLabel`/`tabAuecLabel` from `getTranslations("auec")` to `InventoryTabNav`.
+**Account Settings** has an `AuecBalanceForm` component (`components/settings/auec-balance-form.tsx`) — allows users to set their own aUEC balance (manual sync). Action: `lib/actions/set-user-auec-balance-action.ts`.
 
-**i18n namespace:** `auec` — added to `messages/en.json`, `messages/de.json`, `messages/fr.json`.
+**i18n namespace:** `auec` — in `messages/en.json`, `messages/de.json`, `messages/fr.json`.
 
 ### CSV Bulk Import
 
@@ -207,15 +217,6 @@ name,buyPrice,sellPrice,quantity,minStock,maxStock
 - Type: `lib/types/import-job.ts` — `ImportJobDocument` / `ImportJobView` / `ImportRowInput` / `ImportRowResult`
 - Repository: `lib/repositories/import-job-repository.ts` — `createImportJob`, `getImportJobById`, `getImportJobsByOrg`, `updateImportJobProgress`, `completeImportJob`, `failImportJob`, `toImportJobView`
 
-**ImportJobDocument fields:**
-```ts
-status: "pending" | "processing" | "completed" | "failed"
-totalRows: number       // set at creation
-processedRows: number   // updated after each row
-rows: ImportRowInput[]  // original CSV rows stored verbatim
-results: ImportRowResult[] // per-row outcome, appended as processing runs
-```
-
 **ImportRowResult status values:** `"success"` | `"not_found"` | `"already_exists"` | `"error"`
 
 **Flow:**
@@ -227,26 +228,62 @@ results: ImportRowResult[] // per-row outcome, appended as processing runs
 6. On completion: in-app notification + Discord DM sent to the initiator
 
 **Background processing** (`lib/inventory-import/process-import-job.ts`):
-- Per row: calls `fetchBestMatch(name)` which uses a two-pass SC Wiki lookup:
-  - Pass 1: `filter[name]=<fullName>` — exact match wins, then best word-overlap score
-  - Pass 2 (if pass 1 returns nothing): progressively drops trailing words and retries; picks candidate with highest word-overlap against the original query
-- On match: `createItemInDb` (idempotent) → `createOrganizationInventoryItemInDb` → optional `updateOrganizationInventoryItemInDb` for minStock/maxStock → audit log
-- `updateImportJobProgress` written to DB after every row so the polling endpoint reflects live progress
+- Per row: calls `fetchBestMatch(name)` using a two-pass SC Wiki lookup (exact match → word-overlap, then progressive word-drop retry)
+- On match: `createOrganizationInventoryItemInDb` (idempotent by `{ organizationId, normalizedName }`) → optional price/stock update → audit log
 - After all rows: `completeImportJob` → `notify` → Discord DM via `sendDiscordDm`
 
-**API routes:**
-- `POST /api/orgs/[slug]/inventory/import` — auth + admin/owner check; validates rows (max 500); creates job; fires processing
-- `GET /api/orgs/[slug]/inventory/import/[jobId]` — auth + membership check; returns `ImportJobView` for polling
-
-**UI components** (`components/orgs/details/items/`):
-- `csv-import-form.tsx` — client; CSV template download, drag-and-drop upload, client-side parsing (no external lib), 10-row preview table, submit
-- `csv-import-results-client.tsx` — client; polls job status every 2 s while active; progress bar, per-row results table; on completion shows "Download Failed Items" button (generates CSV of `not_found`/`error` rows from original input data) and links to inventory + history
-
 **Pages:**
-- `app/terminal/orgs/[slug]/inventory/import/[jobId]/page.tsx` — server component; auth + membership gate; passes initial job state to `CsvImportResultsClient`
-- `app/terminal/orgs/[slug]/inventory/imports/page.tsx` — import history list; shows all past jobs for the org (newest first) with status, row counts, success/skipped/failed columns, and a link to each job's detail page
+- `app/terminal/orgs/[slug]/inventory/import/[jobId]/page.tsx` — passes initial job to `CsvImportResultsClient` (polls every 2 s)
+- `app/terminal/orgs/[slug]/inventory/imports/page.tsx` — import history list
 
-**i18n namespace:** `csvImport` — in `messages/en.json`, `messages/de.json`, `messages/fr.json`.
+**i18n namespace:** `csvImport`.
+
+### CSV Export
+
+Admins and owners can export the full inventory to a CSV file. Uses a short-lived job pattern similar to import.
+
+**Collection:** `organization_export_jobs` — type: `lib/types/export-job.ts`, repository: `lib/repositories/export-job-repository.ts`.
+
+**Flow:** POST `.../inventory/export` → creates job + generates CSV in background → client polls GET `.../inventory/export/[jobId]` until `completed`; on completion the polling endpoint streams the CSV file.
+
+### Google Sheets Integration
+
+Orgs can connect a Google Sheet for bi-directional inventory sync.
+
+**Org document fields:** `googleSheetId?: string`, `googleSheetLastSyncedAt?: Date`.
+
+**Auth:** `lib/google-sheets/auth.ts` — RS256 JWT via Node.js `crypto`, exchanges for OAuth2 token; cached 55 min in a module-level variable.
+
+**Sync logic** (`lib/google-sheets/sync-inventory-to-sheet.ts`): clears sheet A1:Z10000, writes header + all items.
+
+**Import from sheet** (`lib/google-sheets/read-inventory-from-sheet.ts` + `lib/actions/import-from-google-sheet-action.ts`): reads rows from the sheet; if sheet is empty → pushes org inventory to sheet; if sheet has rows → fires an import job (`processImportJob`) using the sheet contents.
+
+**Auto-sync scheduler** (`lib/google-sheets/auto-sync-scheduler.ts`): `startGoogleSheetAutoSync()` runs every 10 minutes for all orgs with `googleSheetId` set — same bi-directional logic (empty sheet → push; rows present → import). Started alongside the Discord bot. Guarded by `global.__sheetSyncStarted` singleton.
+
+**Manual triggers** (auto-fire `triggerSync` after): create/update/remove inventory item, clear inventory, CSV import completion.
+
+**Actions:** `lib/actions/save-google-sheet-action.ts` (connect/disconnect), `lib/actions/sync-google-sheet-now-action.ts`, `lib/actions/import-from-google-sheet-action.ts`.
+
+**Settings card:** `components/orgs/details/settings/google-sheet-card.tsx`. The Sheet must be shared with the service account email (Editor access).
+
+### Reporting (PRO-only)
+
+Weekly performance reports are generated as PDFs and stored in MongoDB GridFS. Requires PRO status.
+
+- **Collection:** `organization_reports` — type: `lib/types/report.ts`; repository: `lib/repositories/report-repository.ts`
+- **PDF storage:** GridFS bucket `report_pdfs` — `lib/reporting/storage.ts`
+- **KPI engine:** `lib/reporting/compute-kpis.ts` — MongoDB aggregation pipelines
+- **Week utils:** `lib/reporting/week-utils.ts` — ISO week boundaries with timezone (`date-fns-tz`); org `timezone` field (optional, defaults `"UTC"`)
+- **PDF generation:** `lib/reporting/generate-pdf.ts` — `@react-pdf/renderer`, built-in Helvetica/Courier fonts
+- **Orchestrator:** `lib/reporting/process-report.ts` — fire-and-forget pipeline (compute KPIs → generate PDF → store in GridFS → update report doc)
+- **Cron:** `lib/reporting/cron.ts` — Monday 02:00 UTC auto-generation for all PRO orgs; started in `startDiscordBot()`
+- **API routes:** GET list, POST create, GET single, GET download (streams PDF from GridFS), POST regenerate
+- **Page:** `app/terminal/orgs/[slug]/reports/page.tsx`
+- **UI components:** `components/orgs/details/reports/`
+- **PRO gate:** `isProOrg(org)` checked server-side on every API route AND page; non-PRO sees upgrade CTA
+- **Nav:** `ORG_NAV_ITEMS` has `requiresPro` field; sidebar/mobile-nav accept `isPro` prop from the org layout
+
+`next.config.ts` `serverExternalPackages` includes `node-cron`, `@react-pdf/renderer`, `canvas`.
 
 ### App-wide news
 
@@ -256,6 +293,33 @@ Super-admin manages posts at `/terminal/admin/news`. Posts appear on every org d
 - Type: `lib/types/app-news.ts` — `AppNewsDocument` / `AppNewsView`
 - Actions: `lib/actions/app-news-actions.ts` — `createAppNewsAction`, `updateAppNewsAction`, `deleteAppNewsAction`
 - Dashboard component: `components/orgs/details/dashboard/news-feed.tsx` — accepts `AppNewsView[]`
+
+### Social settings
+
+Super-admin manages social link URLs at `/terminal/admin/social`. These appear in the public landing page footer.
+
+- Collection: `app_social_settings` (singleton document)
+- Repository: `lib/repositories/social-settings-repository.ts` — `getOrCreateSocialSettings`, `saveSocialSettings`
+- Action: `lib/actions/save-social-settings-action.ts`
+
+### GDPR / Legal system
+
+- **Legal pages** (`app/(legal)/legal/{privacy,terms,imprint,cookies}/page.tsx`): public, no auth, dates fetched from DB
+- **Legal settings** (`app_legal_settings` singleton): `lib/types/legal-settings.ts`, `lib/repositories/legal-settings-repository.ts`
+- **`currentVersion`** (date string e.g. `"2026-03-06"`) is the version all users must accept; `users.legalAcceptedVersion` tracks per-user acceptance
+- **Force re-accept:** terminal layout checks `acceptedVersion !== currentVersion`, renders `<LegalAcceptGate>` blocking dialog
+- **Accept action:** `lib/actions/accept-legal-action.ts`
+- **Admin legal tab:** `/terminal/admin/legal` — update doc dates + "Publish New Version" (bumps `currentVersion`, forces all users to re-accept)
+- **Admin actions:** `lib/actions/save-legal-settings-action.ts` — `saveLegalSettingsAction` (dates) + `publishLegalVersionAction` (bumps version)
+- **Cookie notice:** `components/consent/cookie-notice.tsx` — modal `<dialog>` on first visit (`sc_consent` cookie), uses `useSyncExternalStore` to avoid hydration mismatch
+- **Legal gate:** `components/consent/legal-accept-gate.tsx` — blocking `<dialog>` in terminal, Escape key disabled
+
+### Email system
+
+- **Production:** Resend (`RESEND_API_KEY` env var) — `lib/email/send-email.ts`
+- **Local dev:** MailDev via SMTP (localhost:1025) — `docker compose -f docker-compose.maildev.yml up -d`, UI at http://localhost:1080
+- **Trigger:** Stripe webhook `invoice.payment_succeeded` with `billing_reason === "subscription_create"` → sends PRO welcome + invoice email to org owner
+- Pattern: `sendEmail({ to, subject, html, text? })` — never throws on email error in webhook
 
 ### Discord bot
 
@@ -278,6 +342,14 @@ Key Discord lib files:
 `cdn.discordapp.com/icons/**` is whitelisted in `next.config.ts` for `next/image`.
 
 **Discord interaction rules:** All slash command handlers must call `await interaction.deferReply({ ephemeral: true })` as the very first line before any async work (DB queries, etc.) — Discord's response window is 3 seconds. All subsequent replies must use `interaction.editReply(...)` not `interaction.reply(...)`. Button handlers must wrap `await interaction.deferUpdate()` in a try/catch and return early if it throws (interaction already expired).
+
+### Inventory item schema
+
+`organization_inventory_items` stores name/normalizedName/category/scWikiUuid/unit inline — there is **no** shared items collection. Deduplication is by `{ organizationId, normalizedName }`.
+
+`OrganizationInventoryItemView` fields: `inventoryItemId, name, normalizedName, category?, scWikiUuid?, unit?, buyPrice, sellPrice, quantity, minStock?, maxStock?`.
+
+`app/api/sc-items/search/route.ts` returns wiki-only results (`source: "sc_wiki"`). `?commoditiesOnly=true` appends `&filter[type]=Commodity` to the wiki query.
 
 ### UI conventions
 
@@ -338,7 +410,7 @@ t("key", { name: "value" })
 t("key", { count: 3 })
 ```
 
-All namespaces are top-level keys in the message files: `common`, `nav`, `header`, `notifications`, `userMenu`, `adminNav`, `terminal`, `settings`, `adminOverview`, `adminOrgs`, `adminDiscord`, `adminComponents`, `dashboard`, `kpi`, `charts`, `recentTrades`, `orgShell`, `members`, `inventory`, `transactions`, `logs`, `orgSettings`, `auec`, `csvImport`, `news` (nested: `feed`, `admin`), `faq` (nested by section), `home` (nested: `hero`, `howItWorks`, `features`, `discordSection`, `dashboardSection`, `cta`, `footer`).
+All namespaces are top-level keys in the message files: `common`, `nav`, `header`, `notifications`, `userMenu`, `adminNav`, `terminal`, `settings`, `adminOverview`, `adminOrgs`, `adminDiscord`, `adminComponents`, `dashboard`, `kpi`, `charts`, `recentTrades`, `orgShell`, `members`, `inventory`, `transactions`, `logs`, `orgSettings`, `auec`, `csvImport`, `news` (nested: `feed`, `admin`), `faq` (nested by section), `home` (nested: `hero`, `howItWorks`, `features`, `discordSection`, `dashboardSection`, `cta`, `footer`), `billing`, `reports`.
 
 When adding a new translatable string: add the key to all three message files (`en.json`, `de.json`, `fr.json`) at the same time.
 
@@ -364,5 +436,11 @@ if (!session?.user?.id) redirect("/login"); // in pages/layouts
 | `DISCORD_BOT_INSTALL_REDIRECT_URI` | OAuth2 redirect for bot install flow |
 | `NEXT_PUBLIC_APP_URL` | Public base URL |
 | `SUPER_ADMIN_DISCORD_USER_ID` | Your Discord user ID — grants super-admin access |
-
-The Raid Helper API key is stored **in the database** on the org document (`raidHelperApiKey`), not in env. Admins set it via the Settings page.
+| `STRIPE_SECRET_KEY` | Stripe API secret key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `NEXT_PUBLIC_STRIPE_PRICE_ID` | Stripe price ID for the PRO plan |
+| `RESEND_API_KEY` | Resend API key (production email) |
+| `EMAIL_FROM` | Sender address (optional, has default) |
+| `SMTP_HOST` / `SMTP_PORT` | SMTP config for local MailDev |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Google service account for Sheets integration |
+| `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` | PEM key with escaped `\n` |

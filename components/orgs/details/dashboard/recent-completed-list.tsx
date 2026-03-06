@@ -59,47 +59,53 @@ export default async function RecentCompletedList({
                         return (
                             <div
                                 key={tx._id}
-                                className="flex items-center gap-3 rounded px-2 py-1.5"
+                                className="rounded px-2 py-1.5"
                                 style={{ background: "rgba(80,210,120,0.03)" }}
                             >
-                                <div
-                                    className="h-1.5 w-1.5 shrink-0 rounded-full"
-                                    style={{ background: "rgba(80,210,120,0.6)" }}
-                                />
-                                <span
-                                    className="min-w-0 flex-1 truncate text-[11px] font-semibold uppercase tracking-[0.05em]"
-                                    style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
-                                >
-                                    {tx.itemName}
-                                </span>
-                                <span
-                                    className="shrink-0 rounded px-1.5 py-0.5 text-[10px] uppercase tracking-[0.1em]"
-                                    style={{
-                                        color: dirColor,
-                                        background: dirColor.replace("0.75", "0.07"),
-                                        fontFamily: "var(--font-mono)",
-                                    }}
-                                >
-                                    {dirLabel}
-                                </span>
-                                <span
-                                    className="shrink-0 text-[11px]"
-                                    style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
-                                >
-                                    {tx.quantity}× · {tx.totalPrice.toLocaleString()} aUEC
-                                </span>
-                                <span
-                                    className="hidden shrink-0 text-[10px] sm:block"
-                                    style={{ color: "rgba(200,220,232,0.25)", fontFamily: "var(--font-mono)" }}
-                                >
-                                    {tx.memberUsername}
-                                </span>
-                                <span
-                                    className="hidden shrink-0 text-right text-[10px] lg:block"
-                                    style={{ color: "rgba(200,220,232,0.2)", fontFamily: "var(--font-mono)" }}
-                                >
-                                    {formatDate(tx.updatedAt)}
-                                </span>
+                                {/* Line 1: dot + name + direction */}
+                                <div className="flex items-center gap-2">
+                                    <div
+                                        className="h-1.5 w-1.5 shrink-0 rounded-full"
+                                        style={{ background: "rgba(80,210,120,0.6)" }}
+                                    />
+                                    <span
+                                        className="min-w-0 flex-1 truncate text-[11px] font-semibold uppercase tracking-[0.05em]"
+                                        style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
+                                    >
+                                        {tx.itemName}
+                                    </span>
+                                    <span
+                                        className="shrink-0 rounded px-1.5 py-0.5 text-[10px] uppercase tracking-[0.1em]"
+                                        style={{
+                                            color: dirColor,
+                                            background: dirColor.replace("0.75", "0.07"),
+                                            fontFamily: "var(--font-mono)",
+                                        }}
+                                    >
+                                        {dirLabel}
+                                    </span>
+                                </div>
+                                {/* Line 2: qty/price + optional username + optional date */}
+                                <div className="mt-0.5 flex items-center gap-2 pl-3.5">
+                                    <span
+                                        className="text-[10px]"
+                                        style={{ color: "rgba(200,220,232,0.35)", fontFamily: "var(--font-mono)" }}
+                                    >
+                                        {tx.quantity}× · {tx.totalPrice.toLocaleString()} aUEC
+                                    </span>
+                                    <span
+                                        className="hidden text-[10px] sm:block"
+                                        style={{ color: "rgba(200,220,232,0.25)", fontFamily: "var(--font-mono)" }}
+                                    >
+                                        · {tx.memberUsername}
+                                    </span>
+                                    <span
+                                        className="hidden text-[10px] lg:block"
+                                        style={{ color: "rgba(200,220,232,0.2)", fontFamily: "var(--font-mono)" }}
+                                    >
+                                        · {formatDate(tx.updatedAt)}
+                                    </span>
+                                </div>
                             </div>
                         );
                     })}

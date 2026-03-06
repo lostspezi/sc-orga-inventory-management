@@ -98,37 +98,41 @@ export default function LiveActivityFeed({
                         return (
                             <div
                                 key={entry.id}
-                                className="flex items-center gap-2 rounded px-2 py-1.5"
+                                className="rounded px-2 py-1.5"
                                 style={{
                                     background: "rgba(79,195,220,0.03)",
                                     borderLeft: `2px solid ${color.replace("0.85", "0.4")}`,
                                     animation: "slide-in-left 0.2s ease forwards",
                                 }}
                             >
-                                <span
-                                    className="w-16 shrink-0 text-[10px] uppercase tracking-[0.12em]"
-                                    style={{ color, fontFamily: "var(--font-mono)" }}
-                                >
-                                    {label}
-                                </span>
-                                <span
-                                    className="min-w-0 flex-1 truncate text-[11px]"
-                                    style={{ color: "var(--accent-primary)", fontFamily: "var(--font-mono)" }}
-                                >
-                                    {tx.itemName}
-                                </span>
-                                <span
-                                    className="shrink-0 text-[10px]"
+                                {/* Line 1: status + item name + time */}
+                                <div className="flex items-center gap-2">
+                                    <span
+                                        className="w-16 shrink-0 text-[10px] uppercase tracking-[0.12em]"
+                                        style={{ color, fontFamily: "var(--font-mono)" }}
+                                    >
+                                        {label}
+                                    </span>
+                                    <span
+                                        className="min-w-0 flex-1 truncate text-[11px]"
+                                        style={{ color: "var(--accent-primary)", fontFamily: "var(--font-mono)" }}
+                                    >
+                                        {tx.itemName}
+                                    </span>
+                                    <span
+                                        className="w-10 shrink-0 text-right text-[10px]"
+                                        style={{ color: "rgba(200,220,232,0.25)", fontFamily: "var(--font-mono)" }}
+                                    >
+                                        {timeAgo(entry.at, t)}
+                                    </span>
+                                </div>
+                                {/* Line 2: direction + username */}
+                                <div
+                                    className="mt-0.5 pl-[68px] text-[10px]"
                                     style={{ color: "rgba(200,220,232,0.3)", fontFamily: "var(--font-mono)" }}
                                 >
                                     {dirLabel} · {tx.memberUsername}
-                                </span>
-                                <span
-                                    className="w-10 shrink-0 text-right text-[10px]"
-                                    style={{ color: "rgba(200,220,232,0.25)", fontFamily: "var(--font-mono)" }}
-                                >
-                                    {timeAgo(entry.at, t)}
-                                </span>
+                                </div>
                             </div>
                         );
                     })}

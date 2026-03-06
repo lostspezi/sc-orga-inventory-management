@@ -53,7 +53,7 @@ export default function CookieNotice() {
             }}
         >
             <div
-                className="hud-panel relative p-7"
+                className="hud-panel relative max-h-[90dvh] overflow-y-auto p-7"
                 style={{ background: "rgba(4,10,18,0.97)" }}
             >
                 {/* top accent */}

@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Settings, LogOut, ChevronDown, Bell } from "lucide-react";
+import { Settings, LogOut, ChevronDown, Bell, Globe } from "lucide-react";
 import { signOutAction } from "@/lib/actions";
 import { useTranslations } from "next-intl";
+import LanguageSwitcher from "@/components/ui/language-switcher";
 
 type Props = {
     rsiHandle: string | null;
@@ -144,19 +145,8 @@ export default function UserDropdown({ rsiHandle, discordName, userImage }: Prop
                         <Link
                             href="/terminal/notifications"
                             onClick={() => setOpen(false)}
-                            className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors"
-                            style={{
-                                fontFamily: "var(--font-mono)",
-                                color: "rgba(200,220,232,0.65)",
-                            }}
-                            onMouseEnter={(e) => {
-                                (e.currentTarget as HTMLElement).style.background = "rgba(79,195,220,0.07)";
-                                (e.currentTarget as HTMLElement).style.color = "rgba(200,220,232,0.9)";
-                            }}
-                            onMouseLeave={(e) => {
-                                (e.currentTarget as HTMLElement).style.background = "transparent";
-                                (e.currentTarget as HTMLElement).style.color = "rgba(200,220,232,0.65)";
-                            }}
+                            className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors text-[rgba(200,220,232,0.65)] hover:bg-[rgba(79,195,220,0.07)] hover:text-[rgba(200,220,232,0.9)]"
+                            style={{ fontFamily: "var(--font-mono)" }}
                         >
                             <Bell size={14} style={{ color: "rgba(79,195,220,0.55)" }} />
                             <span className="uppercase tracking-widest">{t("notifications")}</span>
@@ -165,19 +155,8 @@ export default function UserDropdown({ rsiHandle, discordName, userImage }: Prop
                         <Link
                             href="/terminal/settings"
                             onClick={() => setOpen(false)}
-                            className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors"
-                            style={{
-                                fontFamily: "var(--font-mono)",
-                                color: "rgba(200,220,232,0.65)",
-                            }}
-                            onMouseEnter={(e) => {
-                                (e.currentTarget as HTMLElement).style.background = "rgba(79,195,220,0.07)";
-                                (e.currentTarget as HTMLElement).style.color = "rgba(200,220,232,0.9)";
-                            }}
-                            onMouseLeave={(e) => {
-                                (e.currentTarget as HTMLElement).style.background = "transparent";
-                                (e.currentTarget as HTMLElement).style.color = "rgba(200,220,232,0.65)";
-                            }}
+                            className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors text-[rgba(200,220,232,0.65)] hover:bg-[rgba(79,195,220,0.07)] hover:text-[rgba(200,220,232,0.9)]"
+                            style={{ fontFamily: "var(--font-mono)" }}
                         >
                             <Settings size={14} style={{ color: "rgba(79,195,220,0.55)" }} />
                             <span className="uppercase tracking-widest">{t("settings")}</span>
@@ -186,24 +165,24 @@ export default function UserDropdown({ rsiHandle, discordName, userImage }: Prop
                         <form action={signOutAction}>
                             <button
                                 type="submit"
-                                className="cursor-pointer flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors"
-                                style={{
-                                    fontFamily: "var(--font-mono)",
-                                    color: "rgba(200,220,232,0.65)",
-                                }}
-                                onMouseEnter={(e) => {
-                                    (e.currentTarget as HTMLElement).style.background = "rgba(220,50,50,0.08)";
-                                    (e.currentTarget as HTMLElement).style.color = "rgba(220,80,80,0.9)";
-                                }}
-                                onMouseLeave={(e) => {
-                                    (e.currentTarget as HTMLElement).style.background = "transparent";
-                                    (e.currentTarget as HTMLElement).style.color = "rgba(200,220,232,0.65)";
-                                }}
+                                className="cursor-pointer flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors text-[rgba(200,220,232,0.65)] hover:bg-[rgba(220,50,50,0.08)] hover:text-[rgba(220,80,80,0.9)]"
+                                style={{ fontFamily: "var(--font-mono)" }}
                             >
                                 <LogOut size={14} style={{ color: "rgba(200,80,80,0.55)" }} />
                                 <span className="uppercase tracking-widest">{t("logout")}</span>
                             </button>
                         </form>
+                    </div>
+
+                    {/* Language */}
+                    <div
+                        className="border-t px-3 py-2"
+                        style={{ borderColor: "rgba(79,195,220,0.1)" }}
+                    >
+                        <div className="flex items-center gap-2.5">
+                            <Globe size={14} style={{ color: "rgba(79,195,220,0.45)", flexShrink: 0 }} />
+                            <LanguageSwitcher />
+                        </div>
                     </div>
                 </div>
             )}

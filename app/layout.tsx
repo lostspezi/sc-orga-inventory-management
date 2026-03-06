@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Orbitron, Rajdhani } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
@@ -47,6 +47,12 @@ const softwareAppSchema = {
         priceCurrency: "EUR",
         description: "Free plan available. PRO plan at €4.99/month.",
     },
+};
+
+export const viewport: Viewport = {
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
