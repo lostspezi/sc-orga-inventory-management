@@ -5,6 +5,7 @@
 
 import { getDb } from "@/lib/db";
 import { ObjectId } from "mongodb";
+import { generateUniqueNewsSlug } from "@/lib/repositories/app-news-repository";
 
 async function migrateMembers() {
     const db = await getDb();
@@ -120,6 +121,23 @@ async function migrateNews() {
         { createdAt: -1 },
         { background: true }
     );
+    await db.collection("app_news").createIndex(
+        { slug: 1 },
+        { unique: true, sparse: true, background: true }
+    );
+
+    // Backfill slug for existing docs missing the field
+    const noSlug = await db.collection("app_news").find({ slug: { $exists: false } }).toArray();
+    if (noSlug.length > 0) {
+        for (const doc of noSlug) {
+            const slug = await generateUniqueNewsSlug(
+                (doc as { title?: string }).title ?? "news",
+                db
+            );
+            await db.collection("app_news").updateOne({ _id: doc._id }, { $set: { slug } });
+        }
+        console.log(`[migration] app_news: backfilled slug for ${noSlug.length} documents`);
+    }
 }
 
 export async function runAllMigrations() {

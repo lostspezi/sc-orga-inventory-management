@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import type { Db } from "mongodb";
 import { getDb } from "@/lib/db";
 import type {
     AppNewsDocument,
@@ -12,6 +13,30 @@ import type {
 
 const COLLECTION = "app_news";
 
+// ── Slug generation ───────────────────────────────────────────────────────────
+
+function slugifyNewsTitle(title: string): string {
+    return title
+        .toLowerCase()
+        .replace(/[äàáâãå]/g, "a").replace(/[ëèéê]/g, "e")
+        .replace(/[ïìíî]/g, "i").replace(/[öòóôõ]/g, "o")
+        .replace(/[üùúû]/g, "u").replace(/ß/g, "ss")
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim().replace(/\s+/g, "-").replace(/-+/g, "-")
+        .slice(0, 80);
+}
+
+export async function generateUniqueNewsSlug(title: string, db?: Db): Promise<string> {
+    const conn = db ?? await getDb();
+    const base = slugifyNewsTitle(title) || `news-${Date.now()}`;
+    let slug = base;
+    let counter = 2;
+    while (await conn.collection(COLLECTION).findOne({ slug })) {
+        slug = `${base}-${counter++}`;
+    }
+    return slug;
+}
+
 // ── Create ───────────────────────────────────────────────────────────────────
 
 export async function createAppNews(data: {
@@ -22,7 +47,9 @@ export async function createAppNews(data: {
 }): Promise<AppNewsDocument> {
     const db = await getDb();
     const now = new Date();
+    const slug = await generateUniqueNewsSlug(data.title, db);
     const doc = {
+        slug,
         primaryLocale: data.primaryLocale,
         title: data.title,
         body: data.body,
@@ -65,6 +92,27 @@ export async function getLatestPublishedAppNews(limit: number): Promise<AppNewsD
 
 // Backward-compat alias used by org dashboard page
 export const getLatestAppNews = getLatestPublishedAppNews;
+
+export async function getAllPublishedAppNews(limit: number, skip = 0): Promise<AppNewsDocument[]> {
+    const db = await getDb();
+    return db
+        .collection<AppNewsDocument>(COLLECTION)
+        .find({ status: "published" })
+        .sort({ publishedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .toArray();
+}
+
+export async function countPublishedAppNews(): Promise<number> {
+    const db = await getDb();
+    return db.collection(COLLECTION).countDocuments({ status: "published" });
+}
+
+export async function getPublishedAppNewsBySlug(slug: string): Promise<AppNewsDocument | null> {
+    const db = await getDb();
+    return db.collection<AppNewsDocument>(COLLECTION).findOne({ slug, status: "published" });
+}
 
 // ── Update content ────────────────────────────────────────────────────────────
 
@@ -189,6 +237,7 @@ export function toAppNewsView(doc: AppNewsDocument): AppNewsView {
 
     return {
         _id: doc._id.toString(),
+        slug: doc.slug ?? "",
         primaryLocale: doc.primaryLocale,
         title: doc.title,
         body: doc.body,
@@ -216,6 +265,7 @@ export function toAppNewsPublicView(doc: AppNewsDocument, locale: NewsLocale): A
     const useTranslation = translation && (translation.status === "ready" || translation.status === "edited");
     return {
         _id: doc._id.toString(),
+        slug: doc.slug ?? "",
         title: useTranslation ? translation.title : doc.title,
         body: useTranslation ? translation.body : doc.body,
         locale: useTranslation ? locale : doc.primaryLocale,

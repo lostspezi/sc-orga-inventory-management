@@ -16,9 +16,9 @@ function markdownToDiscord(md: string): string {
         .replace(/^---+$/gm, "");
 }
 
-function truncateBody(body: string, maxLen: number, newsId: string, appUrl: string): string {
+function truncateBody(body: string, maxLen: number, newsSlug: string, appUrl: string): string {
     if (body.length <= maxLen) return body;
-    const suffix = `\n[…Read more](${appUrl}/news/${newsId})`;
+    const suffix = `\n[…Read more](${appUrl}/news/${newsSlug})`;
     const cutoff = maxLen - suffix.length;
     const spaceIdx = body.lastIndexOf(" ", cutoff);
     return body.slice(0, spaceIdx > 0 ? spaceIdx : cutoff) + suffix;
@@ -44,7 +44,7 @@ function buildDescription(news: AppNewsView, appUrl: string): string {
         }
 
         const discordBody = markdownToDiscord(body);
-        const truncated = truncateBody(discordBody, MAX_PER_LANG, news._id, appUrl);
+        const truncated = truncateBody(discordBody, MAX_PER_LANG, news.slug, appUrl);
         sections.push(`${LOCALE_FLAGS[locale]} **${LOCALE_LABELS[locale]}**\n${truncated}`);
     }
 
@@ -59,7 +59,7 @@ function buildDescription(news: AppNewsView, appUrl: string): string {
             if (newlineIdx === -1) return s;
             const header = s.slice(0, newlineIdx);
             const body = s.slice(newlineIdx + 1);
-            return `${header}\n${truncateBody(body, Math.max(perLang, 100), news._id, appUrl)}`;
+            return `${header}\n${truncateBody(body, Math.max(perLang, 100), news.slug, appUrl)}`;
         });
         description = trimmed.join("\n\n");
     }
@@ -81,7 +81,7 @@ export function buildNewsEmbed(news: AppNewsView, appUrl: string): EmbedBuilder 
         .setColor(NEWS_COLOR)
         .setAuthor({ name: "SCOIM.io News", iconURL: `${appUrl}/favicon.ico` })
         .setTitle(title)
-        .setURL(`${appUrl}/news/${news._id}`)
+        .setURL(`${appUrl}/news/${news.slug}`)
         .setDescription(description || "No content available.")
         .setFooter({ text: `SCOIM.io · ${dateLabel}` })
         .setTimestamp(publishedAt);

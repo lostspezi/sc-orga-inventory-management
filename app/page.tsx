@@ -6,6 +6,7 @@ import UserDropdown from "@/components/terminal/user-dropdown";
 import CookieNotice from "@/components/consent/cookie-notice";
 import { getOrCreateSocialSettings, toSocialSettingsView } from "@/lib/repositories/social-settings-repository";
 import { SocialIconBar, DiscordCtaButton } from "@/components/ui/social-icons";
+import HomeNewsFeed from "@/components/home/home-news-feed";
 
 export async function generateMetadata() {
     const socialDoc = await getOrCreateSocialSettings();
@@ -680,6 +681,9 @@ export default async function Home() {
                         </div>
                     </div>
                 </section>
+
+                {/* ── NEWS FEED ────────────────────────────────────────── */}
+                <HomeNewsFeed />
 
                 {/* ── BOTTOM CTA ───────────────────────────────────────── */}
                 <section className="px-6 pb-20 text-center sm:px-10">
