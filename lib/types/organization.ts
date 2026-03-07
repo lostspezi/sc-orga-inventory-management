@@ -22,7 +22,7 @@ export type OrganizationDocument = {
     _id: ObjectId;
     name: string;
     slug: string;
-    starCitizenOrganizationUrl: string;
+    starCitizenOrganizationUrl?: string;
     createdByUserId: string;
     members: OrganizationMember[];
     discordGuildId?: string;
@@ -99,7 +99,8 @@ export type OrganizationView = {
     _id: ObjectId;
     name: string;
     slug: string;
-    starCitizenOrganizationUrl: string;
+    starCitizenOrganizationUrl?: string;
+    createdByUserId: string;
     createdByUsername?: string;
     members: OrganizationMemberView[];
     discordGuildId?: string;

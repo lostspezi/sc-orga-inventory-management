@@ -34,6 +34,10 @@ async function migrateMembers() {
         { organizationId: 1, isDefault: 1 },
         { background: true }
     );
+    await db.collection("organizations").createIndex(
+        { createdByUserId: 1 },
+        { background: true }
+    );
 
     // Backfill organization_members from org.members[]
     const orgs = await db.collection("organizations").find({}).toArray();

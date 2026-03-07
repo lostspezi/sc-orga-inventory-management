@@ -24,7 +24,7 @@ const COLLECTION = "organizations";
 type CreateOrganizationInput = {
     name: string;
     slug: string;
-    starCitizenOrganizationUrl: string;
+    starCitizenOrganizationUrl?: string;
     createdByUserId: string;
 };
 
@@ -43,7 +43,7 @@ export async function createOrganizationInDb(
     const doc: Omit<OrganizationDocument, "_id"> = {
         name: input.name,
         slug: input.slug,
-        starCitizenOrganizationUrl: input.starCitizenOrganizationUrl,
+        starCitizenOrganizationUrl: input.starCitizenOrganizationUrl ?? "",
         createdByUserId: input.createdByUserId,
         members: [ownerMember],
         createdAt: now,
@@ -338,6 +338,7 @@ async function mapOrganizationToView(
         name: org.name,
         slug: org.slug,
         starCitizenOrganizationUrl: org.starCitizenOrganizationUrl,
+        createdByUserId: org.createdByUserId,
         createdByUsername: usernameByUserId.get(org.createdByUserId),
         createdAt: org.createdAt,
         updatedAt: org.updatedAt,
@@ -580,6 +581,12 @@ export async function adjustOrgAuecBalance(
             $set: { updatedAt: new Date() },
         }
     );
+}
+
+export async function countOrganizationsCreatedByUser(userId: string): Promise<number> {
+    if (!ObjectId.isValid(userId)) return 0;
+    const db = await getDb();
+    return db.collection("organizations").countDocuments({ createdByUserId: userId });
 }
 
 export async function setOrganizationDiscordTransactionChannelId(
