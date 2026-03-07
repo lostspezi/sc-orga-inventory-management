@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useEffect, useSyncExternalStore, useState } from "react";
+import { useTranslations } from "next-intl";
 
 const COOKIE_NAME = "sc_consent";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
@@ -21,6 +22,7 @@ const getClientSnapshot = () => !hasConsent();
 const getServerSnapshot = () => false;
 
 export default function CookieNotice() {
+    const t = useTranslations("cookieNotice");
     const needsConsent = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
     const [dismissed, setDismissed] = useState(false);
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -43,17 +45,11 @@ export default function CookieNotice() {
         <dialog
             ref={dialogRef}
             onCancel={(e) => e.preventDefault()}
-            className="backdrop:bg-black/70"
-            style={{
-                background: "transparent",
-                border: "none",
-                padding: 0,
-                maxWidth: "min(90vw, 480px)",
-                width: "100%",
-            }}
+            className="fixed left-1/2 top-1/2 m-0 w-[min(90vw,480px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden backdrop:bg-black/70"
+            style={{ background: "transparent", border: "none", padding: 0 }}
         >
             <div
-                className="hud-panel relative max-h-[90dvh] overflow-y-auto p-7"
+                className="hud-panel relative max-h-[90dvh] overflow-y-auto p-7 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 style={{ background: "rgba(4,10,18,0.97)" }}
             >
                 {/* top accent */}
@@ -65,23 +61,23 @@ export default function CookieNotice() {
                     className="absolute -top-5 left-1/2 -translate-x-1/2 px-3 text-[10px] tracking-[0.3em] uppercase"
                     style={{ color: "var(--accent-primary)", fontFamily: "var(--font-mono)", background: "var(--background)" }}
                 >
-                    PRIVACY.NOTICE
+                    {t("eyebrow")}
                 </div>
 
                 <h2
                     className="mb-3 text-base font-black uppercase tracking-widest"
                     style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                 >
-                    Cookie Notice
+                    {t("title")}
                 </h2>
 
                 <p
                     className="mb-3 text-sm leading-relaxed"
                     style={{ color: "rgba(200,220,232,0.6)", fontFamily: "var(--font-ui)" }}
                 >
-                    SC Orga Manager uses <strong style={{ color: "rgba(200,220,232,0.85)" }}>essential cookies only</strong> —
-                    for login sessions, CSRF protection, and your language preference.
-                    No tracking, no analytics, no third-party advertising cookies.
+                    {t.rich("body", {
+                        strong: (chunks) => <strong style={{ color: "rgba(200,220,232,0.85)" }}>{chunks}</strong>,
+                    })}
                 </p>
 
                 <Link
@@ -91,14 +87,14 @@ export default function CookieNotice() {
                     className="text-[11px] uppercase tracking-[0.15em] underline transition-colors hover:text-cyan-300"
                     style={{ color: "rgba(79,195,220,0.6)", fontFamily: "var(--font-mono)" }}
                 >
-                    View Cookie Information ↗
+                    {t("link")} ↗
                 </Link>
 
                 <button
                     onClick={dismiss}
                     className="sc-btn mt-5 w-full py-3 text-sm uppercase tracking-[0.2em]"
                 >
-                    Understood — Continue
+                    {t("cta")}
                 </button>
 
                 {/* bottom accent */}

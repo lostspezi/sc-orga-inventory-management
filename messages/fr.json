@@ -1149,5 +1149,12 @@
     "version": "Version",
     "size": "Taille",
     "bytes": "octets"
+  },
+  "cookieNotice": {
+    "eyebrow": "PRIVACY.NOTICE",
+    "title": "Avis sur les cookies",
+    "body": "SC Orga Manager utilise uniquement des <strong>cookies essentiels</strong> — pour les sessions de connexion, la protection CSRF et votre preference linguistique. Aucun suivi, aucune analyse, aucun cookie publicitaire tiers.",
+    "link": "Voir les informations sur les cookies",
+    "cta": "Compris — Continuer"
   }
 }

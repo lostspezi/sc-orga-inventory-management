@@ -251,7 +251,9 @@ Custom sci-fi aesthetic — **do not introduce generic UI component libraries**.
 
 **i18n:** Server components use `getTranslations("ns")` (async). Client components use `useTranslations("ns")`. Add keys to all three message files simultaneously. When a client component needs only a few static labels, pass them as string props from a server parent instead.
 
-All namespaces: `common`, `nav`, `header`, `notifications`, `userMenu`, `adminNav`, `terminal`, `settings`, `adminOverview`, `adminOrgs`, `adminDiscord`, `adminComponents`, `dashboard`, `kpi`, `charts`, `recentTrades`, `orgShell`, `members`, `inventory`, `transactions`, `logs`, `orgSettings`, `auec`, `csvImport`, `cargo`, `news`, `faq`, `home`, `billing`, `reports`.
+Rich text in message values uses XML-style tags — `"key": "Hello <strong>world</strong>"` — rendered via `t.rich("key", { strong: (chunks) => <strong>{chunks}</strong> })`. Do **not** use `{tag}...{/tag}` format; next-intl will throw `INVALID_MESSAGE: MALFORMED_ARGUMENT`.
+
+All namespaces: `common`, `nav`, `header`, `notifications`, `userMenu`, `adminNav`, `terminal`, `settings`, `adminOverview`, `adminOrgs`, `adminDiscord`, `adminComponents`, `dashboard`, `kpi`, `charts`, `recentTrades`, `orgShell`, `members`, `inventory`, `transactions`, `logs`, `orgSettings`, `auec`, `csvImport`, `cargo`, `news`, `faq`, `home`, `billing`, `reports`, `cookieNotice`.
 
 **Client action pattern:**
 ```ts
