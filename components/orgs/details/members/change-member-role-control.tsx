@@ -10,8 +10,8 @@ type Props = {
     organizationSlug: string;
     targetUserId: string;
     targetLabel?: string;
-    currentRole: "owner" | "admin" | "member";
-    actorRole: "owner" | "admin" | "member";
+    currentRole: "owner" | "admin" | "hr" | "member";
+    actorRole: "owner" | "admin" | "hr" | "member";
     disabled?: boolean;
 };
 

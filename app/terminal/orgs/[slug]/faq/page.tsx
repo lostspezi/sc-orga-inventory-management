@@ -317,6 +317,9 @@ export default async function FaqPage() {
                     </div>
                     <P>{t("proSection.q6Outro")}</P>
                 </Q>
+                <Q q={t("proSection.q7")}>
+                    <P>{t.rich("proSection.q7Body", rich)}</P>
+                </Q>
             </Section>
 
             {/* ── Reporting ── */}
@@ -392,6 +395,7 @@ export default async function FaqPage() {
                         <li>{t.rich("membersSection.q1Li1", rich)}</li>
                         <li>{t.rich("membersSection.q1Li2", rich)}</li>
                         <li>{t.rich("membersSection.q1Li3", rich)}</li>
+                        <li>{t.rich("membersSection.q1Li4", rich)}</li>
                     </ul>
                 </Q>
                 <Q q={t("membersSection.q2")}>
@@ -399,6 +403,18 @@ export default async function FaqPage() {
                 </Q>
                 <Q q={t("membersSection.q3")}>
                     <P>{t.rich("membersSection.q3Body", rich)}</P>
+                </Q>
+                <Q q={t("membersSection.q4")}>
+                    <P>{t("membersSection.q4Body")}</P>
+                </Q>
+                <Q q={t("membersSection.q5")}>
+                    <P>{t.rich("membersSection.q5Body", rich)}</P>
+                </Q>
+                <Q q={t("membersSection.q6")}>
+                    <P>{t.rich("membersSection.q6Body", rich)}</P>
+                </Q>
+                <Q q={t("membersSection.q7")}>
+                    <P>{t.rich("membersSection.q7Body", rich)}</P>
                 </Q>
             </Section>
 

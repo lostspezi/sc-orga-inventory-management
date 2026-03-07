@@ -11,7 +11,7 @@ type CreateOrganizationInviteInput = {
     organizationSlug: string;
     invitedByUserId: string;
     invitedByUsername?: string;
-    targetRole: "admin" | "member";
+    targetRole: "admin" | "hr" | "member";
     deliveryMethod: "email" | "discord_dm" | "in_app";
     email?: string;
     token?: string;
@@ -19,6 +19,7 @@ type CreateOrganizationInviteInput = {
     targetUserId?: string;
     status?: "pending" | "accepted" | "declined" | "expired";
     expiresAt: Date;
+    maxUses?: number;
 };
 
 function hashInviteToken(rawToken: string) {
@@ -51,6 +52,8 @@ export async function createOrganizationInvite(
         targetUserId: input.targetUserId,
         status: input.status ?? "pending",
         expiresAt: input.expiresAt,
+        maxUses: input.maxUses,
+        useCount: 0,
         createdAt: now,
         updatedAt: now,
     };
@@ -183,6 +186,14 @@ export async function revokeActivePermanentInvitesByOrgId(
     await db.collection<OrganizationInviteDocument>(COLLECTION).updateMany(
         { organizationId: orgId, isPermanent: true, status: "pending" },
         { $set: { status: "revoked", updatedAt: new Date() } }
+    );
+}
+
+export async function incrementInviteUseCount(inviteId: ObjectId): Promise<void> {
+    const db = await getDb();
+    await db.collection<OrganizationInviteDocument>("organization_invites").updateOne(
+        { _id: inviteId },
+        { $inc: { useCount: 1 }, $set: { updatedAt: new Date() } }
     );
 }
 

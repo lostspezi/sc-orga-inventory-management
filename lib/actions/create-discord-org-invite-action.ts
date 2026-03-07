@@ -30,7 +30,9 @@ export async function createDiscordOrgInviteAction(
 
     const organizationSlug = String(formData.get("organizationSlug") ?? "").trim();
     const discordUserId = String(formData.get("discordUserId") ?? "").trim();
-    const targetRole = String(formData.get("targetRole") ?? "").trim() as "admin" | "member";
+    const targetRole = String(formData.get("targetRole") ?? "").trim() as "admin" | "hr" | "member";
+    const maxUsesRaw = String(formData.get("maxUses") ?? "").trim();
+    const expiresAtRaw = String(formData.get("expiresAt") ?? "").trim();
 
     const fieldErrors: CreateDiscordOrgInviteState["fieldErrors"] = {};
 
@@ -38,7 +40,7 @@ export async function createDiscordOrgInviteAction(
         fieldErrors.discordUserId = "Discord user ID is required.";
     }
 
-    if (!["admin", "member"].includes(targetRole)) {
+    if (!["admin", "hr", "member"].includes(targetRole)) {
         fieldErrors.targetRole = "A valid role is required.";
     }
 
@@ -71,11 +73,20 @@ export async function createDiscordOrgInviteAction(
 
     const inviterMembership = org.members.find((m) => m.userId === session?.user?.id);
 
-    if (!inviterMembership || !["owner", "admin"].includes(inviterMembership.role)) {
+    if (!inviterMembership || !["owner", "admin", "hr"].includes(inviterMembership.role)) {
         return {
             success: false,
             message: "You are not allowed to invite members to this organization.",
             fieldErrors: {},
+        };
+    }
+
+    // HR can only invite as member
+    if (inviterMembership.role === "hr" && targetRole !== "member") {
+        return {
+            success: false,
+            message: "HR can only invite members at the 'member' role.",
+            fieldErrors: { targetRole: "HR can only set role to 'member'." },
         };
     }
 
@@ -88,6 +99,17 @@ export async function createDiscordOrgInviteAction(
         };
     }
 
+    // Parse optional expiry (defaults to 7 days)
+    let expiresAt: Date;
+    if (expiresAtRaw) {
+        const parsed = new Date(expiresAtRaw);
+        expiresAt = isNaN(parsed.getTime()) ? new Date(Date.now() + 1000 * 60 * 60 * 24 * 7) : parsed;
+    } else {
+        expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
+    }
+
+    const maxUses = maxUsesRaw ? parseInt(maxUsesRaw, 10) || undefined : undefined;
+
     const {rawToken} = await createOrganizationInvite({
         organizationId: org._id,
         organizationSlug: org.slug,
@@ -96,7 +118,8 @@ export async function createDiscordOrgInviteAction(
         targetRole,
         deliveryMethod: "discord_dm",
         discordUserId,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 days
+        expiresAt,
+        maxUses,
     });
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
@@ -113,7 +136,7 @@ export async function createDiscordOrgInviteAction(
     const dmText =
         `You have been invited to join "${org.name}" as ${targetRole}.\n\n` +
         `Accept invite: ${inviteUrl}\n\n` +
-        `This invite expires in 7 days.`;
+        `This invite expires on ${expiresAt.toDateString()}.`;
 
     try {
         await sendDiscordDm(discordUserId, dmText);

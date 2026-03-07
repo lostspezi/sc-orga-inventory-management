@@ -263,7 +263,7 @@ export async function getOrganizationByDiscordGuildId(
 export async function changeRoleForOrgMemberInDb(
     organizationId: string,
     memberId: string,
-    role: "admin" | "member"
+    role: "admin" | "hr" | "member"
 ): Promise<boolean> {
     const db = await getDb();
 
@@ -275,6 +275,29 @@ export async function changeRoleForOrgMemberInDb(
         {
             $set: {
                 "members.$.role": role,
+                updatedAt: new Date(),
+            },
+        }
+    );
+
+    return result.modifiedCount > 0;
+}
+
+export async function updateMemberStatusInOrg(
+    organizationId: string,
+    userId: string,
+    status: "active" | "suspended"
+): Promise<boolean> {
+    const db = await getDb();
+
+    const result = await db.collection(COLLECTION).updateOne(
+        {
+            _id: new ObjectId(organizationId),
+            "members.userId": userId,
+        },
+        {
+            $set: {
+                "members.$.status": status,
                 updatedAt: new Date(),
             },
         }

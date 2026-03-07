@@ -7,6 +7,7 @@ import {
     changeRoleForOrgMemberInDb,
     getOrganizationBySlug,
 } from "@/lib/repositories/organization-repository";
+import { updateOrgMemberRole } from "@/lib/repositories/org-member-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
 
 type ChangeOrgMemberRoleState = {
@@ -26,13 +27,17 @@ export async function changeOrgMemberRoleAction(
 
     const organizationSlug = String(formData.get("organizationSlug") ?? "").trim();
     const targetUserId = String(formData.get("targetUserId") ?? "").trim();
-    const newRole = String(formData.get("newRole") ?? "").trim() as "admin" | "member";
+    const newRole = String(formData.get("newRole") ?? "").trim() as "admin" | "hr" | "member";
 
     if (!organizationSlug || !targetUserId || !newRole) {
         return {
             success: false,
             message: "Missing organization or target user or new role.",
         };
+    }
+
+    if (!["admin", "hr", "member"].includes(newRole)) {
+        return { success: false, message: "Invalid role." };
     }
 
     const org = await getOrganizationBySlug(organizationSlug);
@@ -75,6 +80,21 @@ export async function changeOrgMemberRoleAction(
         };
     }
 
+    // Admin cannot promote to owner-level or manage other admins
+    if (actor.role === "admin" && target.role === "admin") {
+        return {
+            success: false,
+            message: "Admins cannot change another admin's role.",
+        };
+    }
+
+    if (target.role === "owner") {
+        return {
+            success: false,
+            message: "Cannot change the owner's role. Use ownership transfer instead.",
+        };
+    }
+
     const changed = await changeRoleForOrgMemberInDb(
         org._id.toString(),
         target.userId,
@@ -87,6 +107,17 @@ export async function changeOrgMemberRoleAction(
             message: "Member role change failed.",
         };
     }
+
+    // Also update the rich org_members document
+    await updateOrgMemberRole(org._id, target.userId, newRole, {
+        fromRole: target.role,
+        toRole: newRole,
+        changedBy: session.user.id,
+        changedByUsername: session.user.name ?? "Unknown",
+        changedAt: new Date(),
+    }).catch(() => {
+        // Best-effort — org_members doc may not exist for legacy members
+    });
 
     await createOrganizationAuditLog({
         organizationId: org._id,

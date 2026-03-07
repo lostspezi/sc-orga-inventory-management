@@ -39,8 +39,9 @@ export type OrganizationDocument = {
 
 export type OrganizationMember = {
     userId: string;
-    role: "owner" | "admin" | "member";
+    role: "owner" | "admin" | "hr" | "member";
     joinedAt: Date;
+    status?: "active" | "suspended";
 };
 
 export type OrganizationInventoryItemDocument = {
@@ -66,7 +67,7 @@ export type OrganizationInventoryItemDocument = {
 export type OrganizationMemberView = {
     userId: string;
     username: string;
-    role: "owner" | "admin" | "member";
+    role: "owner" | "admin" | "hr" | "member";
     joinedAt: Date;
 };
 
@@ -126,6 +127,12 @@ export type OrganizationAuditLogDocument = {
         | "member.added"
         | "member.removed"
         | "member.role_changed"
+        | "member.rank_assigned"
+        | "member.bulk_rank_assigned"
+        | "member.suspended"
+        | "member.reactivated"
+        | "member.profile_updated"
+        | "member.exported"
         | "integration.discord_disconnected"
         | "integration.discord_connected"
         | "item.created"
@@ -159,9 +166,12 @@ export type OrganizationAuditLogDocument = {
         | "billing.pro_override_disabled"
         | "report.generation_requested"
         | "report.downloaded"
-        | "report.regenerated";
+        | "report.regenerated"
+        | "rank.created"
+        | "rank.updated"
+        | "rank.deleted";
 
-    entityType: "organization" | "member" | "item" | "inventory_item" | "inventory" | "transaction" | "auec_transaction" | "report";
+    entityType: "organization" | "member" | "item" | "inventory_item" | "inventory" | "transaction" | "auec_transaction" | "report" | "rank";
     entityId?: string;
 
     message: string;
@@ -178,9 +188,11 @@ export type OrganizationInviteDocument = {
     invitedByUserId: string;
     invitedByUsername?: string;
 
-    targetRole: "admin" | "member";
+    targetRole: "admin" | "hr" | "member";
 
     deliveryMethod: "email" | "discord_dm" | "in_app" | "permanent_link";
+    maxUses?: number;
+    useCount?: number;
 
     inviteToken: string;
     email?: string;
@@ -205,7 +217,7 @@ export type OrganizationInviteView = {
     organizationSlug: string;
     invitedByUserId: string;
     invitedByUsername?: string;
-    targetRole: "admin" | "member";
+    targetRole: "admin" | "hr" | "member";
     deliveryMethod: "email" | "discord_dm" | "in_app" | "permanent_link";
     inviteToken: string;
     email?: string;
@@ -216,4 +228,6 @@ export type OrganizationInviteView = {
     status: "pending" | "accepted" | "declined" | "expired" | "revoked";
     expiresAt: string;
     createdAt: string;
+    maxUses?: number;
+    useCount?: number;
 };

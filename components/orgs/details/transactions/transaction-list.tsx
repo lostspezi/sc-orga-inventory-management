@@ -21,7 +21,7 @@ type Props = {
     transactions: OrganizationTransactionView[];
     inventoryItems: InventoryItemOption[];
     currentUserId: string;
-    currentUserRole: "owner" | "admin" | "member";
+    currentUserRole: "owner" | "admin" | "hr" | "member";
     organizationSlug: string;
 };
 

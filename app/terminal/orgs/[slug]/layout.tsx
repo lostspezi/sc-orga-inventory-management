@@ -36,6 +36,11 @@ export default async function OrgLayout({ children, params }: Props) {
         notFound();
     }
 
+    // Suspension check
+    if (currentMember.status === "suspended") {
+        redirect("/terminal?reason=suspended");
+    }
+
     const currentRole = currentMember.role as OrganizationRole;
     const isPro = isProOrg(org);
 

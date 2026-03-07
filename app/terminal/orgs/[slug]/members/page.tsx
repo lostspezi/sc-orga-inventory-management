@@ -1,66 +1,165 @@
-import {notFound, redirect} from "next/navigation";
-import {getOrganizationViewBySlug} from "@/lib/repositories/organization-repository";
-import {getPendingOrganizationInvitesByOrganizationId} from "@/lib/repositories/organization-invite-repository";
-import {getTranslations} from "next-intl/server";
-import DiscordInviteForm from "@/components/orgs/details/members/discord-invite-form";
-import PendingOrgInvitesList from "@/components/orgs/details/members/pending-org-invites-list";
-import {auth} from "@/auth";
-import Link from "next/link";
-import RemoveMemberButton from "@/components/orgs/details/members/remove-member-button";
-import ChangeMemberRoleControl from "@/components/orgs/details/members/change-member-role-control";
-import { getUsersByIds } from "@/lib/repositories/user-repository";
+import { notFound, redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
+import { getOrganizationBySlug } from "@/lib/repositories/organization-repository";
+import { isProOrg } from "@/lib/billing/is-pro";
+import {
+    getOrgMembersByOrganizationId,
+    buildOrgMemberViews,
+} from "@/lib/repositories/org-member-repository";
+import {
+    getOrgRanksByOrganizationId,
+    toOrgRankView,
+} from "@/lib/repositories/org-rank-repository";
+import {
+    getPendingOrganizationInvitesByOrganizationId,
+} from "@/lib/repositories/organization-invite-repository";
+import MemberList from "@/components/orgs/details/members/member-list";
+import RanksManagement from "@/components/orgs/details/members/ranks-management";
+import InvitationsPanel from "@/components/orgs/details/members/invitations-panel";
+import MembersTabNav from "@/components/orgs/details/members/members-tab-nav";
+import type { OrganizationInviteView } from "@/lib/types/organization";
+
+type Tab = "members" | "ranks" | "invitations";
 
 type Props = {
     params: Promise<{ slug: string }>;
+    searchParams: Promise<{ tab?: string }>;
 };
 
-export default async function OrgMembersPage({params}: Props) {
-    const {slug} = await params;
+export default async function OrgMembersPage({ params, searchParams }: Props) {
+    const { slug } = await params;
+    const { tab } = await searchParams;
+    const activeTab: Tab = (tab === "ranks" || tab === "invitations") ? tab : "members";
 
     const session = await auth();
+    if (!session?.user) redirect("/login");
 
-    if (!session?.user) {
-        redirect("/login")
-    }
+    const org = await getOrganizationBySlug(slug);
+    if (!org) notFound();
 
-    const org = await getOrganizationViewBySlug(slug);
-
-    if (!org) {
-        notFound();
-    }
-
-    const currentMember = org.members.find((m) => m.userId === session?.user?.id);
-
-    const isAdminOrOwner = currentMember && (currentMember.role === "admin" || currentMember.role === "owner");
+    const currentMember = org.members.find((m) => m.userId === session.user!.id);
     const t = await getTranslations("members");
 
-    if (!currentMember || !isAdminOrOwner) {
+    const canAccess = currentMember && ["owner", "admin", "hr"].includes(currentMember.role);
+    if (!currentMember || !canAccess) {
         return (
             <div
                 className="rounded-lg border p-6"
-                style={{
-                    borderColor: "rgba(240,165,0,0.18)",
-                    background: "rgba(20,14,6,0.12)",
-                }}
+                style={{ borderColor: "rgba(240,165,0,0.18)", background: "rgba(20,14,6,0.12)" }}
             >
-                <h2
-                    className="text-lg font-semibold uppercase tracking-[0.08em]"
-                    style={{color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)"}}
-                >
+                <h2 className="text-lg font-semibold uppercase tracking-[0.08em]" style={{ color: "rgba(240,165,0,0.9)", fontFamily: "var(--font-display)" }}>
                     {t("forbidden")}
                 </h2>
-                <p
-                    className="mt-2 text-sm"
-                    style={{color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)"}}
-                >
+                <p className="mt-2 text-sm" style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}>
                     {t("forbiddenMessage")}
                 </p>
             </div>
         );
     }
 
-    const pendingInviteDocs = await getPendingOrganizationInvitesByOrganizationId(org._id);
-    const pendingInvites = pendingInviteDocs.map((doc) => ({
+    const actorRole = currentMember.role as "owner" | "admin" | "hr" | "member";
+    const canManageRanks = ["owner", "admin"].includes(actorRole);
+    const isPro = isProOrg(org);
+
+    // Fetch ranks for all tabs (used in multiple places)
+    const rankDocs = await getOrgRanksByOrganizationId(org._id);
+    const ranks = rankDocs.map(toOrgRankView);
+
+    return (
+        <div className="space-y-4">
+            {/* Page header */}
+            <div>
+                <p className="text-[10px] uppercase tracking-[0.25em]" style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}>
+                    {t("eyebrow")}
+                </p>
+                <h2 className="mt-1 text-lg font-semibold uppercase tracking-[0.08em]" style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}>
+                    {t("title")}
+                </h2>
+                <p className="mt-1 text-sm" style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}>
+                    {t("description")}
+                </p>
+            </div>
+
+            {/* Tab nav */}
+            <MembersTabNav canManageRanks={canManageRanks} />
+
+            {/* Tab content */}
+            <div
+                className="rounded-lg border p-4"
+                style={{ borderColor: "rgba(79,195,220,0.14)", background: "rgba(7,18,28,0.28)" }}
+            >
+                {activeTab === "members" && (
+                    <MembersTabContent
+                        orgId={org._id}
+                        organizationSlug={org.slug}
+                        rankDocs={rankDocs}
+                        ranks={ranks}
+                        actorRole={actorRole}
+                        isPro={isPro}
+                    />
+                )}
+
+                {activeTab === "ranks" && canManageRanks && (
+                    <RanksManagement ranks={ranks} organizationSlug={org.slug} />
+                )}
+
+                {activeTab === "invitations" && (
+                    <InvitationsTabContent
+                        orgId={org._id}
+                        organizationSlug={org.slug}
+                        discordGuildId={org.discordGuildId}
+                        actorRole={actorRole}
+                    />
+                )}
+            </div>
+        </div>
+    );
+}
+
+// Separate async component for members tab to enable data fetching
+async function MembersTabContent({
+    orgId,
+    organizationSlug,
+    rankDocs,
+    ranks,
+    actorRole,
+    isPro,
+}: {
+    orgId: import("mongodb").ObjectId;
+    organizationSlug: string;
+    rankDocs: import("@/lib/types/org-rank").OrgRankDocument[];
+    ranks: import("@/lib/types/org-rank").OrgRankView[];
+    actorRole: "owner" | "admin" | "hr" | "member";
+    isPro: boolean;
+}) {
+    const memberDocs = await getOrgMembersByOrganizationId(orgId);
+    const memberViews = await buildOrgMemberViews(memberDocs, rankDocs);
+
+    return (
+        <MemberList
+            members={memberViews}
+            ranks={ranks}
+            organizationSlug={organizationSlug}
+            actorRole={actorRole}
+            isPro={isPro}
+        />
+    );
+}
+
+async function InvitationsTabContent({
+    orgId,
+    organizationSlug,
+    discordGuildId,
+    actorRole,
+}: {
+    orgId: import("mongodb").ObjectId;
+    organizationSlug: string;
+    discordGuildId?: string;
+    actorRole: "owner" | "admin" | "hr" | "member";
+}) {
+    const pendingDocs = await getPendingOrganizationInvitesByOrganizationId(orgId);
+    const invites: OrganizationInviteView[] = pendingDocs.map((doc) => ({
         id: doc._id.toString(),
         organizationSlug: doc.organizationSlug,
         invitedByUserId: doc.invitedByUserId,
@@ -71,193 +170,21 @@ export default async function OrgMembersPage({params}: Props) {
         email: doc.email,
         discordUserId: doc.discordUserId,
         targetUserId: doc.targetUserId,
+        isPermanent: doc.isPermanent,
+        permanentRawToken: doc.permanentRawToken,
         status: doc.status,
         expiresAt: doc.expiresAt.toISOString(),
         createdAt: doc.createdAt.toISOString(),
+        maxUses: doc.maxUses,
+        useCount: doc.useCount,
     }));
 
-    // Fetch aUEC balances for all members
-    const memberUserIds = org.members.map((m) => m.userId);
-    const memberUsers = await getUsersByIds(memberUserIds);
-    const auecByUserId: Map<string, number> = new Map(
-        memberUsers
-            .filter((u) => u.auecBalance != null)
-            .map((u) => [u._id.toString(), u.auecBalance!])
-    );
-
     return (
-        <div className="space-y-4">
-            <div>
-                <p
-                    className="text-[10px] uppercase tracking-[0.25em]"
-                    style={{color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)"}}
-                >
-                    {t("eyebrow")}
-                </p>
-                <h2
-                    className="mt-1 text-lg font-semibold uppercase tracking-[0.08em]"
-                    style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
-                >
-                    {t("title")}
-                </h2>
-                <p
-                    className="mt-1 text-sm"
-                    style={{color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)"}}
-                >
-                    {t("description")}
-                </p>
-            </div>
-
-            {/* Current members */}
-            <div
-                className="rounded-lg border p-4"
-                style={{
-                    borderColor: "rgba(79,195,220,0.14)",
-                    background: "rgba(7,18,28,0.28)",
-                }}
-            >
-                <div className="mb-3 flex items-center justify-between gap-2">
-                    <div>
-                        <p
-                            className="text-[10px] uppercase tracking-[0.25em]"
-                            style={{color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)"}}
-                        >
-                            {t("activeMembers")}
-                        </p>
-                        <h3
-                            className="mt-1 text-base font-semibold uppercase tracking-[0.08em]"
-                            style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
-                        >
-                            {t("activeMembersCount", { count: org.members.length })}
-                        </h3>
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    {org.members.map((member) => (
-                        <div
-                            key={`${member.userId}-${member.joinedAt.toString()}`}
-                            className="rounded-md border px-3 py-2"
-                            style={{
-                                borderColor: "rgba(79,195,220,0.10)",
-                                background: "rgba(7,18,28,0.18)",
-                            }}
-                        >
-                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                <div className="flex flex-wrap items-center gap-2">
-                                <span
-                                    className="text-xs"
-                                    style={{color: "rgba(200,220,232,0.55)", fontFamily: "var(--font-mono)"}}
-                                >
-                                    {member.username}
-                                </span>
-                                    <span
-                                        className="rounded border px-2 py-0.5 text-[10px] uppercase"
-                                        style={{
-                                            borderColor: "rgba(79,195,220,0.18)",
-                                            color: "rgba(79,195,220,0.65)",
-                                            fontFamily: "var(--font-mono)",
-                                        }}
-                                    >
-                                    {member.role}
-                                </span>
-                                    {auecByUserId.has(member.userId) && (
-                                        <span
-                                            className="rounded border px-2 py-0.5 text-[10px]"
-                                            style={{
-                                                borderColor: "rgba(80,210,120,0.25)",
-                                                color: "rgba(80,210,120,0.75)",
-                                                fontFamily: "var(--font-mono)",
-                                            }}
-                                        >
-                                            {auecByUserId.get(member.userId)!.toLocaleString()} {t("auec")}
-                                        </span>
-                                    )}
-                                </div>
-                                {isAdminOrOwner &&
-                                    <>
-                                        <ChangeMemberRoleControl
-                                            organizationSlug={org.slug}
-                                            targetUserId={member.userId}
-                                            targetLabel={member.username}
-                                            currentRole={member.role}
-                                            actorRole={currentMember.role}
-                                        />
-                                        <RemoveMemberButton
-                                            organizationSlug={org.slug}
-                                            targetUserId={member.userId}
-                                            disabled={member.role === "owner"}
-                                            targetLabel={member.username}
-                                        />
-                                    </>
-                                }
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {isAdminOrOwner && <>
-                {/* Invite via Discord */}
-                {org.discordGuildId ? (
-                    <DiscordInviteForm organizationSlug={org.slug}/>
-                ) : (
-                    <div
-                        className="rounded-lg border p-4"
-                        style={{
-                            borderColor: "rgba(79,195,220,0.12)",
-                            background: "rgba(7,18,28,0.18)",
-                        }}
-                    >
-                        <p
-                            className="text-[10px] uppercase tracking-[0.22em]"
-                            style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
-                        >
-                            {t("discordInvites")}
-                        </p>
-                        <p
-                            className="mt-2 text-sm"
-                            style={{ color: "rgba(200,220,232,0.45)", fontFamily: "var(--font-mono)" }}
-                        >
-                            {t("discordNotConnected")}{" "}
-                            <Link
-                                href={`/terminal/orgs/${org.slug}/settings`}
-                                className="underline underline-offset-2"
-                                style={{ color: "rgba(79,195,220,0.7)" }}
-                            >
-                                {t("goToSettings")}
-                            </Link>
-                        </p>
-                    </div>
-                )}
-
-                {/* Pending invites */}
-                <div
-                    className="rounded-lg border p-4"
-                    style={{
-                        borderColor: "rgba(79,195,220,0.14)",
-                        background: "rgba(7,18,28,0.28)",
-                    }}
-                >
-                    <div className="mb-4">
-                        <p
-                            className="text-[10px] uppercase tracking-[0.25em]"
-                            style={{color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)"}}
-                        >
-                            {t("pendingInvitations")}
-                        </p>
-                        <h3
-                            className="mt-1 text-base font-semibold uppercase tracking-[0.08em]"
-                            style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
-                        >
-                            {t("openInvites")}
-                        </h3>
-                    </div>
-
-                    <PendingOrgInvitesList invites={pendingInvites}/>
-
-                </div>
-            </>}
-        </div>
+        <InvitationsPanel
+            invites={invites}
+            organizationSlug={organizationSlug}
+            discordGuildId={discordGuildId}
+            actorRole={actorRole}
+        />
     );
 }

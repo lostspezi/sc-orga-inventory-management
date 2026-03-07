@@ -14,7 +14,9 @@ import {
     expireOrganizationInvite,
     getOrganizationInviteByRawToken,
     markOrganizationInviteAccepted,
+    incrementInviteUseCount,
 } from "@/lib/repositories/organization-invite-repository";
+import { createOrgMember } from "@/lib/repositories/org-member-repository";
 import { createOrganizationAuditLog } from "@/lib/repositories/organization-audit-log-repository";
 import { getDiscordAccountByUserId } from "@/lib/repositories/auth-account-repository";
 import { notify, notifyMany } from "@/lib/notify";
@@ -49,6 +51,29 @@ export default async function InviteAcceptPage({ params }: Props) {
                 eyebrow="INVITE.STATUS"
                 title="Invite No Longer Available"
                 description="This invite has already been used or is no longer active."
+                tone="amber"
+                icon={<Link2Off size={18} />}
+                actions={
+                    <>
+                        <Link href="/terminal" className="sc-btn">
+                            Open Terminal
+                        </Link>
+                        <Link href="/" className="sc-btn sc-btn-outline">
+                            Back Home
+                        </Link>
+                    </>
+                }
+            />
+        );
+    }
+
+    // Check max uses for permanent invite links
+    if (invite.isPermanent && invite.maxUses != null && (invite.useCount ?? 0) >= invite.maxUses) {
+        return (
+            <InviteStateShell
+                eyebrow="INVITE.MAXUSES"
+                title="Invite Limit Reached"
+                description="This invite link has reached its maximum number of uses."
                 tone="amber"
                 icon={<Link2Off size={18} />}
                 actions={
@@ -151,10 +176,23 @@ export default async function InviteAcceptPage({ params }: Props) {
     const alreadyMember = org.members.some((m) => m.userId === session?.user?.id);
 
     if (!alreadyMember) {
+        const joinedAt = createJoinDate();
         await addMemberToOrganizationInDb(org._id.toString(), {
             userId: session.user.id,
             role: invite.targetRole,
-            joinedAt: createJoinDate(),
+            joinedAt,
+        });
+
+        // Create rich org_member profile document
+        await createOrgMember({
+            organizationId: org._id,
+            organizationSlug: org.slug,
+            userId: session.user.id,
+            role: invite.targetRole,
+            joinedAt,
+            invitedBy: invite.isPermanent ? "permanent_link" : (invite.invitedByUserId ?? "unknown"),
+        }).catch(() => {
+            // Best-effort — do not fail invite acceptance if profile creation fails
         });
 
         if (invite.isPermanent) {
@@ -183,7 +221,9 @@ export default async function InviteAcceptPage({ params }: Props) {
         }
     }
 
-    if (!invite.isPermanent) {
+    if (invite.isPermanent) {
+        await incrementInviteUseCount(invite._id);
+    } else {
         await markOrganizationInviteAccepted(invite._id);
     }
 
