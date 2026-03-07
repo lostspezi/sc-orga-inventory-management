@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import {
+    countOrganizationsCreatedByUser,
     createOrganizationInDb,
     getOrganizationBySlug,
 } from "@/lib/repositories/organization-repository";
@@ -10,10 +11,7 @@ import {
 export type CreateOrganizationActionState = {
     success: boolean;
     message: string;
-    fieldErrors?: {
-        name?: string;
-        starCitizenOrganizationUrl?: string;
-    };
+    fieldErrors?: { name?: string };
 };
 
 function slugify(value: string): string {
@@ -29,15 +27,6 @@ function slugify(value: string): string {
         .replace(/-+/g, "-");
 }
 
-function isValidUrl(url: string): boolean {
-    try {
-        new URL(url);
-        return true;
-    } catch {
-        return false;
-    }
-}
-
 export async function createOrganizationAction(
     _prevState: CreateOrganizationActionState,
     formData: FormData
@@ -45,40 +34,37 @@ export async function createOrganizationAction(
     const session = await auth();
 
     if (!session?.user) {
-        return {
-            success: false,
-            message: "You are not logged in.",
-        };
+        return { success: false, message: "You are not logged in." };
     }
 
     const userId = session.user.id;
     if (!userId) {
-        return {
-            success: false,
-            message: "User-ID missing.",
-        };
+        return { success: false, message: "User-ID missing." };
+    }
+
+    const createdCount = await countOrganizationsCreatedByUser(userId);
+    if (createdCount >= 3) {
+        return { success: false, message: "limit_reached" };
     }
 
     const nameRaw = formData.get("name");
     const urlRaw = formData.get("starCitizenOrganizationUrl");
-
     const name = typeof nameRaw === "string" ? nameRaw.trim() : "";
-    const starCitizenOrganizationUrl = typeof urlRaw === "string" ? urlRaw.trim() : "";
+    const starCitizenOrganizationUrl = typeof urlRaw === "string" ? urlRaw.trim() : undefined;
 
-    const fieldErrors: CreateOrganizationActionState["fieldErrors"] = {};
-
-    if (!name) fieldErrors.name = "Bitte gib einen Namen ein.";
-    if (!starCitizenOrganizationUrl) {
-        fieldErrors.starCitizenOrganizationUrl = "Bitte gib eine URL ein.";
-    } else if (!isValidUrl(starCitizenOrganizationUrl)) {
-        fieldErrors.starCitizenOrganizationUrl = "Bitte gib eine gültige URL ein.";
-    }
-
-    if (Object.keys(fieldErrors).length > 0) {
+    if (!name || name.length < 2) {
         return {
             success: false,
-            message: "Bitte prüfe deine Eingaben.",
-            fieldErrors,
+            message: "Please check your input.",
+            fieldErrors: { name: "Organization name must be at least 2 characters." },
+        };
+    }
+
+    if (name.length > 60) {
+        return {
+            success: false,
+            message: "Please check your input.",
+            fieldErrors: { name: "Organization name must be 60 characters or fewer." },
         };
     }
 
@@ -93,14 +79,11 @@ export async function createOrganizationAction(
     await createOrganizationInDb({
         name,
         slug,
-        starCitizenOrganizationUrl,
+        starCitizenOrganizationUrl: starCitizenOrganizationUrl || undefined,
         createdByUserId: userId,
     });
 
-    revalidatePath("/terminal/orgs");
+    revalidatePath("/terminal");
 
-    return {
-        success: true,
-        message: "Organisation wurde erstellt.",
-    };
+    return { success: true, message: "Organisation created." };
 }

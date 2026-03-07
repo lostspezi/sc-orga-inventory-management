@@ -20,6 +20,8 @@ export default async function TerminalPage() {
         getTranslations("terminal"),
     ]);
 
+    const atLimit = orgs.filter(o => o.createdByUserId === session.user.id).length >= 3;
+
     return (
         <main className="px-4 py-6 sm:px-6">
             <div
@@ -37,7 +39,7 @@ export default async function TerminalPage() {
                                 {t("adminPanel")}
                             </Link>
                         )}
-                        {orgs.length > 0 && <CreateOrgDialog/>}
+                        {orgs.length > 0 && <CreateOrgDialog atLimit={atLimit}/>}
                     </section>
                 )}
                 <section
@@ -96,7 +98,7 @@ export default async function TerminalPage() {
                         >
                             {t("noOrgsDescription")}
                         </p>
-                        <CreateOrgDialog/>
+                        <CreateOrgDialog atLimit={atLimit}/>
                     </section>
                 ) : (
                     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
