@@ -15,7 +15,7 @@ export const revalidate = 3600;
 
 export async function generateStaticParams() {
     const posts = await getAllPublishedAppNews(100);
-    return posts.map((p) => ({ slug: p.slug }));
+    return posts.filter((p) => p.slug).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
