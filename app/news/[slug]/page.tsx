@@ -57,14 +57,18 @@ function formatDate(date: Date) {
 
 export default async function NewsDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
-    const [doc, locale] = await Promise.all([
-        getPublishedAppNewsBySlug(slug),
-        getLocale(),
-    ]);
+    const doc = await getPublishedAppNewsBySlug(slug);
 
     if (!doc) notFound();
 
-    const post = toAppNewsPublicView(doc, locale as NewsLocale);
+    let locale: NewsLocale;
+    try {
+        locale = (await getLocale()) as NewsLocale;
+    } catch {
+        locale = doc.primaryLocale;
+    }
+
+    const post = toAppNewsPublicView(doc, locale);
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://scoim.io";
     const excerpt = stripMarkdown(doc.body).slice(0, 160);
     const pageUrl = `${appUrl}/news/${slug}`;
