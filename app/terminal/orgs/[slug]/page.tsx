@@ -9,8 +9,9 @@ import {
     getRecentCompletedTransactions,
 } from "@/lib/repositories/organization-transaction-repository";
 import { getOrganizationInventoryItemViewsByOrganizationId } from "@/lib/repositories/organization-inventory-item-repository";
-import { getLatestAppNews } from "@/lib/repositories/app-news-repository";
-import { getTranslations } from "next-intl/server";
+import { getLatestPublishedAppNews, toAppNewsPublicView } from "@/lib/repositories/app-news-repository";
+import { getTranslations, getLocale } from "next-intl/server";
+import type { NewsLocale } from "@/lib/types/app-news";
 import DashboardShell from "@/components/orgs/details/dashboard/dashboard-shell";
 import DashboardKpiCards from "@/components/orgs/details/dashboard/dashboard-kpi-cards";
 import RevenueChart from "@/components/orgs/details/dashboard/revenue-chart";
@@ -39,7 +40,10 @@ export default async function OrgDashboardPage({ params }: Props) {
 
     const member = org.members.find((m) => m.userId === session.user!.id);
 
-    const t = await getTranslations("dashboard");
+    const [t, tNews] = await Promise.all([
+        getTranslations("dashboard"),
+        getTranslations("news"),
+    ]);
 
     if (!member) {
         return (
@@ -66,14 +70,18 @@ export default async function OrgDashboardPage({ params }: Props) {
         );
     }
 
-    const [stats, dailyStats, topItems, recentCompleted, inventoryItems, newsItems] = await Promise.all([
+    const [stats, dailyStats, topItems, recentCompleted, inventoryItems, newsItems, locale] = await Promise.all([
         getDashboardStats(org._id),
         getDailyTransactionStats(org._id, 30),
         getTopItemsByRevenue(org._id, 5),
         getRecentCompletedTransactions(org._id, 10),
         getOrganizationInventoryItemViewsByOrganizationId(org._id),
-        getLatestAppNews(3),
+        getLatestPublishedAppNews(3),
+        getLocale(),
     ]);
+    const VALID_LOCALES: NewsLocale[] = ["en", "de", "fr"];
+    const resolvedLocale: NewsLocale = VALID_LOCALES.includes(locale as NewsLocale) ? (locale as NewsLocale) : "en";
+    const newsPosts = newsItems.map((doc) => toAppNewsPublicView(doc, resolvedLocale));
 
     return (
         <DashboardShell organizationSlug={slug}>
@@ -134,12 +142,11 @@ export default async function OrgDashboardPage({ params }: Props) {
                 )}
 
                 {/* News feed */}
-                <NewsFeed posts={newsItems.map((p) => ({
-                    _id: p._id.toString(),
-                    title: p.title,
-                    body: p.body,
-                    publishedAt: p.publishedAt.toISOString(),
-                }))} />
+                <NewsFeed
+                    posts={newsPosts}
+                    updatesLabel={tNews("feed.updates")}
+                    closeLabel={tNews("feed.close")}
+                />
 
                 {/* KPI Cards */}
                 <DashboardKpiCards

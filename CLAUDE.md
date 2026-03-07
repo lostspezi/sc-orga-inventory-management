@@ -29,6 +29,8 @@ docker compose up -d   # MongoDB 7 on :27017 + MailDev SMTP on :1025 (UI: http:/
 - **Stripe** — subscription billing for PRO orgs
 - **@react-pdf/renderer** — server-side PDF generation (no headless browser)
 - **node-cron** — scheduled tasks (weekly reports) started alongside the Discord bot
+- **react-markdown@10 + remark-gfm + rehype-sanitize** — markdown rendering (ESM-only; ~60 packages listed in `next.config.ts` `transpilePackages`)
+- **openai** — GPT-4o-mini translation pipeline for the news module
 
 ## Architecture
 
@@ -81,13 +83,24 @@ app/
     stripe/webhooks/               # POST — Stripe webhook (subscription lifecycle + emails)
     user/export/                   # GET — GDPR data export for calling user
     rsi/ / orgs/exists/ / sc-items/ / discord/guild-members/search/ / discord/guild-channels/
+    news/                          # GET list (public, locale-resolved AppNewsPublicView[])
+    news/[id]/                     # GET single published post (public)
+    admin/news/                    # GET all (any status) + POST create — super-admin
+    admin/news/[id]/               # GET + PATCH (content update, auto-resets published→draft) + DELETE
+    admin/news/[id]/translate/     # POST — fire-and-forget OpenAI translation
+    admin/news/[id]/publish/       # POST — publish + optional Discord embed
+    admin/news/[id]/archive/       # POST
+    admin/news/[id]/restore/       # POST → draft
+    admin/news/[id]/mark-ready/    # POST → ready_to_publish
+    admin/news-settings/           # GET + POST — Discord channel config
+    admin/news-settings/test/      # POST — test Discord embed (30s rate limit)
 ```
 
 ### Database access pattern
 
 All MongoDB access goes through `lib/db.ts` → `getDb()`. Repository files in `lib/repositories/` own all queries — pages and actions never call `getDb()` directly. The MongoDB client is cached on `global._mongoClient` in development to survive hot reloads.
 
-Collections: `users`, `accounts`, `sessions` (NextAuth), `organizations`, `organization_audit_logs`, `organization_inventory_items`, `organization_transactions`, `organization_invites`, `organization_auec_transactions`, `organization_import_jobs`, `organization_export_jobs`, `organization_reports`, `report_pdfs` (GridFS), `organization_members`, `organization_ranks`, `app_news`, `notifications`, `app_legal_settings`, `app_social_settings`.
+Collections: `users`, `accounts`, `sessions` (NextAuth), `organizations`, `organization_audit_logs`, `organization_inventory_items`, `organization_transactions`, `organization_invites`, `organization_auec_transactions`, `organization_import_jobs`, `organization_export_jobs`, `organization_reports`, `report_pdfs` (GridFS), `organization_members`, `organization_ranks`, `app_news`, `app_news_settings`, `notifications`, `app_legal_settings`, `app_social_settings`.
 
 ### Server actions
 
@@ -144,6 +157,34 @@ New in the `smb` branch. Two new collections + repositories:
 **PRO-gated:** CSV member export (`export-members-action.ts`) — returns CSV string in action state, client downloads via `URL.createObjectURL`.
 
 **Migration script:** `scripts/migrate-members.ts` — backfills `organization_members` from `organizations.members[]`. Safe to re-run (upsert on unique index). Run with `npx tsx scripts/migrate-members.ts`.
+
+### App-wide News System
+
+Global announcements written and managed by Super Admin only. Multilingual (EN/DE/FR), markdown-enabled, with optional Discord embed posting.
+
+**Status machine:** `draft → translation_pending → ready_to_publish → published → archived`. Any content edit on a `published` post resets it to `draft` (Discord `messageId` preserved for embed update on re-publish).
+
+**Translation status per locale:** `missing | generating | ready | edited | error`. Translations are generated via OpenAI GPT-4o-mini (fire-and-forget — no `await` on `translateNewsPost`). Each locale translates independently; partial failures don't block other locales.
+
+**Key files:**
+- `lib/types/app-news.ts` — all news types (`AppNewsDocument`, `AppNewsView`, `AppNewsPublicView`)
+- `lib/types/app-news-settings.ts` — singleton Discord config type
+- `lib/repositories/app-news-repository.ts` — CRUD + `toAppNewsView`, `toAppNewsPublicView`
+- `lib/repositories/app-news-settings-repository.ts` — `getOrCreateNewsSettings`, `saveNewsSettings`
+- `lib/translations/translate-news.ts` — OpenAI pipeline with exponential backoff (1s, 2s), auto-transitions to `ready_to_publish` when all locales done
+- `lib/discord/send-news-embed.ts` — `buildNewsEmbed` + `sendOrUpdateNewsEmbed` (edits existing Discord message if `discord.messageId` is stored; falls back to new post if message deleted)
+- `components/admin/news-editor.tsx` — full client editor; polls `/api/admin/news/[id]` every 2s while `status === "translation_pending"`
+- `components/admin/news-settings-card.tsx` — Discord guild/channel config UI
+
+**Admin pages:** `/terminal/admin/news` (list + settings card), `/terminal/admin/news/new`, `/terminal/admin/news/[id]/edit`
+
+**Public consumption:** `getLatestPublishedAppNews()` → server component resolves locale via `getLocale()` (next-intl) → maps to `AppNewsPublicView` → passes to `components/orgs/details/dashboard/news-feed.tsx` (client, ReactMarkdown body in a `<dialog>`).
+
+**Discord embed:** multilingual embed with locale flags (🇬🇧/🇩🇪/🇫🇷), proportional truncation to 4,000 chars total. Only locales with content are included. Primary locale always first.
+
+**react-markdown@10 note:** ESM-only package requires `transpilePackages` in `next.config.ts` (~60 entries). Do NOT add `className` prop to `<ReactMarkdown>` — removed in v10; wrap with `<div className="...">` instead.
+
+**Migration script:** `scripts/migrate-news.ts` — adds `status/primaryLocale/translations/createdBy` to existing docs, creates `app_news_settings` singleton, ensures indexes. Run with `npx tsx scripts/migrate-news.ts`.
 
 ### PRO / Billing
 
@@ -276,7 +317,7 @@ if (!session?.user?.id) redirect("/login"); // in pages/layouts
 ## Environment variables
 
 | Variable | Purpose |
-|---|---|
+| --- | --- |
 | `MONGODB_URI` | MongoDB connection string |
 | `MONGODB_DB_NAME` | Database name |
 | `AUTH_SECRET` | NextAuth secret |
@@ -293,3 +334,5 @@ if (!session?.user?.id) redirect("/login"); // in pages/layouts
 | `SMTP_HOST` / `SMTP_PORT` | SMTP config for local MailDev |
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Google service account for Sheets integration |
 | `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` | PEM key with escaped `\n` |
+| `OPENAI_API_KEY` | OpenAI key for news auto-translation (optional — disables translation button if missing) |
+| `OPENAI_TRANSLATION_MODEL` | Override model for translation (default: `gpt-4o-mini`) |

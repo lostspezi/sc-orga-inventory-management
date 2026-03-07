@@ -1,29 +1,32 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useTranslations } from "next-intl";
-import type { AppNewsView } from "@/lib/types/app-news";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeSanitize from "rehype-sanitize";
+import type { AppNewsPublicView } from "@/lib/types/app-news";
 
 type Props = {
-    posts: AppNewsView[];
+    posts: AppNewsPublicView[];
+    updatesLabel: string;
+    closeLabel: string;
 };
 
-function formatDate(date: string) {
-    return new Date(date).toLocaleDateString("en-US", {
+function formatDate(isoDate: string) {
+    return new Date(isoDate).toLocaleDateString("en-US", {
         month: "short",
         day: "2-digit",
         year: "numeric",
     });
 }
 
-export default function NewsFeed({ posts }: Props) {
+export default function NewsFeed({ posts, updatesLabel, closeLabel }: Props) {
     const dialogRef = useRef<HTMLDialogElement | null>(null);
-    const [activePost, setActivePost] = useState<AppNewsView | null>(null);
-    const t = useTranslations("news.feed");
+    const [activePost, setActivePost] = useState<AppNewsPublicView | null>(null);
 
     if (posts.length === 0) return null;
 
-    const open = (post: AppNewsView) => {
+    const open = (post: AppNewsPublicView) => {
         setActivePost(post);
         dialogRef.current?.showModal();
     };
@@ -39,12 +42,12 @@ export default function NewsFeed({ posts }: Props) {
                     className="mb-2 text-[10px] uppercase tracking-[0.25em]"
                     style={{ color: "rgba(79,195,220,0.45)", fontFamily: "var(--font-mono)" }}
                 >
-                    {t("updates")}
+                    {updatesLabel}
                 </p>
                 <div className="flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-3">
                     {posts.map((post) => (
                         <button
-                            key={post._id.toString()}
+                            key={post._id}
                             type="button"
                             onClick={() => open(post)}
                             className="hud-panel w-[min(16rem,80vw)] shrink-0 cursor-pointer p-4 text-left transition-colors hover:brightness-125 sm:w-auto"
@@ -52,19 +55,13 @@ export default function NewsFeed({ posts }: Props) {
                         >
                             <p
                                 className="truncate text-sm font-semibold uppercase tracking-[0.06em]"
-                                style={{
-                                    color: "var(--accent-primary)",
-                                    fontFamily: "var(--font-display)",
-                                }}
+                                style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                             >
                                 {post.title}
                             </p>
                             <p
                                 className="mt-1 text-[11px]"
-                                style={{
-                                    color: "rgba(79,195,220,0.5)",
-                                    fontFamily: "var(--font-mono)",
-                                }}
+                                style={{ color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)" }}
                             >
                                 {formatDate(post.publishedAt)}
                             </p>
@@ -87,8 +84,7 @@ export default function NewsFeed({ posts }: Props) {
                         <div
                             className="absolute left-6 right-6 top-0 h-px"
                             style={{
-                                background:
-                                    "linear-gradient(90deg, transparent, rgba(79,195,220,0.35), transparent)",
+                                background: "linear-gradient(90deg, transparent, rgba(79,195,220,0.35), transparent)",
                             }}
                         />
 
@@ -96,19 +92,13 @@ export default function NewsFeed({ posts }: Props) {
                             <div>
                                 <p
                                     className="mb-1 text-[11px]"
-                                    style={{
-                                        color: "rgba(79,195,220,0.5)",
-                                        fontFamily: "var(--font-mono)",
-                                    }}
+                                    style={{ color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)" }}
                                 >
                                     {formatDate(activePost.publishedAt)}
                                 </p>
                                 <h2
                                     className="text-lg font-semibold uppercase tracking-[0.08em]"
-                                    style={{
-                                        color: "var(--accent-primary)",
-                                        fontFamily: "var(--font-display)",
-                                    }}
+                                    style={{ color: "var(--accent-primary)", fontFamily: "var(--font-display)" }}
                                 >
                                     {activePost.title}
                                 </h2>
@@ -125,19 +115,21 @@ export default function NewsFeed({ posts }: Props) {
                                     background: "rgba(79,195,220,0.04)",
                                 }}
                             >
-                                {t("close").toUpperCase()}
+                                {closeLabel.toUpperCase()}
                             </button>
                         </div>
 
-                        <pre
-                            className="whitespace-pre-wrap text-sm leading-relaxed"
-                            style={{
-                                color: "rgba(200,220,232,0.75)",
-                                fontFamily: "var(--font-mono)",
-                            }}
+                        <div
+                            className="prose prose-invert prose-sm max-w-none"
+                            style={{ color: "rgba(200,220,232,0.75)" }}
                         >
-                            {activePost.body}
-                        </pre>
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeSanitize]}
+                            >
+                                {activePost.body}
+                            </ReactMarkdown>
+                        </div>
                     </div>
                 )}
             </dialog>
