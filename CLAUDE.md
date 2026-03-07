@@ -42,6 +42,10 @@ app/
   (auth)/login/        # Discord OAuth login page
   (legal)/legal/       # Public legal pages: privacy, terms, imprint, cookies
   invite/[token]/      # Permanent invite link acceptance
+  news/
+    page.tsx           # Public news listing (ISR revalidate=3600, paginated)
+    [slug]/
+      page.tsx         # Public news detail (ISR, generateMetadata, JSON-LD Article schema)
   terminal/            # Authenticated app shell
     layout.tsx         # Auth gate + legal-version gate + TerminalHeader + TerminalBackground
     page.tsx           # Org list (home)
@@ -101,6 +105,14 @@ app/
 All MongoDB access goes through `lib/db.ts` → `getDb()`. Repository files in `lib/repositories/` own all queries — pages and actions never call `getDb()` directly. The MongoDB client is cached on `global._mongoClient` in development to survive hot reloads.
 
 Collections: `users`, `accounts`, `sessions` (NextAuth), `organizations`, `organization_audit_logs`, `organization_inventory_items`, `organization_transactions`, `organization_invites`, `organization_auec_transactions`, `organization_import_jobs`, `organization_export_jobs`, `organization_reports`, `report_pdfs` (GridFS), `organization_members`, `organization_ranks`, `app_news`, `app_news_settings`, `notifications`, `app_legal_settings`, `app_social_settings`.
+
+### Startup migrations
+
+`instrumentation.ts` calls `runAllMigrations()` from `lib/migrations/run-all.ts` on every cold server start (Node.js runtime only). Migrations are idempotent — safe to re-run. Current migrations:
+- **`migrateMembers()`** — creates indexes on `organization_members` / `organization_ranks`, backfills `organization_members` from `org.members[]`
+- **`migrateNews()`** — backfills `status/primaryLocale/translations/createdBy` on old news docs, creates `app_news_settings` singleton, creates indexes including the unique sparse `{ slug: 1 }` index, backfills `slug` for any docs missing it
+
+Hot-reload in dev does **not** re-run `instrumentation.ts` — only a full server restart does. If schema changes aren't reflected, restart the dev server.
 
 ### Server actions
 
@@ -166,19 +178,28 @@ Global announcements written and managed by Super Admin only. Multilingual (EN/D
 
 **Translation status per locale:** `missing | generating | ready | edited | error`. Translations are generated via OpenAI GPT-4o-mini (fire-and-forget — no `await` on `translateNewsPost`). Each locale translates independently; partial failures don't block other locales.
 
+**Slug system:** Each post has a `slug` field generated once at creation from the title (`slugifyNewsTitle` → unicode-normalized, max 80 chars, suffix `-2`/`-3`/… for collisions). **Slugs are immutable after creation** — title edits do not regenerate them, keeping Discord embed URLs stable. Globally unique sparse index `{ slug: 1 }` on `app_news`. `generateUniqueNewsSlug()` is exported from the repository for use in migrations.
+
 **Key files:**
-- `lib/types/app-news.ts` — all news types (`AppNewsDocument`, `AppNewsView`, `AppNewsPublicView`)
+- `lib/types/app-news.ts` — all news types (`AppNewsDocument`, `AppNewsView`, `AppNewsPublicView`) — all three include `slug`
 - `lib/types/app-news-settings.ts` — singleton Discord config type
-- `lib/repositories/app-news-repository.ts` — CRUD + `toAppNewsView`, `toAppNewsPublicView`
+- `lib/repositories/app-news-repository.ts` — CRUD + `toAppNewsView`, `toAppNewsPublicView`, `getAllPublishedAppNews`, `countPublishedAppNews`, `getPublishedAppNewsBySlug`
 - `lib/repositories/app-news-settings-repository.ts` — `getOrCreateNewsSettings`, `saveNewsSettings`
 - `lib/translations/translate-news.ts` — OpenAI pipeline with exponential backoff (1s, 2s), auto-transitions to `ready_to_publish` when all locales done
-- `lib/discord/send-news-embed.ts` — `buildNewsEmbed` + `sendOrUpdateNewsEmbed` (edits existing Discord message if `discord.messageId` is stored; falls back to new post if message deleted)
+- `lib/discord/send-news-embed.ts` — `buildNewsEmbed` + `sendOrUpdateNewsEmbed` (edits existing Discord message if `discord.messageId` is stored; falls back to new post if message deleted). Embed URL and "Read more" links use `news.slug`, not `news._id`.
+- `lib/utils/strip-markdown.ts` — regex-based markdown stripper used for meta description excerpts (160 chars)
 - `components/admin/news-editor.tsx` — full client editor; polls `/api/admin/news/[id]` every 2s while `status === "translation_pending"`
 - `components/admin/news-settings-card.tsx` — Discord guild/channel config UI
+- `components/news/news-markdown-body.tsx` — client ReactMarkdown wrapper for public pages
+- `components/news/news-list-card.tsx` — card used on `/news` listing and home feed
+- `components/news/share-buttons.tsx` — client share bar (X, Facebook, Telegram, WhatsApp, Reddit, copy link)
+- `components/home/home-news-feed.tsx` — server component on the landing page; fetches latest 3 published posts
 
 **Admin pages:** `/terminal/admin/news` (list + settings card), `/terminal/admin/news/new`, `/terminal/admin/news/[id]/edit`
 
-**Public consumption:** `getLatestPublishedAppNews()` → server component resolves locale via `getLocale()` (next-intl) → maps to `AppNewsPublicView` → passes to `components/orgs/details/dashboard/news-feed.tsx` (client, ReactMarkdown body in a `<dialog>`).
+**Public pages:** `/news` (paginated listing, ISR 1h), `/news/[slug]` (detail with OG/Twitter meta + JSON-LD Article schema, ISR 1h). The publish API route calls `revalidatePath("/news")` + `revalidatePath("/news/${slug}")` for immediate freshness after publish.
+
+**Public consumption (in-app):** `getLatestPublishedAppNews()` → server component resolves locale via `getLocale()` (next-intl) → maps to `AppNewsPublicView` → passes to `components/orgs/details/dashboard/news-feed.tsx` (client, ReactMarkdown body in a `<dialog>`).
 
 **Discord embed:** multilingual embed with locale flags (🇬🇧/🇩🇪/🇫🇷), proportional truncation to 4,000 chars total. Only locales with content are included. Primary locale always first.
 

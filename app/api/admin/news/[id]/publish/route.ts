@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { isSuperAdmin } from "@/lib/is-super-admin";
 import {
@@ -59,5 +60,8 @@ export async function POST(
     }
 
     const updated = await getAppNewsById(id);
-    return NextResponse.json({ ...toAppNewsView(updated!), discordWarning });
+    const view = toAppNewsView(updated!);
+    revalidatePath("/news");
+    if (view.slug) revalidatePath(`/news/${view.slug}`);
+    return NextResponse.json({ ...view, discordWarning });
 }

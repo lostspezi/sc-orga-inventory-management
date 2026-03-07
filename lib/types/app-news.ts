@@ -25,6 +25,7 @@ export type DiscordPostResult = {
 
 export type AppNewsDocument = {
     _id: ObjectId;
+    slug: string;
     primaryLocale: NewsLocale;
     title: string;
     body: string;
@@ -50,6 +51,7 @@ export type NewsTranslationView = {
 
 export type AppNewsView = {
     _id: string;
+    slug: string;
     primaryLocale: NewsLocale;
     title: string;
     body: string;
@@ -72,6 +74,7 @@ export type AppNewsView = {
 // Locale-resolved view for user-facing components
 export type AppNewsPublicView = {
     _id: string;
+    slug: string;
     title: string;
     body: string;
     locale: NewsLocale;
