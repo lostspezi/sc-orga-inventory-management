@@ -7,7 +7,7 @@ import { leaveOrganizationAction } from "@/lib/actions/leave-organization-action
 type Props = {
     orgSlug: string;
     orgName: string;
-    role: "owner" | "admin" | "member";
+    role: "owner" | "admin" | "hr" | "member";
     memberCount: number;
 };
 

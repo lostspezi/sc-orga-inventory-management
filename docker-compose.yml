@@ -1,0 +1,23 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: sc-orga-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - sc-orga-mongodb-data:/data/db
+    restart: unless-stopped
+
+  maildev:
+    image: maildev/maildev:latest
+    container_name: sc-orga-maildev
+    ports:
+      - "1025:1025" # SMTP (app sends here)
+      - "1080:1080" # Web UI — http://localhost:1080
+    environment:
+      MAILDEV_INCOMING_USER: ""
+      MAILDEV_INCOMING_PASS: ""
+    restart: unless-stopped
+
+volumes:
+  sc-orga-mongodb-data:

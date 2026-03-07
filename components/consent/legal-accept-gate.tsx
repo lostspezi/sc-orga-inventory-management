@@ -23,6 +23,7 @@ export default function LegalAcceptGate({
     function handleAccept() {
         startTransition(async () => {
             await acceptLegalAction(currentVersion);
+            dialogRef.current?.close();
             router.refresh();
         });
     }
@@ -31,17 +32,11 @@ export default function LegalAcceptGate({
         <dialog
             ref={dialogRef}
             onCancel={(e) => e.preventDefault()}
-            className="backdrop:bg-black/70"
-            style={{
-                background: "transparent",
-                border: "none",
-                padding: 0,
-                maxWidth: "min(90vw, 540px)",
-                width: "100%",
-            }}
+            className="fixed left-1/2 top-1/2 m-0 w-[min(90vw,540px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden backdrop:bg-black/70"
+            style={{ background: "transparent", border: "none", padding: 0 }}
         >
             <div
-                className="hud-panel relative max-h-[90dvh] overflow-y-auto p-7"
+                className="hud-panel relative max-h-[90dvh] overflow-y-auto p-7 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 style={{ background: "rgba(4,10,18,0.97)" }}
             >
                 {/* top accent */}

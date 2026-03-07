@@ -18,7 +18,8 @@
       "Bash(cmd:*)",
       "Bash(node_modules/.bin/tsc:*)",
       "Bash(grep:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npx tsx:*)"
     ]
   }
 }
