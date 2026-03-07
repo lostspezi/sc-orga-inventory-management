@@ -1,56 +1,224 @@
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/db";
-import type { AppNewsDocument } from "@/lib/types/app-news";
+import type {
+    AppNewsDocument,
+    AppNewsView,
+    AppNewsPublicView,
+    NewsLocale,
+    NewsStatus,
+    NewsTranslation,
+    DiscordPostResult,
+} from "@/lib/types/app-news";
 
 const COLLECTION = "app_news";
+
+// ── Create ───────────────────────────────────────────────────────────────────
+
+export async function createAppNews(data: {
+    primaryLocale: NewsLocale;
+    title: string;
+    body: string;
+    createdBy: string;
+}): Promise<AppNewsDocument> {
+    const db = await getDb();
+    const now = new Date();
+    const doc = {
+        primaryLocale: data.primaryLocale,
+        title: data.title,
+        body: data.body,
+        translations: {} as Partial<Record<NewsLocale, NewsTranslation>>,
+        status: "draft" as NewsStatus,
+        createdBy: data.createdBy,
+        createdAt: now,
+        updatedAt: now,
+    };
+    const result = await db.collection(COLLECTION).insertOne(doc);
+    return { ...doc, _id: result.insertedId } as AppNewsDocument;
+}
+
+// ── Read ─────────────────────────────────────────────────────────────────────
 
 export async function getAllAppNews(): Promise<AppNewsDocument[]> {
     const db = await getDb();
     return db
         .collection<AppNewsDocument>(COLLECTION)
         .find()
-        .sort({ publishedAt: -1 })
+        .sort({ createdAt: -1 })
         .toArray();
 }
 
-export async function getLatestAppNews(limit: number): Promise<AppNewsDocument[]> {
+export async function getAppNewsById(id: string): Promise<AppNewsDocument | null> {
+    if (!ObjectId.isValid(id)) return null;
+    const db = await getDb();
+    return db.collection<AppNewsDocument>(COLLECTION).findOne({ _id: new ObjectId(id) });
+}
+
+export async function getLatestPublishedAppNews(limit: number): Promise<AppNewsDocument[]> {
     const db = await getDb();
     return db
         .collection<AppNewsDocument>(COLLECTION)
-        .find()
+        .find({ status: "published" })
         .sort({ publishedAt: -1 })
         .limit(limit)
         .toArray();
 }
 
-export async function createAppNewsInDb(title: string, body: string): Promise<void> {
-    const db = await getDb();
-    const now = new Date();
-    const doc: Omit<AppNewsDocument, "_id"> = {
-        title,
-        body,
-        publishedAt: now,
-        createdAt: now,
-        updatedAt: now,
-    };
-    await db.collection<Omit<AppNewsDocument, "_id">>(COLLECTION).insertOne(doc);
-}
+// Backward-compat alias used by org dashboard page
+export const getLatestAppNews = getLatestPublishedAppNews;
 
-export async function updateAppNewsInDb(id: string, title: string, body: string): Promise<boolean> {
+// ── Update content ────────────────────────────────────────────────────────────
+
+export async function updateAppNewsContent(
+    id: string,
+    data: { title?: string; body?: string; primaryLocale?: NewsLocale }
+): Promise<boolean> {
     if (!ObjectId.isValid(id)) return false;
     const db = await getDb();
+
+    const current = await db.collection<AppNewsDocument>(COLLECTION).findOne({ _id: new ObjectId(id) });
+    if (!current) return false;
+
+    const setFields: Record<string, unknown> = { updatedAt: new Date() };
+    if (data.title !== undefined) setFields.title = data.title;
+    if (data.body !== undefined) setFields.body = data.body;
+    if (data.primaryLocale !== undefined) setFields.primaryLocale = data.primaryLocale;
+
+    // Editing published/ready_to_publish content resets to draft
+    if (current.status === "published" || current.status === "ready_to_publish") {
+        setFields.status = "draft";
+    }
+
     const result = await db.collection<AppNewsDocument>(COLLECTION).updateOne(
         { _id: new ObjectId(id) },
-        { $set: { title, body, updatedAt: new Date() } }
+        { $set: setFields }
     );
     return result.modifiedCount > 0;
 }
 
-export async function deleteAppNewsInDb(id: string): Promise<boolean> {
+// ── Update translation for a locale ──────────────────────────────────────────
+
+export async function setAppNewsTranslation(
+    id: string,
+    locale: NewsLocale,
+    translation: NewsTranslation
+): Promise<void> {
+    if (!ObjectId.isValid(id)) return;
+    const db = await getDb();
+    await db.collection<AppNewsDocument>(COLLECTION).updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { [`translations.${locale}`]: translation, updatedAt: new Date() } }
+    );
+}
+
+// ── Status transitions ────────────────────────────────────────────────────────
+
+export async function setAppNewsStatus(
+    id: string,
+    status: NewsStatus,
+    extra?: { publishedAt?: Date; archivedAt?: Date }
+): Promise<boolean> {
     if (!ObjectId.isValid(id)) return false;
     const db = await getDb();
-    const result = await db.collection<AppNewsDocument>(COLLECTION).deleteOne({
-        _id: new ObjectId(id),
-    });
+    const setFields: Record<string, unknown> = { status, updatedAt: new Date() };
+    if (extra?.publishedAt) setFields.publishedAt = extra.publishedAt;
+    if (extra?.archivedAt) setFields.archivedAt = extra.archivedAt;
+    const result = await db.collection<AppNewsDocument>(COLLECTION).updateOne(
+        { _id: new ObjectId(id) },
+        { $set: setFields }
+    );
+    return result.modifiedCount > 0;
+}
+
+// ── Store Discord post result ─────────────────────────────────────────────────
+
+export async function setAppNewsDiscord(id: string, discord: DiscordPostResult): Promise<void> {
+    if (!ObjectId.isValid(id)) return;
+    const db = await getDb();
+    await db.collection<AppNewsDocument>(COLLECTION).updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { discord, updatedAt: new Date() } }
+    );
+}
+
+export async function setAppNewsDiscordFailure(id: string, reason: string): Promise<void> {
+    if (!ObjectId.isValid(id)) return;
+    const db = await getDb();
+    await db.collection<AppNewsDocument>(COLLECTION).updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { "discord.failureReason": reason, updatedAt: new Date() } }
+    );
+}
+
+// ── Delete ────────────────────────────────────────────────────────────────────
+
+export async function deleteAppNews(id: string): Promise<boolean> {
+    if (!ObjectId.isValid(id)) return false;
+    const db = await getDb();
+    const result = await db.collection<AppNewsDocument>(COLLECTION).deleteOne({ _id: new ObjectId(id) });
     return result.deletedCount > 0;
+}
+
+// ── Legacy aliases (keep old actions working) ─────────────────────────────────
+
+export async function createAppNewsInDb(title: string, body: string): Promise<void> {
+    await createAppNews({ primaryLocale: "en", title, body, createdBy: "legacy" });
+}
+
+export async function updateAppNewsInDb(id: string, title: string, body: string): Promise<boolean> {
+    return updateAppNewsContent(id, { title, body });
+}
+
+export const deleteAppNewsInDb = deleteAppNews;
+
+// ── Serialization ─────────────────────────────────────────────────────────────
+
+export function toAppNewsView(doc: AppNewsDocument): AppNewsView {
+    const translations: AppNewsView["translations"] = {};
+    for (const [locale, t] of Object.entries(doc.translations ?? {})) {
+        if (!t) continue;
+        translations[locale as NewsLocale] = {
+            title: t.title,
+            body: t.body,
+            status: t.status,
+            translatedAt: t.translatedAt?.toISOString(),
+            editedAt: t.editedAt?.toISOString(),
+            modelUsed: t.modelUsed,
+            errorMessage: t.errorMessage,
+        };
+    }
+
+    return {
+        _id: doc._id.toString(),
+        primaryLocale: doc.primaryLocale,
+        title: doc.title,
+        body: doc.body,
+        translations,
+        status: doc.status,
+        publishedAt: doc.publishedAt?.toISOString(),
+        archivedAt: doc.archivedAt?.toISOString(),
+        discord: doc.discord
+            ? {
+                guildId: doc.discord.guildId,
+                channelId: doc.discord.channelId,
+                messageId: doc.discord.messageId,
+                postedAt: doc.discord.postedAt.toISOString(),
+                updatedAt: doc.discord.updatedAt?.toISOString(),
+                failureReason: doc.discord.failureReason,
+              }
+            : undefined,
+        createdAt: doc.createdAt.toISOString(),
+        updatedAt: doc.updatedAt.toISOString(),
+    };
+}
+
+export function toAppNewsPublicView(doc: AppNewsDocument, locale: NewsLocale): AppNewsPublicView {
+    const translation = doc.translations?.[locale];
+    const useTranslation = translation && (translation.status === "ready" || translation.status === "edited");
+    return {
+        _id: doc._id.toString(),
+        title: useTranslation ? translation.title : doc.title,
+        body: useTranslation ? translation.body : doc.body,
+        locale: useTranslation ? locale : doc.primaryLocale,
+        publishedAt: doc.publishedAt!.toISOString(),
+    };
 }
