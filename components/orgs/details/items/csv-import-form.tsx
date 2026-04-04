@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Download, AlertCircle, X, FileText } from "lucide-react";
 import { ImportRowInput } from "@/lib/types/import-job";
+import { parseQualityInput } from "@/lib/utils/item-quality";
 
 type Props = {
     organizationSlug: string;
@@ -17,6 +18,7 @@ type Props = {
         colBuyPrice: string;
         colSellPrice: string;
         colQuantity: string;
+        colQuality: string;
         colMinStock: string;
         colMaxStock: string;
         submitBtn: string;
@@ -74,6 +76,7 @@ function parseCsv(text: string): { rows: ImportRowInput[]; error?: string } {
     const buyPriceIdx = headers.indexOf("buyprice");
     const sellPriceIdx = headers.indexOf("sellprice");
     const quantityIdx = headers.indexOf("quantity");
+    const qualityIdx = headers.indexOf("quality");
     const minStockIdx = headers.indexOf("minstock");
     const maxStockIdx = headers.indexOf("maxstock");
 
@@ -104,9 +107,13 @@ function parseCsv(text: string): { rows: ImportRowInput[]; error?: string } {
         const minStock = parseOptionalNumber(minStockIdx, true);
         const maxStock = parseOptionalNumber(maxStockIdx, true);
 
+        const qualityRaw = qualityIdx !== -1 ? cells[qualityIdx]?.trim() : undefined;
+        const quality = qualityRaw ? parseQualityInput(qualityRaw) : undefined;
+
         if (buyPrice !== undefined) row.buyPrice = buyPrice;
         if (sellPrice !== undefined) row.sellPrice = sellPrice;
         if (quantity !== undefined) row.quantity = quantity;
+        if (quality !== undefined && quality !== null) row.quality = quality;
         if (minStock !== undefined) row.minStock = minStock;
         if (maxStock !== undefined) row.maxStock = maxStock;
 
@@ -117,9 +124,9 @@ function parseCsv(text: string): { rows: ImportRowInput[]; error?: string } {
 }
 
 function downloadTemplate() {
-    const header = "name,buyPrice,sellPrice,quantity,minStock,maxStock";
-    const example1 = '"Laranite",100,150,50,10,200';
-    const example2 = '"Gold",80,120,30,,';
+    const header = "name,buyPrice,sellPrice,quantity,quality,minStock,maxStock";
+    const example1 = '"Laranite",100,150,50,675,10,200';
+    const example2 = '"Gold",80,120,30,Good,,';
     const csv = [header, example1, example2].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -336,6 +343,7 @@ export default function CsvImportForm({ organizationSlug, labels }: Props) {
                                         labels.colBuyPrice,
                                         labels.colSellPrice,
                                         labels.colQuantity,
+                                        labels.colQuality,
                                         labels.colMinStock,
                                         labels.colMaxStock,
                                     ].map((col) => (
@@ -362,6 +370,7 @@ export default function CsvImportForm({ organizationSlug, labels }: Props) {
                                         <td className="px-3 py-2">{row.buyPrice ?? "—"}</td>
                                         <td className="px-3 py-2">{row.sellPrice ?? "—"}</td>
                                         <td className="px-3 py-2">{row.quantity ?? "—"}</td>
+                                        <td className="px-3 py-2">{row.quality ?? "—"}</td>
                                         <td className="px-3 py-2">{row.minStock ?? "—"}</td>
                                         <td className="px-3 py-2">{row.maxStock ?? "—"}</td>
                                     </tr>

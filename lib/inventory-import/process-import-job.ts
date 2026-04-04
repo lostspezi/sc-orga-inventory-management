@@ -130,6 +130,7 @@ export async function processImportJob(
                     buyPrice: row.buyPrice ?? 0,
                     sellPrice: row.sellPrice ?? 0,
                     quantity: row.quantity ?? 0,
+                    quality: row.quality,
                 });
 
                 if (createResult.alreadyExists && createResult.document) {

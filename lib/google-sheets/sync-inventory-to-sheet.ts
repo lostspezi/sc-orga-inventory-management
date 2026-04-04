@@ -38,7 +38,7 @@ export async function syncInventoryToSheet(
     const items = await getOrganizationInventoryItemViewsByOrganizationId(orgId);
 
     // Same format as the CSV import template
-    const header = ["name", "buyPrice", "sellPrice", "quantity", "minStock", "maxStock"];
+    const header = ["name", "buyPrice", "sellPrice", "quantity", "quality", "minStock", "maxStock"];
     const rows: (string | number)[][] = [header];
 
     for (const item of items) {
@@ -47,6 +47,7 @@ export async function syncInventoryToSheet(
             item.buyPrice,
             item.sellPrice,
             item.quantity,
+            item.quality ?? "",
             item.minStock ?? "",
             item.maxStock ?? "",
         ]);

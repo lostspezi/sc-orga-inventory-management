@@ -59,6 +59,9 @@ export async function createOrganizationInventoryItemAction(
     const sellPrice = parseNumber(formData.get("sellPrice"));
     const quantity = parseNumber(formData.get("quantity"));
 
+    const qualityRaw = formData.get("quality");
+    const quality = qualityRaw ? parseInt(String(qualityRaw), 10) : undefined;
+
     const minStockRaw = formData.get("minStock");
     const maxStockRaw = formData.get("maxStock");
     const minStock = minStockRaw ? parseInt(String(minStockRaw), 10) : undefined;
@@ -127,6 +130,7 @@ export async function createOrganizationInventoryItemAction(
             buyPrice,
             sellPrice,
             quantity,
+            quality,
             minStock,
             maxStock,
             unit,
