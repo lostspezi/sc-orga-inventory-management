@@ -23,13 +23,14 @@ export async function processExportJob(
     try {
         const items = await getOrganizationInventoryItemViewsByOrganizationId(org._id);
 
-        const header = "name,buyPrice,sellPrice,quantity,minStock,maxStock";
+        const header = "name,buyPrice,sellPrice,quantity,quality,minStock,maxStock";
         const rows = items.map((item) =>
             [
                 escapeCell(item.name),
                 escapeCell(item.buyPrice),
                 escapeCell(item.sellPrice),
                 escapeCell(item.quantity),
+                escapeCell(item.quality),
                 escapeCell(item.minStock),
                 escapeCell(item.maxStock),
             ].join(",")

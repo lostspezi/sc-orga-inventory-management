@@ -57,6 +57,7 @@ export type OrganizationInventoryItemDocument = {
     buyPrice: number;
     sellPrice: number;
     quantity: number;
+    quality?: number;
     minStock?: number;
     maxStock?: number;
 
@@ -81,6 +82,7 @@ export type OrganizationInventoryItemView = {
     buyPrice: number;
     sellPrice: number;
     quantity: number;
+    quality?: number;
     minStock?: number;
     maxStock?: number;
     createdAt: Date;

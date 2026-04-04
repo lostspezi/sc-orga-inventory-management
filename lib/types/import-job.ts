@@ -5,6 +5,7 @@ export type ImportRowInput = {
     buyPrice?: number;
     sellPrice?: number;
     quantity?: number;
+    quality?: number;
     minStock?: number;
     maxStock?: number;
 };

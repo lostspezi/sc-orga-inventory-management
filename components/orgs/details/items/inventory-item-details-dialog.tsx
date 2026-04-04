@@ -1,12 +1,14 @@
 "use client";
 
-import {useActionState, useEffect, useRef} from "react";
+import {useActionState, useEffect, useRef, useState} from "react";
 import {useRouter} from "next/navigation";
 import {useTranslations} from "next-intl";
 import {updateOrganizationInventoryItemAction} from "@/lib/actions/update-organization-inventory-item-action";
 import RemoveOrganizationInventoryItemButton
     from "@/components/orgs/details/items/remove-organization-inventory-item-button";
 import TransactionStatusBadge from "@/components/orgs/details/transactions/transaction-status-badge";
+import QualityBadge from "@/components/orgs/details/items/quality-badge";
+import QualityInput from "@/components/orgs/details/items/quality-input";
 import type {OrganizationTransactionView} from "@/lib/types/transaction";
 
 type Props = {
@@ -22,6 +24,7 @@ type Props = {
         buyPrice: number;
         sellPrice: number;
         quantity: number;
+        quality?: number;
         minStock?: number;
         maxStock?: number;
     } | null;
@@ -55,6 +58,15 @@ export default function InventoryItemDetailsDialog({
         updateOrganizationInventoryItemAction,
         initialState
     );
+
+    // Reset quality state when the selected item changes (different item opened)
+    const itemQualityKey = `${item?.inventoryItemId}-${item?.quality}`;
+    const [qualityValue, setQualityValue] = useState<number | undefined>(item?.quality);
+    const [prevKey, setPrevKey] = useState(itemQualityKey);
+    if (prevKey !== itemQualityKey) {
+        setPrevKey(itemQualityKey);
+        setQualityValue(item?.quality);
+    }
 
     useEffect(() => {
         const dialog = dialogRef.current;
@@ -156,6 +168,17 @@ export default function InventoryItemDetailsDialog({
                                 <div className="mt-3 space-y-3">
                                     <InfoRow label={t("name")} value={item.name}/>
                                     <InfoRow label={t("category")} value={item.category ?? t("uncategorized")}/>
+                                    {item.quality !== undefined && (
+                                        <div className="flex items-center justify-between gap-3">
+                                            <span
+                                                className="text-[10px] uppercase"
+                                                style={{color: "rgba(79,195,220,0.5)", fontFamily: "var(--font-mono)"}}
+                                            >
+                                                {t("qualityValue")}
+                                            </span>
+                                            <QualityBadge quality={item.quality} />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -246,7 +269,7 @@ export default function InventoryItemDetailsDialog({
 
                             <div
                                 className="mt-4 space-y-4"
-                                key={`${item.buyPrice}-${item.sellPrice}-${item.quantity}-${item.minStock ?? ""}-${item.maxStock ?? ""}`}
+                                key={`${item.buyPrice}-${item.sellPrice}-${item.quantity}-${item.quality ?? ""}-${item.minStock ?? ""}-${item.maxStock ?? ""}`}
                             >
                                 <Field
                                     id="buyPrice"
@@ -291,6 +314,13 @@ export default function InventoryItemDetailsDialog({
                                     label={t("maxStock")}
                                     unit={unit}
                                     defaultValue={item.maxStock}
+                                    disabled={!canEdit || isPending}
+                                />
+
+                                <input type="hidden" name="quality" value={qualityValue ?? ""} />
+                                <QualityInput
+                                    value={qualityValue}
+                                    onChange={setQualityValue}
                                     disabled={!canEdit || isPending}
                                 />
                             </div>

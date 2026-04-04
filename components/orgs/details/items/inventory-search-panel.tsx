@@ -6,6 +6,7 @@ import {Search} from "lucide-react";
 import { useTranslations } from "next-intl";
 import InventoryItemDetailsDialog from "@/components/orgs/details/items/inventory-item-details-dialog";
 import CreateTransactionDialog from "@/components/orgs/details/transactions/create-transaction-dialog";
+import QualityBadge from "@/components/orgs/details/items/quality-badge";
 import type {OrganizationTransactionView} from "@/lib/types/transaction";
 
 type InventoryItem = {
@@ -18,6 +19,7 @@ type InventoryItem = {
     buyPrice: number;
     sellPrice: number;
     quantity: number;
+    quality?: number;
     minStock?: number;
     maxStock?: number;
 };
@@ -38,12 +40,15 @@ type Props = {
     categories: string[];
     initialSearch: string;
     initialCategory: string;
+    initialQuality: string;
 };
 
 type TransactionIntent = {
     inventoryItemId: string;
     direction: "org_to_member" | "member_to_org";
 };
+
+const QUALITY_FILTER_OPTIONS = ["worthless", "useable", "base", "good", "best", "ungraded"] as const;
 
 export default function InventorySearchPanel({
     items,
@@ -54,6 +59,7 @@ export default function InventorySearchPanel({
     categories,
     initialSearch,
     initialCategory,
+    initialQuality,
 }: Props) {
     const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -65,10 +71,12 @@ export default function InventorySearchPanel({
 
     const [searchValue, setSearchValue] = useState(initialSearch);
     const [categoryValue, setCategoryValue] = useState(initialCategory);
+    const [qualityValue, setQualityValue] = useState(initialQuality);
 
     // Sync local state when server-driven initial values change (e.g. after navigation)
     useEffect(() => { setSearchValue(initialSearch); }, [initialSearch]);
     useEffect(() => { setCategoryValue(initialCategory); }, [initialCategory]);
+    useEffect(() => { setQualityValue(initialQuality); }, [initialQuality]);
 
     // Debounced search → URL update
     useEffect(() => {
@@ -87,6 +95,14 @@ export default function InventorySearchPanel({
         setCategoryValue(val);
         const params = new URLSearchParams(searchParams.toString());
         if (val) { params.set("category", val); } else { params.delete("category"); }
+        params.delete("page");
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    };
+
+    const handleQualityChange = (val: string) => {
+        setQualityValue(val);
+        const params = new URLSearchParams(searchParams.toString());
+        if (val) { params.set("quality", val); } else { params.delete("quality"); }
         params.delete("page");
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     };
@@ -134,7 +150,7 @@ export default function InventorySearchPanel({
                     </h3>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
                     <div className="relative">
                         <Search
                             size={14}
@@ -159,6 +175,19 @@ export default function InventorySearchPanel({
                         <option value="">{t("categoryAll")}</option>
                         {categories.map((cat) => (
                             <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                    </select>
+                    <select
+                        value={qualityValue}
+                        onChange={(e) => handleQualityChange(e.target.value)}
+                        className="sc-input min-w-0 sm:min-w-[140px]"
+                        style={{ fontFamily: "var(--font-mono)" }}
+                    >
+                        <option value="">{t("qualityFilter")}</option>
+                        {QUALITY_FILTER_OPTIONS.map((opt) => (
+                            <option key={opt} value={opt}>
+                                {opt === "ungraded" ? t("qualityUngraded") : t(`quality_${opt}`)}
+                            </option>
                         ))}
                     </select>
                 </div>
@@ -223,12 +252,15 @@ export default function InventorySearchPanel({
                                 key={item.inventoryItemId}
                             >
                                 <div className="space-y-1">
-                                    <h4
-                                        className="text-sm font-semibold uppercase tracking-[0.06em]"
-                                        style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
-                                    >
-                                        {item.name}
-                                    </h4>
+                                    <div className="flex items-center gap-2">
+                                        <h4
+                                            className="text-sm font-semibold uppercase tracking-[0.06em]"
+                                            style={{color: "var(--accent-primary)", fontFamily: "var(--font-display)"}}
+                                        >
+                                            {item.name}
+                                        </h4>
+                                        {item.quality !== undefined && <QualityBadge quality={item.quality} />}
+                                    </div>
                                     <p
                                         className="text-[11px]"
                                         style={{color: "rgba(200,220,232,0.38)", fontFamily: "var(--font-mono)"}}

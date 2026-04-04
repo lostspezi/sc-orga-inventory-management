@@ -412,7 +412,17 @@
     "categoryAll": "All Categories",
     "pageOf": "Page {page} of {total}",
     "prevPage": "← Prev",
-    "nextPage": "Next →"
+    "nextPage": "Next →",
+    "qualityValue": "Quality",
+    "qualityGrade": "Grade",
+    "qualityNone": "— None —",
+    "qualityFilter": "All Qualities",
+    "qualityUngraded": "Ungraded",
+    "quality_worthless": "Worthless",
+    "quality_useable": "Useable",
+    "quality_base": "Base",
+    "quality_good": "Good",
+    "quality_best": "Best"
   },
   "transactions": {
     "eyebrow": "Transactions",
@@ -836,6 +846,7 @@
     "colBuyPrice": "Buy Price",
     "colSellPrice": "Sell Price",
     "colQuantity": "Quantity",
+    "colQuality": "Quality",
     "colMinStock": "Min Stock",
     "colMaxStock": "Max Stock",
     "submitBtn": "Start Import",

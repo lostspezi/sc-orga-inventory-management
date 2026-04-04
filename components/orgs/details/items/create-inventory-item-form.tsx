@@ -8,6 +8,7 @@ import {
     type CreateOrganizationInventoryItemActionState,
 } from "@/lib/actions/create-organization-inventory-item-action";
 import ScItemAutocomplete, { type SelectedItemWithVariants } from "@/components/orgs/details/items/sc-item-autocomplete";
+import QualityInput from "@/components/orgs/details/items/quality-input";
 
 type Props = { organizationSlug: string };
 
@@ -32,6 +33,7 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
     const [selection, setSelection] = useState<SelectedItemWithVariants | null>(null);
     const [excludeShopItems, setExcludeShopItems] = useState(false);
     const [commoditiesOnly, setCommoditiesOnly] = useState(false);
+    const [quality, setQuality] = useState<number | undefined>(undefined);
     const [resetKey, setResetKey] = useState(0);
 
     const unitLabel = selection?.item.unit ?? null;
@@ -41,6 +43,7 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
             formRef.current?.reset();
             startTransition(() => {
                 setSelection(null);
+                setQuality(undefined);
                 setResetKey((k) => k + 1);
             });
         }
@@ -55,6 +58,8 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
         if (selection.item.scUuid) formData.set("scWikiUuid", selection.item.scUuid);
         if (selection.item.category) formData.set("category", selection.item.category);
         if (selection.item.unit) formData.set("unit", selection.item.unit);
+
+        if (quality !== undefined) formData.set("quality", String(quality));
 
         // Remove empty min/max stock so action treats them as undefined
         if (!formData.get("minStock")) formData.delete("minStock");
@@ -216,6 +221,9 @@ export default function CreateInventoryItemForm({ organizationSlug }: Props) {
                     </div>
                 ))}
             </div>
+
+            {/* Quality */}
+            <QualityInput value={quality} onChange={setQuality} disabled={isPending} />
 
             {!state.success && state.message && (
                 <p className="text-[11px]" style={{ color: "rgba(248,113,113,0.8)", fontFamily: "var(--font-mono)" }}>{state.message}</p>

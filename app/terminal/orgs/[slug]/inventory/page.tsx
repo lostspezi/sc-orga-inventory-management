@@ -28,12 +28,12 @@ const PAGE_SIZE = 25;
 
 type Props = {
     params: Promise<{ slug: string }>;
-    searchParams: Promise<{ deleted?: string; tab?: string; page?: string; q?: string; category?: string }>;
+    searchParams: Promise<{ deleted?: string; tab?: string; page?: string; q?: string; category?: string; quality?: string }>;
 };
 
 export default async function OrgItemsPage({params, searchParams}: Props) {
     const {slug} = await params;
-    const {deleted, tab, page: pageParam, q, category} = await searchParams;
+    const {deleted, tab, page: pageParam, q, category, quality} = await searchParams;
     const session = await auth();
 
     if (!session?.user?.id) {
@@ -56,6 +56,7 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
     const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
     const search = q?.trim() ?? "";
     const categoryFilter = category?.trim() ?? "";
+    const qualityFilter = quality?.trim() ?? "";
 
     const isPro = org.billing.isPro;
 
@@ -87,6 +88,7 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                 pageSize: PAGE_SIZE,
                 search: search || undefined,
                 category: categoryFilter || undefined,
+                qualityGrade: (qualityFilter || undefined) as import("@/lib/utils/item-quality").ItemQualityGrade | "ungraded" | undefined,
             })
             : Promise.resolve(null),
         activeTab === "items" ? getDistinctInventoryCategories(org._id) : Promise.resolve([]),
@@ -123,6 +125,7 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
         buyPrice: item.buyPrice,
         sellPrice: item.sellPrice,
         quantity: item.quantity,
+        quality: item.quality,
     }));
 
     const transactionsByItemId: Record<string, OrganizationTransactionView[]> = {};
@@ -204,6 +207,7 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                                                     colBuyPrice: tCsv("colBuyPrice"),
                                                     colSellPrice: tCsv("colSellPrice"),
                                                     colQuantity: tCsv("colQuantity"),
+                                                    colQuality: tCsv("colQuality"),
                                                     colMinStock: tCsv("colMinStock"),
                                                     colMaxStock: tCsv("colMaxStock"),
                                                     submitBtn: tCsv("submitBtn"),
@@ -249,6 +253,7 @@ export default async function OrgItemsPage({params, searchParams}: Props) {
                             categories={categories}
                             initialSearch={search}
                             initialCategory={categoryFilter}
+                            initialQuality={qualityFilter}
                         />
                     </>
                 ) : (

@@ -52,6 +52,7 @@ export async function updateOrganizationInventoryItemAction(
     const buyPrice = parseNumber(formData.get("buyPrice"));
     const sellPrice = parseNumber(formData.get("sellPrice"));
     const quantity = parseNumber(formData.get("quantity"));
+    const quality = parseOptionalInt(formData.get("quality"));
     const minStock = parseOptionalInt(formData.get("minStock"));
     const maxStock = parseOptionalInt(formData.get("maxStock"));
 
@@ -105,6 +106,7 @@ export async function updateOrganizationInventoryItemAction(
         buyPrice,
         sellPrice,
         quantity,
+        quality,
         minStock,
         maxStock,
     });

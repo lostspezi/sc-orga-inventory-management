@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/db";
 import { OrganizationInventoryItemDocument, OrganizationInventoryItemView } from "@/lib/types/organization";
+import { type ItemQualityGrade, getQualityGradeDefinition } from "@/lib/utils/item-quality";
 
 export type PaginatedInventoryResult = {
     items: OrganizationInventoryItemView[];
@@ -29,6 +30,7 @@ function toView(doc: OrganizationInventoryItemDocument): OrganizationInventoryIt
         buyPrice: doc.buyPrice,
         sellPrice: doc.sellPrice,
         quantity: doc.quantity,
+        quality: doc.quality,
         minStock: doc.minStock,
         maxStock: doc.maxStock,
         createdAt: doc.createdAt,
@@ -48,6 +50,7 @@ export async function createOrganizationInventoryItemInDb(input: {
     buyPrice: number;
     sellPrice: number;
     quantity: number;
+    quality?: number;
     minStock?: number;
     maxStock?: number;
     unit?: string;
@@ -76,6 +79,7 @@ export async function createOrganizationInventoryItemInDb(input: {
         buyPrice: input.buyPrice,
         sellPrice: input.sellPrice,
         quantity: input.quantity,
+        ...(input.quality !== undefined && { quality: input.quality }),
         ...(input.minStock !== undefined && { minStock: input.minStock }),
         ...(input.maxStock !== undefined && { maxStock: input.maxStock }),
         ...(input.unit !== undefined && { unit: input.unit }),
@@ -140,6 +144,7 @@ export async function updateOrganizationInventoryItemInDb(input: {
     buyPrice: number;
     sellPrice: number;
     quantity: number;
+    quality?: number | undefined;
     minStock: number | undefined;
     maxStock: number | undefined;
 }): Promise<boolean> {
@@ -156,6 +161,12 @@ export async function updateOrganizationInventoryItemInDb(input: {
         updatedAt: new Date(),
     };
     const unsetData: Record<string, string> = {};
+
+    if (input.quality !== undefined) {
+        setData.quality = input.quality;
+    } else {
+        unsetData.quality = "";
+    }
 
     if (input.minStock !== undefined) {
         setData.minStock = input.minStock;
@@ -212,10 +223,10 @@ export async function getOrganizationInventoryItemViewById(
 
 export async function getOrganizationInventoryItemViewsPaginated(
     organizationId: ObjectId,
-    options: { page: number; pageSize: number; search?: string; category?: string }
+    options: { page: number; pageSize: number; search?: string; category?: string; qualityGrade?: ItemQualityGrade | "ungraded" }
 ): Promise<PaginatedInventoryResult> {
     const db = await getDb();
-    const { page, pageSize, search, category } = options;
+    const { page, pageSize, search, category, qualityGrade } = options;
     const offset = (page - 1) * pageSize;
 
     const match: Record<string, unknown> = { organizationId };
@@ -225,6 +236,12 @@ export async function getOrganizationInventoryItemViewsPaginated(
     }
     if (category) {
         match.category = new RegExp(`^${escapeRegex(category)}$`, "i");
+    }
+    if (qualityGrade === "ungraded") {
+        match.quality = { $exists: false };
+    } else if (qualityGrade) {
+        const def = getQualityGradeDefinition(qualityGrade);
+        match.quality = { $gte: def.min, $lte: def.max };
     }
 
     const pipeline: object[] = [
