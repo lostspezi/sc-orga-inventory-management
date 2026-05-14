@@ -1,3 +1,5 @@
+I do not have time to work on this project any more. feel free to use it!
+
 # SC Orga Inventory Management
 
 A Star Citizen organization inventory management system that allows org members to buy from and sell to the organization's stockpile. Built with a HUD-style UI inspired by the Star Citizen universe.
